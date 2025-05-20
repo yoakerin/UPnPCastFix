@@ -5,7 +5,7 @@ import android.content.Intent
 import com.yinnho.upnpcast.registry.StandardDeviceRegistry
 import com.yinnho.upnpcast.api.DLNAErrorType
 import com.yinnho.upnpcast.api.DLNAException
-import com.yinnho.upnpcast.interfaces.ControlPoint
+import com.yinnho.upnpcast.api.ControlPoint
 import com.yinnho.upnpcast.interfaces.UpnpServiceConfiguration
 import com.yinnho.upnpcast.model.RemoteDevice
 import com.yinnho.upnpcast.core.EnhancedThreadManager
@@ -19,6 +19,7 @@ import com.yinnho.upnpcast.event.PlaybackStoppedEvent
 import com.yinnho.upnpcast.event.DeviceConnectedEvent
 import com.yinnho.upnpcast.event.DeviceDisconnectedEvent
 import com.yinnho.upnpcast.event.DeviceErrorEvent
+import com.yinnho.upnpcast.core.DefaultControlPoint
 
 /**
  * DLNA播放器控制类

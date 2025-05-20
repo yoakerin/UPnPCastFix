@@ -1,5 +1,7 @@
 package com.yinnho.upnpcast.api
 
+import com.yinnho.upnpcast.model.RemoteDevice
+
 /**
  * UPnP控制点接口
  * 负责发现和控制UPnP设备

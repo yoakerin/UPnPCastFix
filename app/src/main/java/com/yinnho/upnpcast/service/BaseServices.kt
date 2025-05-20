@@ -4,14 +4,14 @@ import android.content.Context
 import android.util.Log
 import com.yinnho.upnpcast.core.DefaultControlPoint
 import com.yinnho.upnpcast.core.DefaultUpnpServiceConfiguration
-import com.yinnho.upnpcast.interfaces.ControlPoint
+import com.yinnho.upnpcast.api.ControlPoint
+import com.yinnho.upnpcast.api.UpnpService
 import com.yinnho.upnpcast.interfaces.DLNAAction
 import com.yinnho.upnpcast.interfaces.PositionInfo
 import com.yinnho.upnpcast.interfaces.Registry
 import com.yinnho.upnpcast.interfaces.Router
 import com.yinnho.upnpcast.interfaces.ServiceInterface
 import com.yinnho.upnpcast.interfaces.StateVariable
-import com.yinnho.upnpcast.interfaces.UpnpService
 import com.yinnho.upnpcast.interfaces.UpnpServiceConfiguration
 import com.yinnho.upnpcast.model.DLNAUrl
 import com.yinnho.upnpcast.model.PositionInfoImpl
