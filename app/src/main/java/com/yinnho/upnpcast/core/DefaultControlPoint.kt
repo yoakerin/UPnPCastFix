@@ -1,7 +1,7 @@
 package com.yinnho.upnpcast.core
 
 import android.util.Log
-import com.yinnho.upnpcast.interfaces.ControlPoint
+import com.yinnho.upnpcast.api.ControlPoint
 import com.yinnho.upnpcast.interfaces.UpnpServiceConfiguration
 import com.yinnho.upnpcast.model.RemoteDevice
 
