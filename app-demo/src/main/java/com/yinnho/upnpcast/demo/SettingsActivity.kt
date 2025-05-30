@@ -5,7 +5,8 @@ import android.widget.Button
 import android.widget.Switch
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.yinnho.upnpcast.DLNACastManager
+// 使用本地定义的简化版DLNACastManager
+import com.yinnho.upnpcast.demo.DLNACastManager
 import android.widget.SeekBar
 import android.widget.TextView
 import android.util.Log

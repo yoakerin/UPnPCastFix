@@ -1,7 +1,38 @@
 package com.yinnho.upnpcast
 
 /**
- * UPnP服务接口
- * 为保持兼容性，使用类型别名直接引用新的API类
+ * UPnP service core interface - Reference Cling design
+ * This is the core entry point for the entire UPnP protocol stack
  */
-typealias UpnpService = com.yinnho.upnpcast.api.UpnpService 
+interface UpnpService {
+    
+    /**
+     * Get device registry
+     */
+    fun getRegistry(): Registry
+    
+    /**
+     * Get control point
+     */
+    fun getControlPoint(): ControlPoint
+    
+    /**
+     * Start UPnP service
+     */
+    fun startup()
+    
+    /**
+     * Shutdown UPnP service and release resources
+     */
+    fun shutdown()
+    
+    /**
+     * Get service configuration
+     */
+    fun getConfiguration(): UpnpServiceConfiguration
+    
+    /**
+     * Whether service is running
+     */
+    fun isRunning(): Boolean
+} 

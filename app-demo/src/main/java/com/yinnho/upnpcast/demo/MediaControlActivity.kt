@@ -7,7 +7,8 @@ import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.yinnho.upnpcast.DLNACastManager
+// 使用本地定义的简化版DLNACastManager
+import com.yinnho.upnpcast.demo.DLNACastManager
 
 class MediaControlActivity : AppCompatActivity() {
     
@@ -23,6 +24,9 @@ class MediaControlActivity : AppCompatActivity() {
     
     // 当前连接的设备ID
     private var currentDeviceId: String? = null
+    
+    // 当前音量（0-100）
+    private var currentVolume: Int = 50
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,23 +64,17 @@ class MediaControlActivity : AppCompatActivity() {
         }
         
         findViewById<Button>(R.id.btn_pause).setOnClickListener {
-            currentDeviceId?.let { deviceId ->
-                dlnaCastManager.pausePlayback(deviceId)
-                statusText.text = "已暂停"
-            }
+            dlnaCastManager.pausePlayback()
+            statusText.text = "已暂停"
         }
         
         findViewById<Button>(R.id.btn_resume).setOnClickListener {
-            currentDeviceId?.let { deviceId ->
-                dlnaCastManager.resumePlayback(deviceId)
-                statusText.text = "正在播放"
-            }
+            dlnaCastManager.resumePlayback()
+            statusText.text = "正在播放"
         }
         
         findViewById<Button>(R.id.btn_stop).setOnClickListener {
-            currentDeviceId?.let { deviceId ->
-                dlnaCastManager.stopPlayback(deviceId)
-            }
+            dlnaCastManager.stopPlayback()
             finish()
         }
         
@@ -88,9 +86,7 @@ class MediaControlActivity : AppCompatActivity() {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 // 仅当用户操作时才跳转
                 if (fromUser) {
-                    currentDeviceId?.let { deviceId ->
-                        dlnaCastManager.seekTo(deviceId, progress.toLong() * 1000) // 转换为毫秒
-                    }
+                    dlnaCastManager.seekTo(progress.toLong() * 1000) // 转换为毫秒
                 }
             }
             
@@ -101,17 +97,17 @@ class MediaControlActivity : AppCompatActivity() {
         
         // 音量控制
         findViewById<Button>(R.id.btn_volume_up).setOnClickListener {
-            currentDeviceId?.let { deviceId ->
-                dlnaCastManager.setVolume(deviceId, 75)
-                Toast.makeText(this, "音量增加", Toast.LENGTH_SHORT).show()
-            }
+            // 音量增加10，最大100
+            currentVolume = (currentVolume + 10).coerceAtMost(100)
+            dlnaCastManager.setVolume(currentVolume)
+            Toast.makeText(this, "音量: $currentVolume%", Toast.LENGTH_SHORT).show()
         }
         
         findViewById<Button>(R.id.btn_volume_down).setOnClickListener {
-            currentDeviceId?.let { deviceId ->
-                dlnaCastManager.setVolume(deviceId, 25)
-                Toast.makeText(this, "音量降低", Toast.LENGTH_SHORT).show()
-            }
+            // 音量减少10，最小0
+            currentVolume = (currentVolume - 10).coerceAtLeast(0)
+            dlnaCastManager.setVolume(currentVolume)
+            Toast.makeText(this, "音量: $currentVolume%", Toast.LENGTH_SHORT).show()
         }
     }
     
@@ -120,15 +116,15 @@ class MediaControlActivity : AppCompatActivity() {
      * 监控并更新UI中的播放状态和进度
      */
     private fun setupPlaybackStateMonitoring() {
-        dlnaCastManager.setPlaybackStateListener(object : DLNACastManager.PlaybackStateListener {
-            override fun onPlaybackStateChanged(state: String) {
+        dlnaCastManager.setPlaybackStateListener(object : PlaybackStateListener {
+            override fun onPlaybackStateChanged(state: PlaybackState) {
                 runOnUiThread {
                     statusText.text = when(state) {
-                        "PLAYING" -> "正在播放"
-                        "PAUSED" -> "已暂停"
-                        "STOPPED" -> "已停止"
-                        "TRANSITIONING" -> "缓冲中..."
-                        else -> state
+                        PlaybackState.PLAYING -> "正在播放"
+                        PlaybackState.PAUSED -> "已暂停"
+                        PlaybackState.STOPPED -> "已停止"
+                        PlaybackState.BUFFERING -> "缓冲中..."
+                        else -> state.toString()
                     }
                 }
             }
@@ -165,13 +161,7 @@ class MediaControlActivity : AppCompatActivity() {
             return
         }
         
-        currentDeviceId?.let { deviceId ->
-            dlnaCastManager.playMedia(
-                deviceId = deviceId,
-                mediaUrl = mediaUrl,
-                title = title
-            )
-        }
+        dlnaCastManager.playMedia(url = mediaUrl, title = title)
         
         titleText.text = title
         statusText.text = "正在播放"

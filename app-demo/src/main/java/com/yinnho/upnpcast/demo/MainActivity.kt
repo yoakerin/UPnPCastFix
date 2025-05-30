@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+// 使用真实的DLNACastManager
 import com.yinnho.upnpcast.DLNACastManager
 import com.yinnho.upnpcast.RemoteDevice
 import com.yinnho.upnpcast.CastListener
@@ -17,7 +18,6 @@ import android.net.wifi.WifiManager
 import android.content.Context
 import android.util.Log
 import androidx.fragment.app.FragmentTransaction
-import com.yinnho.upnpcast.demo.fragment.TestHelperFragment
 
 class MainActivity : AppCompatActivity() {
     private lateinit var dlnaCastManager: DLNACastManager
@@ -45,30 +45,28 @@ class MainActivity : AppCompatActivity() {
         
         // 初始化DLNA管理器
         dlnaCastManager = DLNACastManager.getInstance(applicationContext)
-        // 设置DLNA管理器调试模式
-        dlnaCastManager.setDebugMode(true)
-        Log.d(TAG, "DLNA管理器调试模式已启用")
+        Log.d(TAG, "真实DLNA管理器已初始化")
         
         // 添加监听器设置日志
         Log.d(TAG, "准备设置CastListener")
         dlnaCastManager.setCastListener(object : CastListener {
-            override fun onDeviceListUpdated(deviceList: List<RemoteDevice>) {
-                Log.d(TAG, "收到设备列表更新，共${deviceList.size}个设备")
+            override fun onDeviceListUpdated(devices: List<RemoteDevice>) {
+                Log.d(TAG, "收到设备列表更新，共${devices.size}个设备")
                 
                 // 记录设备详情
-                deviceList.forEachIndexed { index, device ->
+                devices.forEachIndexed { index, device ->
                     Log.d(TAG, "接收到设备[$index]: ${device.displayName}, 制造商: ${device.manufacturer}, ID: ${device.id}")
                 }
                 
                 runOnUiThread {
                     // 先对设备列表去重
-                    val uniqueDevices = deviceList.distinctBy { device ->
+                    val uniqueDevices = devices.distinctBy { device ->
                         // 使用设备ID和地址组合作为唯一标识
                         "${device.id}@${device.address}"
                     }
                     
-                    if (uniqueDevices.size != deviceList.size) {
-                        Log.d(TAG, "设备去重: 从${deviceList.size}个设备减少到${uniqueDevices.size}个唯一设备")
+                    if (uniqueDevices.size != devices.size) {
+                        Log.d(TAG, "设备去重: 从${devices.size}个设备减少到${uniqueDevices.size}个唯一设备")
                     }
                     
                     // 过滤并只展示MediaRenderer类型设备
@@ -143,37 +141,6 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.btn_settings).setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
-        
-        // 添加测试助手按钮
-        val btnTest = Button(this)
-        btnTest.text = "测试助手"
-        btnTest.setOnClickListener {
-            // 显示测试助手界面
-            showTestHelperFragment()
-        }
-        
-        // 将按钮添加到布局中
-        val mainLayout = findViewById<View>(R.id.main_layout)
-        if (mainLayout is android.view.ViewGroup) {
-            btnTest.layoutParams = android.view.ViewGroup.LayoutParams(
-                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            mainLayout.addView(btnTest)
-        }
-    }
-    
-    /**
-     * 显示测试助手界面
-     */
-    private fun showTestHelperFragment() {
-        val fragment = TestHelperFragment()
-        val transaction = supportFragmentManager.beginTransaction()
-        // 替换当前界面
-        transaction.replace(R.id.main_layout, fragment)
-        // 添加到回退栈
-        transaction.addToBackStack(null)
-        transaction.commit()
     }
     
     /**
@@ -224,7 +191,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun startDeviceDiscovery() {
         try {
-            dlnaCastManager.startDiscovery()
+            dlnaCastManager.startSearch()
             Toast.makeText(this, "正在搜索设备...", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Log.e(TAG, "开始搜索设备失败", e)
@@ -248,7 +215,7 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         try {
-            dlnaCastManager.stopDiscovery()
+            dlnaCastManager.stopSearch()
             multicastLock?.release()
         } catch (e: Exception) {
             Log.e(TAG, "清理资源失败", e)

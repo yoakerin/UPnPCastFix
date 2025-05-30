@@ -1,0 +1,1732 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.9.2" type="incidents">
+
+    <incident
+        id="OldTargetApi"
+        severity="warning"
+        message="Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the `android.os.Build.VERSION_CODES` javadoc for details.">
+        <fix-replace
+            description="Update targetSdkVersion to 36"
+            oldString="34"
+            replacement="36"
+            priority="0"/>
+        <location
+            file="${:app-demo*projectDir}/build.gradle.kts"
+            line="13"
+            column="9"
+            startOffset="263"
+            endLine="13"
+            endColumn="23"
+            endOffset="277"/>
+    </incident>
+
+    <incident
+        id="UseSwitchCompatOrMaterialCode"
+        severity="warning"
+        message="Use `SwitchCompat` from AppCompat or `MaterialSwitch` from Material library">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+            line="31"
+            column="9"
+            startOffset="932"
+            endLine="31"
+            endColumn="79"
+            endOffset="1002"/>
+    </incident>
+
+    <incident
+        id="UseSwitchCompatOrMaterialCode"
+        severity="warning"
+        message="Use `SwitchCompat` from AppCompat or `MaterialSwitch` from Material library">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+            line="48"
+            column="9"
+            startOffset="1530"
+            endLine="48"
+            endColumn="83"
+            endOffset="1604"/>
+    </incident>
+
+    <incident
+        id="UseSwitchCompatOrMaterialXml"
+        severity="warning"
+        message="Use `SwitchCompat` from AppCompat or `MaterialSwitch` from Material library">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_settings.xml"
+            line="17"
+            column="5"
+            startOffset="535"
+            endLine="22"
+            endColumn="34"
+            endOffset="748"/>
+    </incident>
+
+    <incident
+        id="UseSwitchCompatOrMaterialXml"
+        severity="warning"
+        message="Use `SwitchCompat` from AppCompat or `MaterialSwitch` from Material library">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_settings.xml"
+            line="24"
+            column="5"
+            startOffset="764"
+            endLine="29"
+            endColumn="34"
+            endOffset="977"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.core:core-ktx than 1.12.0 is available: 1.16.0">
+        <fix-replace
+            description="Change to 1.16.0"
+            family="Update versions"
+            oldString="1.12.0"
+            replacement="1.16.0"
+            priority="0"/>
+        <location
+            file="${:app-demo*projectDir}/build.gradle.kts"
+            line="39"
+            column="20"
+            startOffset="840"
+            endLine="39"
+            endColumn="51"
+            endOffset="871"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.appcompat:appcompat than 1.6.1 is available: 1.7.0">
+        <fix-replace
+            description="Change to 1.7.0"
+            family="Update versions"
+            oldString="1.6.1"
+            replacement="1.7.0"
+            priority="0"/>
+        <location
+            file="${:app-demo*projectDir}/build.gradle.kts"
+            line="40"
+            column="20"
+            startOffset="892"
+            endLine="40"
+            endColumn="56"
+            endOffset="928"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.constraintlayout:constraintlayout than 2.1.4 is available: 2.2.1">
+        <fix-replace
+            description="Change to 2.2.1"
+            family="Update versions"
+            oldString="2.1.4"
+            replacement="2.2.1"
+            priority="0"/>
+        <location
+            file="${:app-demo*projectDir}/build.gradle.kts"
+            line="41"
+            column="20"
+            startOffset="949"
+            endLine="41"
+            endColumn="70"
+            endOffset="999"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of com.google.android.material:material than 1.10.0 is available: 1.12.0">
+        <fix-replace
+            description="Change to 1.12.0"
+            family="Update versions"
+            oldString="1.10.0"
+            replacement="1.12.0"
+            priority="0"/>
+        <location
+            file="${:app-demo*projectDir}/build.gradle.kts"
+            line="42"
+            column="20"
+            startOffset="1020"
+            endLine="42"
+            endColumn="65"
+            endOffset="1065"/>
+    </incident>
+
+    <incident
+        id="NotifyDataSetChanged"
+        severity="warning"
+        message="It will always be more efficient to use more specific change events if you can. Rely on `notifyDataSetChanged` as a last resort.">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/adapter/DeviceListAdapter.kt"
+            line="40"
+            column="13"
+            startOffset="1261"
+            endLine="40"
+            endColumn="35"
+            endOffset="1283"/>
+    </incident>
+
+    <incident
+        id="NotifyDataSetChanged"
+        severity="warning"
+        message="It will always be more efficient to use more specific change events if you can. Rely on `notifyDataSetChanged` as a last resort.">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/adapter/DeviceListAdapter.kt"
+            line="66"
+            column="13"
+            startOffset="2209"
+            endLine="66"
+            endColumn="35"
+            endOffset="2231"/>
+    </incident>
+
+    <incident
+        id="StaticFieldLeak"
+        severity="warning"
+        message="Do not place Android context classes in static fields (static reference to `MemoryMonitor` which has field `context` pointing to `Context`); this is a memory leak">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/helper/MemoryMonitor.kt"
+            line="96"
+            column="9"
+            startOffset="2930"
+            endLine="96"
+            endColumn="52"
+            endOffset="2973"/>
+    </incident>
+
+    <incident
+        id="ButtonStyle"
+        severity="warning"
+        message="Buttons in button bars should be borderless; use `style=&quot;?android:attr/buttonBarButtonStyle&quot;` (and `?android:attr/buttonBarStyle` on the parent)">
+        <fix-composite
+            description="Make borderless">
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="3209"
+                    endOffset="4498"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="3545"
+                    endOffset="3761"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="3783"
+                    endOffset="4000"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="4022"
+                    endOffset="4240"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="4262"
+                    endOffset="4478"/>
+            </fix-attribute>
+        </fix-composite>
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="95"
+            column="10"
+            startOffset="3546"
+            endLine="95"
+            endColumn="16"
+            endOffset="3552"/>
+    </incident>
+
+    <incident
+        id="ButtonStyle"
+        severity="warning"
+        message="Buttons in button bars should be borderless; use `style=&quot;?android:attr/buttonBarButtonStyle&quot;` (and `?android:attr/buttonBarStyle` on the parent)">
+        <fix-composite
+            description="Make borderless">
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="3209"
+                    endOffset="4498"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="3545"
+                    endOffset="3761"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="3783"
+                    endOffset="4000"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="4022"
+                    endOffset="4240"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="4262"
+                    endOffset="4478"/>
+            </fix-attribute>
+        </fix-composite>
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="102"
+            column="10"
+            startOffset="3784"
+            endLine="102"
+            endColumn="16"
+            endOffset="3790"/>
+    </incident>
+
+    <incident
+        id="ButtonStyle"
+        severity="warning"
+        message="Buttons in button bars should be borderless; use `style=&quot;?android:attr/buttonBarButtonStyle&quot;` (and `?android:attr/buttonBarStyle` on the parent)">
+        <fix-composite
+            description="Make borderless">
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="3209"
+                    endOffset="4498"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="3545"
+                    endOffset="3761"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="3783"
+                    endOffset="4000"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="4022"
+                    endOffset="4240"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="4262"
+                    endOffset="4478"/>
+            </fix-attribute>
+        </fix-composite>
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="109"
+            column="10"
+            startOffset="4023"
+            endLine="109"
+            endColumn="16"
+            endOffset="4029"/>
+    </incident>
+
+    <incident
+        id="ButtonStyle"
+        severity="warning"
+        message="Buttons in button bars should be borderless; use `style=&quot;?android:attr/buttonBarButtonStyle&quot;` (and `?android:attr/buttonBarStyle` on the parent)">
+        <fix-composite
+            description="Make borderless">
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="3209"
+                    endOffset="4498"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="3545"
+                    endOffset="3761"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="3783"
+                    endOffset="4000"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="4022"
+                    endOffset="4240"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="4262"
+                    endOffset="4478"/>
+            </fix-attribute>
+        </fix-composite>
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="116"
+            column="10"
+            startOffset="4263"
+            endLine="116"
+            endColumn="16"
+            endOffset="4269"/>
+    </incident>
+
+    <incident
+        id="ButtonStyle"
+        severity="warning"
+        message="Buttons in button bars should be borderless; use `style=&quot;?android:attr/buttonBarButtonStyle&quot;` (and `?android:attr/buttonBarStyle` on the parent)">
+        <fix-composite
+            description="Make borderless">
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="4508"
+                    endOffset="5297"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="4809"
+                    endOffset="5033"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="5055"
+                    endOffset="5277"/>
+            </fix-attribute>
+        </fix-composite>
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="132"
+            column="10"
+            startOffset="4810"
+            endLine="132"
+            endColumn="16"
+            endOffset="4816"/>
+    </incident>
+
+    <incident
+        id="ButtonStyle"
+        severity="warning"
+        message="Buttons in button bars should be borderless; use `style=&quot;?android:attr/buttonBarButtonStyle&quot;` (and `?android:attr/buttonBarStyle` on the parent)">
+        <fix-composite
+            description="Make borderless">
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="4508"
+                    endOffset="5297"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="4809"
+                    endOffset="5033"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+                    startOffset="5055"
+                    endOffset="5277"/>
+            </fix-attribute>
+        </fix-composite>
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="139"
+            column="10"
+            startOffset="5056"
+            endLine="139"
+            endColumn="16"
+            endOffset="5062"/>
+    </incident>
+
+    <incident
+        id="ButtonStyle"
+        severity="warning"
+        message="Buttons in button bars should be borderless; use `style=&quot;?android:attr/buttonBarButtonStyle&quot;` (and `?android:attr/buttonBarStyle` on the parent)">
+        <fix-composite
+            description="Make borderless">
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+                    startOffset="771"
+                    endOffset="1683"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+                    startOffset="1072"
+                    endOffset="1336"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+                    startOffset="1360"
+                    endOffset="1662"/>
+            </fix-attribute>
+        </fix-composite>
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+            line="29"
+            column="10"
+            startOffset="1073"
+            endLine="29"
+            endColumn="16"
+            endOffset="1079"/>
+    </incident>
+
+    <incident
+        id="ButtonStyle"
+        severity="warning"
+        message="Buttons in button bars should be borderless; use `style=&quot;?android:attr/buttonBarButtonStyle&quot;` (and `?android:attr/buttonBarStyle` on the parent)">
+        <fix-composite
+            description="Make borderless">
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+                    startOffset="771"
+                    endOffset="1683"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+                    startOffset="1072"
+                    endOffset="1336"/>
+            </fix-attribute>
+            <fix-attribute
+                description="Set style=&quot;?android:attr/buttonBarButtonStyle&quot;"
+                attribute="style"
+                value="?android:attr/buttonBarButtonStyle">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+                    startOffset="1360"
+                    endOffset="1662"/>
+            </fix-attribute>
+        </fix-composite>
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+            line="37"
+            column="10"
+            startOffset="1361"
+            endLine="37"
+            endColumn="16"
+            endOffset="1367"/>
+    </incident>
+
+    <incident
+        id="Autofill"
+        severity="warning"
+        message="Missing `autofillHints` attribute">
+        <fix-alternatives>
+            <fix-attribute
+                description="Set autofillHints"
+                namespace="http://schemas.android.com/apk/res/android"
+                attribute="autofillHints"
+                value=""
+                point="0"
+                mark="0"/>
+            <fix-attribute
+                description="Set importantForAutofill=&quot;no&quot;"
+                namespace="http://schemas.android.com/apk/res/android"
+                attribute="importantForAutofill"
+                value="no"/>
+        </fix-alternatives>
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="20"
+            column="6"
+            startOffset="728"
+            endLine="20"
+            endColumn="14"
+            endOffset="736"/>
+    </incident>
+
+    <incident
+        id="Autofill"
+        severity="warning"
+        message="Missing `autofillHints` attribute">
+        <fix-alternatives>
+            <fix-attribute
+                description="Set autofillHints"
+                namespace="http://schemas.android.com/apk/res/android"
+                attribute="autofillHints"
+                value=""
+                point="0"
+                mark="0"/>
+            <fix-attribute
+                description="Set importantForAutofill=&quot;no&quot;"
+                namespace="http://schemas.android.com/apk/res/android"
+                attribute="importantForAutofill"
+                value="no"/>
+        </fix-alternatives>
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="43"
+            column="6"
+            startOffset="1599"
+            endLine="43"
+            endColumn="14"
+            endOffset="1607"/>
+    </incident>
+
+    <incident
+        id="UseKtx"
+        severity="warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?">
+        <fix-composite
+            description="Replace with the edit extension function"
+            family="Replace with the edit extension function"
+            robot="true"
+            independent="true">
+            <fix-replace
+                description="Replace with edit"
+                robot="true"
+                independent="true"
+                oldString="edit"
+                replacement="edit"
+                reformat="value"
+                imports="androidx.core.content.edit"
+                priority="0">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+                    startOffset="1153"
+                    endOffset="1157"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with ) {"
+                robot="true"
+                independent="true"
+                oldString=")"
+                replacement=") {"
+                priority="0">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+                    startOffset="1158"
+                    endOffset="1159"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with }"
+                robot="true"
+                independent="true"
+                oldString=".apply()"
+                replacement="}"
+                priority="0">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+                    startOffset="1231"
+                    endOffset="1239"/>
+            </fix-replace>
+            <fix-replace
+                description="Delete &quot;.&quot;"
+                robot="true"
+                independent="true"
+                oldString="."
+                replacement=""
+                priority="0">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+                    startOffset="1176"
+                    endOffset="1177"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with     "
+                robot="true"
+                independent="true"
+                oldString=""
+                replacement="    "
+                priority="0">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+                    startOffset="1160"
+                    endOffset="1160"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+            line="34"
+            column="13"
+            startOffset="1106"
+            endLine="34"
+            endColumn="66"
+            endOffset="1159"/>
+    </incident>
+
+    <incident
+        id="UseKtx"
+        severity="warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?">
+        <fix-composite
+            description="Replace with the edit extension function"
+            family="Replace with the edit extension function"
+            robot="true"
+            independent="true">
+            <fix-replace
+                description="Replace with edit"
+                robot="true"
+                independent="true"
+                oldString="edit"
+                replacement="edit"
+                reformat="value"
+                imports="androidx.core.content.edit"
+                priority="0">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+                    startOffset="1757"
+                    endOffset="1761"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with ) {"
+                robot="true"
+                independent="true"
+                oldString=")"
+                replacement=") {"
+                priority="0">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+                    startOffset="1762"
+                    endOffset="1763"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with }"
+                robot="true"
+                independent="true"
+                oldString=".apply()"
+                replacement="}"
+                priority="0">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+                    startOffset="1837"
+                    endOffset="1845"/>
+            </fix-replace>
+            <fix-replace
+                description="Delete &quot;.&quot;"
+                robot="true"
+                independent="true"
+                oldString="."
+                replacement=""
+                priority="0">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+                    startOffset="1780"
+                    endOffset="1781"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with     "
+                robot="true"
+                independent="true"
+                oldString=""
+                replacement="    "
+                priority="0">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+                    startOffset="1764"
+                    endOffset="1764"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+            line="51"
+            column="13"
+            startOffset="1710"
+            endLine="51"
+            endColumn="66"
+            endOffset="1763"/>
+    </incident>
+
+    <incident
+        id="UseKtx"
+        severity="warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?">
+        <fix-composite
+            description="Replace with the edit extension function"
+            family="Replace with the edit extension function"
+            robot="true"
+            independent="true">
+            <fix-replace
+                description="Replace with edit"
+                robot="true"
+                independent="true"
+                oldString="edit"
+                replacement="edit"
+                reformat="value"
+                imports="androidx.core.content.edit"
+                priority="0">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+                    startOffset="3061"
+                    endOffset="3065"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with ) {"
+                robot="true"
+                independent="true"
+                oldString=")"
+                replacement=") {"
+                priority="0">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+                    startOffset="3066"
+                    endOffset="3067"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with }"
+                robot="true"
+                independent="true"
+                oldString=".apply()"
+                replacement="}"
+                priority="0">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+                    startOffset="3143"
+                    endOffset="3151"/>
+            </fix-replace>
+            <fix-replace
+                description="Delete &quot;.&quot;"
+                robot="true"
+                independent="true"
+                oldString="."
+                replacement=""
+                priority="0">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+                    startOffset="3088"
+                    endOffset="3089"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with     "
+                robot="true"
+                independent="true"
+                oldString=""
+                replacement="    "
+                priority="0">
+                <range
+                    file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+                    startOffset="3068"
+                    endOffset="3068"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+            line="83"
+            column="17"
+            startOffset="3014"
+            endLine="83"
+            endColumn="70"
+            endOffset="3067"/>
+    </incident>
+
+    <incident
+        id="UseTomlInstead"
+        severity="warning"
+        message="Use version catalog instead (androidx.core:core-ktx is already available as `androidx-core-ktx`, but using version 1.16.0 instead)">
+        <fix-alternatives>
+            <fix-composite
+                description="Replace with new library catalog declaration for androidx-core-ktx-v1120"
+                robot="true"
+                independent="true">
+                <fix-replace
+                    description="Replace with coreKtxVersion = &quot;1.12.0&quot;..."
+                    robot="true"
+                    independent="true"
+                    oldString="_lint_insert_begin_"
+                    replacement="coreKtxVersion = &quot;1.12.0&quot;&#xA;"
+                    priority="0">
+                    <range
+                        file="../gradle/libs.versions.toml"
+                        startOffset="25"
+                        endOffset="25"/>
+                </fix-replace>
+                <fix-replace
+                    description="Replace with androidx-core-ktx-v1120 = { module = &quot;androidx.core:core-ktx&quot;, version.ref = &quot;coreKtxVersion&quot; }..."
+                    robot="true"
+                    independent="true"
+                    oldString="_lint_insert_begin_"
+                    replacement="androidx-core-ktx-v1120 = { module = &quot;androidx.core:core-ktx&quot;, version.ref = &quot;coreKtxVersion&quot; }&#xA;"
+                    priority="0">
+                    <range
+                        file="../gradle/libs.versions.toml"
+                        startOffset="304"
+                        endOffset="304"/>
+                </fix-replace>
+                <fix-replace
+                    description="Replace with libs.androidx.core.ktx.v1120"
+                    robot="true"
+                    independent="true"
+                    replacement="libs.androidx.core.ktx.v1120"
+                    priority="0">
+                    <range
+                        file="${:app-demo*projectDir}/build.gradle.kts"
+                        startOffset="840"
+                        endOffset="871"/>
+                </fix-replace>
+            </fix-composite>
+            <fix-replace
+                description="Replace with existing version catalog reference `androidx-core-ktx` (version 1.16.0)"
+                replacement="libs.androidx.core.ktx"
+                priority="0">
+                <range
+                    file="${:app-demo*projectDir}/build.gradle.kts"
+                    startOffset="840"
+                    endOffset="871"/>
+            </fix-replace>
+        </fix-alternatives>
+        <location
+            file="${:app-demo*projectDir}/build.gradle.kts"
+            line="39"
+            column="20"
+            startOffset="840"
+            endLine="39"
+            endColumn="51"
+            endOffset="871"/>
+    </incident>
+
+    <incident
+        id="UseTomlInstead"
+        severity="warning"
+        message="Use version catalog instead (androidx.appcompat:appcompat is already available as `androidx-appcompat`, but using version 1.7.0 instead)">
+        <fix-alternatives>
+            <fix-composite
+                description="Replace with new library catalog declaration for androidx-appcompat-v161"
+                robot="true"
+                independent="true">
+                <fix-replace
+                    description="Replace with appcompatVersion = &quot;1.6.1&quot;..."
+                    robot="true"
+                    independent="true"
+                    oldString="_lint_insert_begin_"
+                    replacement="appcompatVersion = &quot;1.6.1&quot;&#xA;"
+                    priority="0">
+                    <range
+                        file="../gradle/libs.versions.toml"
+                        startOffset="25"
+                        endOffset="25"/>
+                </fix-replace>
+                <fix-replace
+                    description="Replace with androidx-appcompat-v161 = { module = &quot;androidx.appcompat:appcompat&quot;, version.ref = &quot;appcompatVersion&quot; }..."
+                    robot="true"
+                    independent="true"
+                    oldString="_lint_insert_begin_"
+                    replacement="androidx-appcompat-v161 = { module = &quot;androidx.appcompat:appcompat&quot;, version.ref = &quot;appcompatVersion&quot; }&#xA;"
+                    priority="0">
+                    <range
+                        file="../gradle/libs.versions.toml"
+                        startOffset="212"
+                        endOffset="212"/>
+                </fix-replace>
+                <fix-replace
+                    description="Replace with libs.androidx.appcompat.v161"
+                    robot="true"
+                    independent="true"
+                    replacement="libs.androidx.appcompat.v161"
+                    priority="0">
+                    <range
+                        file="${:app-demo*projectDir}/build.gradle.kts"
+                        startOffset="892"
+                        endOffset="928"/>
+                </fix-replace>
+            </fix-composite>
+            <fix-replace
+                description="Replace with existing version catalog reference `androidx-appcompat` (version 1.7.0)"
+                replacement="libs.androidx.appcompat"
+                priority="0">
+                <range
+                    file="${:app-demo*projectDir}/build.gradle.kts"
+                    startOffset="892"
+                    endOffset="928"/>
+            </fix-replace>
+        </fix-alternatives>
+        <location
+            file="${:app-demo*projectDir}/build.gradle.kts"
+            line="40"
+            column="20"
+            startOffset="892"
+            endLine="40"
+            endColumn="56"
+            endOffset="928"/>
+    </incident>
+
+    <incident
+        id="UseTomlInstead"
+        severity="warning"
+        message="Use version catalog instead">
+        <fix-composite
+            description="Replace with new library catalog declaration for androidx-constraintlayout"
+            robot="true">
+            <fix-replace
+                description="Replace with constraintlayout = &quot;2.1.4&quot;..."
+                robot="true"
+                oldString="_lint_insert_begin_"
+                replacement="constraintlayout = &quot;2.1.4&quot;&#xA;"
+                priority="0">
+                <range
+                    file="../gradle/libs.versions.toml"
+                    startOffset="25"
+                    endOffset="25"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with androidx-constraintlayout = { module = &quot;androidx.constraintlayout:constraintlayout&quot;, version.ref = &quot;constraintlayout&quot; }..."
+                robot="true"
+                oldString="_lint_insert_begin_"
+                replacement="androidx-constraintlayout = { module = &quot;androidx.constraintlayout:constraintlayout&quot;, version.ref = &quot;constraintlayout&quot; }&#xA;"
+                priority="0">
+                <range
+                    file="../gradle/libs.versions.toml"
+                    startOffset="212"
+                    endOffset="212"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with libs.androidx.constraintlayout"
+                robot="true"
+                replacement="libs.androidx.constraintlayout"
+                priority="0">
+                <range
+                    file="${:app-demo*projectDir}/build.gradle.kts"
+                    startOffset="949"
+                    endOffset="999"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app-demo*projectDir}/build.gradle.kts"
+            line="41"
+            column="20"
+            startOffset="949"
+            endLine="41"
+            endColumn="70"
+            endOffset="999"/>
+    </incident>
+
+    <incident
+        id="UseTomlInstead"
+        severity="warning"
+        message="Use version catalog instead (com.google.android.material:material is already available as `material`, but using version 1.12.0 instead)">
+        <fix-alternatives>
+            <fix-composite
+                description="Replace with new library catalog declaration for material-v1100"
+                robot="true"
+                independent="true">
+                <fix-replace
+                    description="Replace with materialVersion = &quot;1.10.0&quot;..."
+                    robot="true"
+                    independent="true"
+                    oldString="_lint_insert_begin_"
+                    replacement="materialVersion = &quot;1.10.0&quot;&#xA;"
+                    priority="0">
+                    <range
+                        file="../gradle/libs.versions.toml"
+                        startOffset="165"
+                        endOffset="165"/>
+                </fix-replace>
+                <fix-replace
+                    description="Replace with material-v1100 = { module = &quot;com.google.android.material:material&quot;, version.ref = &quot;materialVersion&quot; }..."
+                    robot="true"
+                    independent="true"
+                    oldString="_lint_insert_begin_"
+                    replacement="material-v1100 = { module = &quot;com.google.android.material:material&quot;, version.ref = &quot;materialVersion&quot; }&#xA;"
+                    priority="0">
+                    <range
+                        file="../gradle/libs.versions.toml"
+                        startOffset="781"
+                        endOffset="781"/>
+                </fix-replace>
+                <fix-replace
+                    description="Replace with libs.material.v1100"
+                    robot="true"
+                    independent="true"
+                    replacement="libs.material.v1100"
+                    priority="0">
+                    <range
+                        file="${:app-demo*projectDir}/build.gradle.kts"
+                        startOffset="1020"
+                        endOffset="1065"/>
+                </fix-replace>
+            </fix-composite>
+            <fix-replace
+                description="Replace with existing version catalog reference `material` (version 1.12.0)"
+                replacement="libs.material"
+                priority="0">
+                <range
+                    file="${:app-demo*projectDir}/build.gradle.kts"
+                    startOffset="1020"
+                    endOffset="1065"/>
+            </fix-replace>
+        </fix-alternatives>
+        <location
+            file="${:app-demo*projectDir}/build.gradle.kts"
+            line="42"
+            column="20"
+            startOffset="1020"
+            endLine="42"
+            endColumn="65"
+            endOffset="1065"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="Do not concatenate text displayed with `setText`. Use resource string with placeholders.">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/adapter/DeviceListAdapter.kt"
+            line="108"
+            column="37"
+            startOffset="3886"
+            endLine="108"
+            endColumn="55"
+            endOffset="3904"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/adapter/DeviceListAdapter.kt"
+            line="108"
+            column="38"
+            startOffset="3887"
+            endLine="108"
+            endColumn="44"
+            endOffset="3893"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="Do not concatenate text displayed with `setText`. Use resource string with placeholders.">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/adapter/DeviceListAdapter.kt"
+            line="112"
+            column="34"
+            startOffset="4078"
+            endLine="112"
+            endColumn="46"
+            endOffset="4090"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/adapter/DeviceListAdapter.kt"
+            line="112"
+            column="35"
+            startOffset="4079"
+            endLine="112"
+            endColumn="41"
+            endOffset="4085"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/adapter/DeviceListAdapter.kt"
+            line="123"
+            column="38"
+            startOffset="4518"
+            endLine="123"
+            endColumn="46"
+            endOffset="4526"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/adapter/DeviceListAdapter.kt"
+            line="124"
+            column="35"
+            startOffset="4562"
+            endLine="124"
+            endColumn="43"
+            endOffset="4570"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/MediaControlActivity.kt"
+            line="56"
+            column="29"
+            startOffset="1916"
+            endLine="56"
+            endColumn="50"
+            endOffset="1937"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="Do not concatenate text displayed with `setText`. Use resource string with placeholders.">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+            line="74"
+            column="33"
+            startOffset="2595"
+            endLine="74"
+            endColumn="50"
+            endOffset="2612"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="Do not concatenate text displayed with `setText`. Use resource string with placeholders.">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*javaDir*0}/com/yinnho/upnpcast/demo/SettingsActivity.kt"
+            line="80"
+            column="41"
+            startOffset="2944"
+            endLine="80"
+            endColumn="53"
+            endOffset="2956"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;可用设备&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_main.xml"
+            line="13"
+            column="9"
+            startOffset="474"
+            endLine="13"
+            endColumn="28"
+            endOffset="493"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;设置&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_main.xml"
+            line="24"
+            column="9"
+            startOffset="860"
+            endLine="24"
+            endColumn="26"
+            endOffset="877"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;视频链接:&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="13"
+            column="9"
+            startOffset="471"
+            endLine="13"
+            endColumn="29"
+            endOffset="491"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;输入视频URL&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="24"
+            column="9"
+            startOffset="870"
+            endLine="24"
+            endColumn="31"
+            endOffset="892"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;视频标题:&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="35"
+            column="9"
+            startOffset="1293"
+            endLine="35"
+            endColumn="29"
+            endOffset="1313"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;输入视频标题&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="47"
+            column="9"
+            startOffset="1743"
+            endLine="47"
+            endColumn="30"
+            endOffset="1764"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;媒体标题&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="58"
+            column="9"
+            startOffset="2160"
+            endLine="58"
+            endColumn="28"
+            endOffset="2179"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;未播放&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="71"
+            column="9"
+            startOffset="2649"
+            endLine="71"
+            endColumn="27"
+            endOffset="2667"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;播放&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="99"
+            column="13"
+            startOffset="3701"
+            endLine="99"
+            endColumn="30"
+            endOffset="3718"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;暂停&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="106"
+            column="13"
+            startOffset="3940"
+            endLine="106"
+            endColumn="30"
+            endOffset="3957"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;继续&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="113"
+            column="13"
+            startOffset="4180"
+            endLine="113"
+            endColumn="30"
+            endOffset="4197"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;停止&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="120"
+            column="13"
+            startOffset="4418"
+            endLine="120"
+            endColumn="30"
+            endOffset="4435"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;音量-&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="136"
+            column="13"
+            startOffset="4972"
+            endLine="136"
+            endColumn="31"
+            endOffset="4990"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;音量+&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="143"
+            column="13"
+            startOffset="5216"
+            endLine="143"
+            endColumn="31"
+            endOffset="5234"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;设置&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_settings.xml"
+            line="12"
+            column="9"
+            startOffset="388"
+            endLine="12"
+            endColumn="26"
+            endOffset="405"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;自动连接上次设备&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_settings.xml"
+            line="21"
+            column="9"
+            startOffset="690"
+            endLine="21"
+            endColumn="32"
+            endOffset="713"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;启用详细日志&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_settings.xml"
+            line="28"
+            column="9"
+            startOffset="921"
+            endLine="28"
+            endColumn="30"
+            endOffset="942"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;搜索超时设置(秒):&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_settings.xml"
+            line="41"
+            column="9"
+            startOffset="1330"
+            endLine="41"
+            endColumn="34"
+            endOffset="1355"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;30 秒&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_settings.xml"
+            line="64"
+            column="13"
+            startOffset="2156"
+            endLine="64"
+            endColumn="32"
+            endOffset="2175"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;清除设备缓存&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_settings.xml"
+            line="80"
+            column="9"
+            startOffset="2675"
+            endLine="80"
+            endColumn="30"
+            endOffset="2696"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;返回&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_settings.xml"
+            line="92"
+            column="9"
+            startOffset="3031"
+            endLine="92"
+            endColumn="26"
+            endOffset="3048"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;UPnPCast测试助手&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+            line="13"
+            column="9"
+            startOffset="475"
+            endLine="13"
+            endColumn="36"
+            endOffset="502"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;开始记录&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+            line="34"
+            column="13"
+            startOffset="1270"
+            endLine="34"
+            endColumn="32"
+            endOffset="1289"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;停止记录&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+            line="42"
+            column="13"
+            startOffset="1557"
+            endLine="42"
+            endColumn="32"
+            endOffset="1576"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;开始自动测试&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+            line="51"
+            column="9"
+            startOffset="1848"
+            endLine="51"
+            endColumn="30"
+            endOffset="1869"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;测试状态:&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+            line="59"
+            column="9"
+            startOffset="2143"
+            endLine="59"
+            endColumn="29"
+            endOffset="2163"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;等待开始...&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+            line="68"
+            column="9"
+            startOffset="2478"
+            endLine="68"
+            endColumn="31"
+            endOffset="2500"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;内存状态:&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+            line="76"
+            column="9"
+            startOffset="2778"
+            endLine="76"
+            endColumn="29"
+            endOffset="2798"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;等待数据...&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+            line="85"
+            column="9"
+            startOffset="3112"
+            endLine="85"
+            endColumn="31"
+            endOffset="3134"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;缓存统计:&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+            line="93"
+            column="9"
+            startOffset="3406"
+            endLine="93"
+            endColumn="29"
+            endOffset="3426"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;等待数据...&quot;, should use `@string` resource">
+        <location
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+            line="109"
+            column="13"
+            startOffset="4030"
+            endLine="109"
+            endColumn="35"
+            endOffset="4052"/>
+    </incident>
+
+</incidents>

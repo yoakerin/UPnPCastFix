@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.9.2" type="partial_results">
+    <map id="UnsafeIntentLaunch">
+            <map id="unprotected">
+                <entry
+                    name="com.yinnho.upnpcast.demo.MainActivity"
+                    boolean="true"/>
+            </map>
+    </map>
+    <map id="UnusedResources">
+        <location id="R.layout.fragment_test_helper"
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+            line="2"
+            column="1"
+            startOffset="40"
+            endLine="114"
+            endColumn="53"
+            endOffset="4211"/>
+        <entry
+            name="model"
+            string="id[main_layout(D),title(U),btn_settings(U),device_list(U),url_label(U),url_input(U),title_label(U),title_input(U),media_title(U),playback_status(U),seek_bar(U),controls_layout(U),btn_play(U),btn_pause(U),btn_resume(U),btn_stop(U),btn_volume_down(U),btn_volume_up(U),switch_auto_connect(U),switch_enable_logging(U),seekbar_search_timeout(U),text_timeout_value(U),btn_clear_cache(U),btn_back(U),controls(D),btn_start_record(D),btn_stop_record(D),btn_run_auto_test(D),label_test_status(D),tv_test_status(D),label_memory(D),tv_memory_status(D),label_cache(D),tv_cache_stats(D),device_name(U),device_manufacturer(U),device_ip_port(U),device_udn(U)],layout[activity_main(U),activity_media_control(U),activity_settings(U),fragment_test_helper(D),item_device(U)],mipmap[ic_launcher(R),ic_launcher_round(R)],style[Theme_AppCompat_Light(R)];26^1,27^4^5^6^7^8^9^a^b,29^1^18^1b^1c^1d^1e^1f^20;;;"/>
+    </map>
+
+</incidents>
