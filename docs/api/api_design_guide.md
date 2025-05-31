@@ -1,124 +1,169 @@
 # UPnPCast API 设计指南
 
-## 设计理念
+## 实际架构 - 超级简单！
 
-UPnPCast库遵循"核心API在顶层，实现细节在子包"的设计原则，这一原则有以下优势：
+UPnPCast的架构非常简单直接，没有复杂的分层设计，核心就是几个类：
 
-1. **用户友好性**：简化了用户的引用路径，只需导入少量顶层类即可使用
-2. **实现隐藏**：内部实现细节被合理组织在子包中，避免用户直接依赖
-3. **代码组织**：保持良好的内部代码组织结构
-4. **易于维护**：接口与实现分离，便于独立更新
-5. **向后兼容**：保持API稳定的同时允许内部实现变化
+### 🎯 **真实的文件结构**
 
-这种设计方法参考了许多成熟Java/Kotlin库的最佳实践，如Retrofit、OkHttp、Gson等。
+```
+com.yinnho.upnpcast/
+├── DLNACastManager.kt     ← 唯一的用户入口，单例模式
+├── CastListener.kt        ← 回调接口
+├── RemoteDevice.kt        ← 设备数据类
+├── PlaybackState.kt       ← 播放状态枚举
+├── DLNAException.kt       ← 异常类
+├── UpnpService.kt         ← UPnP服务接口
+├── ControlPoint.kt        ← 控制点接口
+├── Registry.kt            ← 设备注册表接口
+├── UpnpServiceConfiguration.kt ← 配置类
+└── internal/              ← 内部实现
+    ├── UpnpServiceImpl.kt
+    ├── ControlPointImpl.kt  
+    ├── RegistryImpl.kt
+    ├── SsdpDeviceDiscovery.kt
+    ├── DlnaMediaController.kt
+    └── DeviceDescriptionParser.kt
+```
 
-## 核心API结构
+**就这么简单！** 总共才9个公开类 + 6个内部实现类。
 
-### 顶层API（直接位于`com.yinnho.upnpcast`包下）
+## ✨ **设计理念**
 
-以下核心类和接口应位于顶层包中，作为用户的主要入口点：
+### 1. **单一入口原则**
+- **`DLNACastManager`** 是唯一的用户入口
+- 用户不需要知道其他任何类
+- 单例模式，全局使用
 
-| 类/接口 | 描述 | 用途 |
-|---------|------|------|
-| `DLNACastManager` | 主要管理类 | 用户的主要入口点，管理设备发现和控制 |
-| `CastListener` | 回调接口 | 用户实现以接收事件通知 |
-| `RemoteDevice` | 设备数据模型 | 表示DLNA设备的核心数据结构 |
-| `PlaybackState` | 播放状态枚举 | 定义媒体播放状态 |
-| `DLNAException` | 异常类 | 处理库中的错误情况 |
+### 2. **接口 + 实现分离**
+- 公开接口在顶层：`UpnpService`, `ControlPoint`, `Registry`
+- 具体实现在 `internal/` 包下
+- 用户永远不直接接触 `internal/` 包
 
-### 实现子包
+### 3. **基于UPnP标准**
+- `UpnpService` - UPnP服务核心
+- `Registry` - 设备注册表（发现的设备存这里）
+- `ControlPoint` - 控制点（连接和控制设备）
 
-库的内部实现应组织在以下子包中：
+## 🚀 **核心API设计**
 
-| 子包 | 内容 | 说明 |
-|------|------|------|
-| `core/` | 核心功能实现 | 基础功能和通用实现 |
-| `device/` | 设备管理实现 | 设备发现、缓存和状态管理 |
-| `network/` | 网络相关实现 | 网络请求、SSDP处理等 |
-| `registry/` | 注册表实现 | 设备注册和管理 |
-| `interfaces/` | 内部接口 | 非核心接口定义 |
-| `utils/` | 工具类 | 辅助功能和实用工具 |
-| `wrapper/` | 包装器 | 对外部库或旧API的包装 |
-
-## 实现策略
-
-核心API类应该使用委托模式，将实际实现委托给子包中的具体实现类，例如：
-
+### **DLNACastManager** - 单一入口
 ```kotlin
-// 顶层API类
-package com.yinnho.upnpcast
-
-class DLNACastManager private constructor(context: Context) {
-    // 委托给实现类
-    private val impl = com.yinnho.upnpcast.manager.DLNACastManagerImpl(context)
+class DLNACastManager {
+    // 设备发现
+    fun startSearch(timeoutMs: Long = 30000)
+    fun stopSearch()
     
-    fun startDiscovery() = impl.startDiscovery()
+    // 设备连接
+    fun connectToDevice(device: RemoteDevice): Boolean
+    fun disconnect()
     
-    // 其他方法...
+    // 媒体控制
+    fun playMedia(url: String, title: String?): Boolean
+    fun pause(): Boolean
+    fun resume(): Boolean
+    fun stop(): Boolean
     
-    companion object {
-        // 工厂方法
-        fun getInstance(context: Context): DLNACastManager = ...
-    }
+    // 状态查询
+    fun getAllDevices(): List<RemoteDevice>
+    fun getCurrentDevice(): RemoteDevice?
+    fun getCurrentState(): PlaybackState
+    
+    // 监听器
+    fun setCastListener(listener: CastListener?)
+    fun setPlaybackStateListener(listener: PlaybackStateListener?)
 }
 ```
 
-## 迁移计划
-
-为了实现这一设计理念，我们计划：
-
-1. 在顶层包中创建核心API类和接口
-2. 将现有实现重构为内部实现类
-3. 让顶层API委托给内部实现
-4. 更新文档和示例代码
-
-## 向后兼容性考虑
-
-为了保持向后兼容性，我们将：
-
-1. 保留旧的包结构一段时间，使用`@Deprecated`注解标记
-2. 提供迁移指南和代码示例
-3. 使用适配器模式连接新旧API
-4. 在主要版本更新时才完全移除旧API
-
-## 用户使用示例
-
-使用顶层API的示例代码：
-
+### **CastListener** - 事件回调
 ```kotlin
-import com.yinnho.upnpcast.DLNACastManager
-import com.yinnho.upnpcast.CastListener
-import com.yinnho.upnpcast.RemoteDevice
-import com.yinnho.upnpcast.DLNAException
-
-class MyActivity : AppCompatActivity() {
-    private lateinit var castManager: DLNACastManager
-    
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        
-        // 初始化管理器
-        castManager = DLNACastManager.getInstance(this)
-        
-        // 设置监听器
-        castManager.setCastListener(object : CastListener {
-            override fun onDeviceListUpdated(devices: List<RemoteDevice>) {
-                // 处理设备列表更新
-            }
-            
-            override fun onError(error: DLNAException) {
-                // 处理错误
-            }
-            
-            // 其他回调...
-        })
-        
-        // 开始设备发现
-        castManager.startDiscovery()
-    }
+interface CastListener {
+    fun onDeviceListUpdated(devices: List<RemoteDevice>)
+    fun onConnected(device: RemoteDevice)
+    fun onDisconnected()
+    fun onError(error: DLNAException)
 }
 ```
 
-## 结论
+### **RemoteDevice** - 设备信息
+```kotlin
+data class RemoteDevice(
+    val id: String,           // 设备唯一ID
+    val displayName: String,  // 显示名称
+    val manufacturer: String, // 制造商
+    val address: String,      // IP地址
+    val details: Map<String, Any> // 其他信息
+)
+```
 
-这种"核心API在顶层，实现细节在子包"的设计方法在保持代码组织性的同时，也提供了更好的用户体验。它使得库更易于使用，同时不牺牲内部代码的清晰度和可维护性。 
+## 🔧 **内部实现说明**
+
+### **不复杂的内部结构**
+- **`UpnpServiceImpl`** - 管理整个UPnP服务生命周期
+- **`RegistryImpl`** - 维护发现的设备列表
+- **`ControlPointImpl`** - 处理设备连接和控制
+- **`SsdpDeviceDiscovery`** - 负责SSDP协议的设备发现
+- **`DlnaMediaController`** - 处理媒体播放控制
+- **`DeviceDescriptionParser`** - 解析设备描述XML
+
+### **数据流向超级简单**
+```
+用户调用DLNACastManager 
+    ↓
+委托给UpnpService
+    ↓
+UpnpService协调Registry和ControlPoint
+    ↓
+Registry管理设备，ControlPoint处理连接和控制
+    ↓
+通过CastListener回调给用户
+```
+
+## 💡 **为什么这么简单？**
+
+1. **专注核心功能** - 只做DLNA投屏，不做其他
+2. **单例模式** - 全局只有一个Manager实例
+3. **委托模式** - Manager只是外观，真正工作由内部类完成
+4. **基于成熟协议** - UPnP是标准协议，不需要重新发明轮子
+
+## 📝 **使用示例**
+
+### **完整的使用流程**
+```kotlin
+// 1. 获取Manager（单例）
+val manager = DLNACastManager.getInstance(context)
+
+// 2. 设置监听器
+manager.setCastListener(object : CastListener {
+    override fun onDeviceListUpdated(devices: List<RemoteDevice>) {
+        // 更新设备列表UI
+    }
+    override fun onConnected(device: RemoteDevice) {
+        // 连接成功，可以投屏了
+    }
+    override fun onError(error: DLNAException) {
+        // 处理错误
+    }
+})
+
+// 3. 开始搜索设备
+manager.startSearch()
+
+// 4. 连接设备
+manager.connectToDevice(selectedDevice)
+
+// 5. 投屏媒体
+manager.playMedia("http://example.com/video.mp4", "我的视频")
+```
+
+**就这么简单！** 用户不需要了解UPnP协议细节，不需要管理复杂的状态，只要调用几个方法就能实现DLNA投屏。
+
+## 🎉 **总结**
+
+UPnPCast的架构哲学就是：**让复杂的变简单，让简单的更简单**。
+
+- ✅ **对用户简单**：只需要一个Manager类
+- ✅ **对开发者简单**：代码结构清晰，职责分明  
+- ✅ **对维护简单**：基于标准协议，不重复造轮子
+
+**这就是为什么叫"超级简单"！** 🚀 
