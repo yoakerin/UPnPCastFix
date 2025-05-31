@@ -7,6 +7,25 @@
 
 A modern Android DLNA/UPnP casting library as a replacement for the discontinued Cling project.
 
+## 📖 Documentation Quick Navigation
+
+| 📋 **What you need** | 📂 **Where to find it** | ⏱️ **Time needed** |
+|---------------------|------------------------|-------------------|
+| **🚀 Get started quickly** | This README → [Quick Start](#quick-start) | 5 minutes |
+| **📚 Complete API reference** | [docs/API.md](docs/API.md) | 10 minutes |
+| **💡 Real-world examples** | [docs/api/usage_examples.md](docs/api/usage_examples.md) | 15 minutes |
+| **🔧 Fix problems** | [docs/api/troubleshooting.md](docs/api/troubleshooting.md) | When needed |
+| **🏗️ Architecture & design** | [docs/api/api_design_guide.md](docs/api/api_design_guide.md) | 20 minutes |
+| **🌍 Internationalization** | [docs/INTERNATIONALIZATION.md](docs/INTERNATIONALIZATION.md) | When needed |
+| **✨ Best practices** | [docs/best_practices.md](docs/best_practices.md) | 30 minutes |
+| **🎯 Working demo app** | [app-demo/](app-demo/) | Try it now |
+
+> **👉 New to UPnPCast?** Start with [Quick Start](#quick-start) below, then check the [API reference](docs/API.md) and [examples](docs/api/usage_examples.md).
+> 
+> **👉 Having issues?** Go straight to [troubleshooting guide](docs/api/troubleshooting.md).
+> 
+> **👉 Want to contribute?** Read [best practices](docs/best_practices.md) and [design guide](docs/api/api_design_guide.md).
+
 ## Features
 
 - 🔍 **Device Discovery**: Automatic DLNA/UPnP device discovery with SSDP protocol
