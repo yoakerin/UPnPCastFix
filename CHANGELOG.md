@@ -5,6 +5,24 @@ All notable changes to the UPnPCast library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2025-01-14
+
+### Fixed
+- **JitPack Build Issues**: Simplified build configuration to ensure reliable JitPack builds
+- **Maven Publishing**: Streamlined publishing configuration for better JitPack compatibility
+- **Build System**: Added jitpack.yml configuration file to specify Java 17 environment
+- **Dependencies**: Removed complex Maven publishing and signing configurations that interfered with JitPack
+
+### Changed
+- Simplified `app/build.gradle.kts` configuration for JitPack compatibility
+- Removed unnecessary ProGuard obfuscation in release builds
+- Updated documentation to reference v1.0.2
+
+### Technical Improvements
+- Added JitPack-specific build configuration (`jitpack.yml`)
+- Optimized Gradle build scripts for external repository builds
+- Cleaner dependency management for library consumers
+
 ## [1.0.0] - 2024-12-XX
 
 ### Added
