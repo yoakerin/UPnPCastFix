@@ -1,6 +1,8 @@
 package com.yinnho.upnpcast
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import com.yinnho.upnpcast.internal.DLNACastImpl
 import com.yinnho.upnpcast.types.Device as TypesDevice
 import com.yinnho.upnpcast.types.MediaAction as TypesMediaAction
@@ -17,9 +19,9 @@ import com.yinnho.upnpcast.types.State as TypesState
  * // Initialize
  * DLNACast.init(context)
  * 
- * // Search for devices
+ * // Search for devices - returns all devices at once
  * DLNACast.search { devices: List<DLNACast.Device> ->
- *     // Handle device list
+ *     // All devices returned in single callback
  * }
  * 
  * // Cast media
@@ -122,7 +124,12 @@ object DLNACast {
         DLNACastImpl.castToDevice(device.toTypes(), url, title, callback)
     }
     
-    fun search(timeout: Long = 10000, callback: (devices: List<Device>) -> Unit) {
+    /**
+     * Search for devices - returns new devices in real-time batches
+     * @param timeout Total search timeout (default 5 seconds)
+     * @param callback Called with newly discovered devices (may be called multiple times)
+     */
+    fun search(timeout: Long = 5000, callback: (devices: List<Device>) -> Unit) {
         DLNACastImpl.search(timeout) { typesDevices ->
             val devices = typesDevices.map { Device.fromTypes(it) }
             callback(devices)

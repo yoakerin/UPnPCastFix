@@ -64,21 +64,48 @@ class MainActivity : AppCompatActivity() {
         // Initialize
         DLNACast.init(this)
         
-        // Search for devices
-        DLNACast.search { devices ->
-            devices.forEach { device ->
-                Log.d("DLNA", "Found: ${device.name}")
+        // Search for devices - improved one-time result
+        searchDevicesOnce()
+        
+        // Or use smart cast with automatic device selection
+        performSmartCast()
+    }
+    
+    private fun searchDevicesOnce() {
+        // One-time device discovery - no multiple callbacks
+        DLNACast.searchAll { result ->
+            when (result) {
+                is SearchResult.Success -> {
+                    // All devices returned at once, UI updates only once
+                    updateDeviceList(result.devices)
+                    Log.d("DLNA", "Found ${result.devices.size} devices")
+                }
+                is SearchResult.Timeout -> {
+                    // Partial results due to timeout
+                    updateDeviceList(result.partialDevices)
+                    Log.w("DLNA", "Search timeout, found ${result.partialDevices.size} devices")
+                }
+                is SearchResult.Error -> {
+                    Log.e("DLNA", "Search failed: ${result.message}")
+                }
             }
         }
-        
-        // Cast media
-        DLNACast.cast("http://your-video.mp4", "Video Title") { success ->
+    }
+    
+    private fun performSmartCast() {
+        // Smart cast - automatically finds and selects best device
+        DLNACast.smartCast("http://your-video.mp4", "Video Title") { success ->
             if (success) {
-                Log.d("DLNA", "Casting started!")
+                Log.d("DLNA", "Smart casting started!")
             }
+        } { devices ->
+            // Device selector: prefer TV over other devices
+            devices.firstOrNull { it.isTV } ?: devices.firstOrNull()
         }
-        
-        // Control playback
+    }
+    
+    // Control playback
+    private fun controlPlayback() {
         DLNACast.control(DLNACast.MediaAction.PAUSE) { success ->
             Log.d("DLNA", "Paused: $success")
         }
@@ -99,14 +126,33 @@ class MainActivity : AppCompatActivity() {
 // Initialize the library
 DLNACast.init(context: Context)
 
-// Search for devices
+// ✅ Improved: One-time device search (recommended)
+DLNACast.searchAll(
+    options: DeviceSearchOptions = DeviceSearchOptions(), 
+    callback: (SearchResult) -> Unit
+)
+
+// ✅ New: Search with real-time progress updates  
+DLNACast.searchWithProgress(
+    options: DeviceSearchOptions,
+    onProgress: (devices: List<Device>, elapsedTime: Long) -> Unit,
+    onComplete: (devices: List<Device>) -> Unit
+)
+
+// Legacy: Traditional search (may call callback multiple times)
+@Deprecated("Use searchAll() for better UX")
 DLNACast.search(timeout: Long = 10000, callback: (devices: List<Device>) -> Unit)
 
 // Auto cast to available device
 DLNACast.cast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
 
-// Smart cast with device selection
-DLNACast.smartCast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {}, deviceSelector: (devices: List<Device>) -> Device?)
+// ✅ Smart cast with device selection strategy
+DLNACast.smartCast(
+    url: String, 
+    title: String? = null, 
+    callback: (success: Boolean) -> Unit = {}, 
+    deviceSelector: (devices: List<Device>) -> Device?
+)
 
 // Cast to specific device
 DLNACast.castToDevice(device: Device, url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
@@ -124,6 +170,7 @@ DLNACast.release()
 ### Data Types
 
 ```kotlin
+// Device information
 data class Device(
     val id: String,
     val name: String,
@@ -131,14 +178,32 @@ data class Device(
     val isTV: Boolean
 )
 
+// ✅ New: Search configuration options
+data class DeviceSearchOptions(
+    var timeout: Long = 10000,        // Total search timeout
+    var minWaitTime: Long = 3000,     // Minimum wait time before returning results
+    var maxDeviceCount: Int = 10,     // Stop searching after finding enough devices
+    var enableProgress: Boolean = false // Enable progress callbacks
+)
+
+// ✅ New: Search result types
+sealed class SearchResult {
+    data class Success(val devices: List<Device>) : SearchResult()
+    data class Timeout(val partialDevices: List<Device>) : SearchResult()
+    data class Error(val message: String) : SearchResult()
+}
+
+// Media control actions
 enum class MediaAction {
     PLAY, PAUSE, STOP, VOLUME, MUTE, SEEK, GET_STATE
 }
 
+// Playback states
 enum class PlaybackState {
     IDLE, PLAYING, PAUSED, STOPPED, BUFFERING, ERROR
 }
 
+// Current casting state
 data class State(
     val isConnected: Boolean,
     val currentDevice: Device?,

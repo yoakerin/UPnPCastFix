@@ -97,16 +97,16 @@ class ApiDemoActivity : AppCompatActivity() {
 
     private fun demoSearch() {
         logMessage("\n🔍 === 搜索设备API演示 ===")
-        logMessage("调用: DLNACast.search(timeout = 10000) { devices ->")
-        logMessage("参数: timeout = 10秒")
-        logMessage("回调: 返回发现的设备列表")
+        logMessage("调用: DLNACast.search(timeout = 5000) { devices ->")
+        logMessage("参数: timeout = 5秒")
+        logMessage("回调: 实时返回累积的全部设备列表")
         
         val startTime = System.currentTimeMillis()
-        DLNACast.search(timeout = 10000) { devices: List<DLNACast.Device> ->
+        DLNACast.search(timeout = 5000) { devices: List<DLNACast.Device> ->
             runOnUiThread {
                 val elapsed = System.currentTimeMillis() - startTime
-                logMessage("⏰ 搜索完成，耗时: ${elapsed}ms")
-                logMessage("📱 发现设备数量: ${devices.size}")
+                logMessage("⏰ 实时更新，耗时: ${elapsed}ms")
+                logMessage("📱 当前设备总数: ${devices.size}")
                 
                 devices.forEachIndexed { index, device ->
                     val icon = if (device.isTV) "📺" else "📱"
@@ -119,7 +119,7 @@ class ApiDemoActivity : AppCompatActivity() {
             }
         }
         
-        logMessage("✅ 搜索请求已发送，等待结果...")
+        logMessage("✅ 搜索请求已发送，等待实时更新...")
     }
 
     private fun demoCastTo() {

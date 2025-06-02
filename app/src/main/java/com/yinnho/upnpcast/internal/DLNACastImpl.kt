@@ -219,16 +219,15 @@ internal object DLNACastImpl {
     }
 
     private fun getAllDevices(): List<Device> {
-        return devices.values.map { convertToDevice(it) }.sortedByDescending { it.isTV }
+        return devices.values.map { convertToDevice(it) }
+            .sortedWith(compareByDescending<Device> { it.isTV }.thenBy { it.name })
     }
 
     private fun notifyNewDevicesOnly() {
         if (!searchCompleted) {
             currentDeviceListCallback?.let { callback ->
                 val allDevices = getAllDevices()
-                val newDevices = allDevices.filter { !notifiedDeviceIds.contains(it.id) }
-                notifiedDeviceIds.addAll(newDevices.map { it.id })
-                callback(newDevices)
+                callback(allDevices)
             }
         }
     }

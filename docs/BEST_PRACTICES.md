@@ -9,91 +9,289 @@
 
 ## 🔄 异步回调处理
 
-### 1. 使用协程封装
+### 1. 改进的设备发现API设计
+
+**❌ 当前的分批返回问题：**
+```kotlin
+// 现有API - 分批返回，体验不佳
+DLNACast.search { devices ->
+    // 这个回调可能被调用多次
+    // 每次返回部分设备，UI频繁刷新
+    updateUI(devices) // 用户看到设备列表不断跳动
+}
+```
+
+**✅ 建议的一次性返回设计：**
+```kotlin
+// 改进API - 一次性返回完整设备列表
+class DeviceSearchOptions {
+    var timeout: Long = 10000        // 搜索总超时时间
+    var minWaitTime: Long = 3000     // 最少等待时间（确保发现大部分设备）
+    var maxDeviceCount: Int = 10     // 发现足够设备数后可提前结束
+    var enableProgress: Boolean = false // 是否需要进度回调
+}
+
+// 一次性返回完整结果
+DLNACast.searchAll(options = DeviceSearchOptions()) { result ->
+    when (result) {
+        is SearchResult.Success -> {
+            // 一次性获得所有设备，UI只更新一次
+            updateDeviceList(result.devices)
+            showMessage("发现 ${result.devices.size} 个设备")
+        }
+        is SearchResult.Timeout -> {
+            // 超时但可能有部分设备
+            updateDeviceList(result.partialDevices)
+            showMessage("搜索超时，发现 ${result.partialDevices.size} 个设备")
+        }
+        is SearchResult.Error -> {
+            showError("搜索失败: ${result.message}")
+        }
+    }
+}
+
+// 如果需要实时进度，提供专门的进度回调
+DLNACast.searchWithProgress(
+    options = DeviceSearchOptions(enableProgress = true),
+    onProgress = { currentDevices, elapsedTime ->
+        // 可选的进度更新，用于显示搜索状态
+        showProgress("已发现 ${currentDevices.size} 个设备 (${elapsedTime}ms)")
+    },
+    onComplete = { finalDevices ->
+        // 最终结果，UI做最终更新
+        updateDeviceList(finalDevices)
+    }
+)
+```
+
+### 2. 智能设备搜索策略
+```kotlin
+class SmartDeviceDiscovery {
+    
+    // 智能搜索 - 根据环境自动调整策略
+    suspend fun discoverDevices(): SearchResult {
+        return withContext(Dispatchers.IO) {
+            val searchConfig = determineSearchStrategy()
+            
+            val foundDevices = mutableSetOf<Device>()
+            val startTime = System.currentTimeMillis()
+            
+            // 多轮搜索策略
+            repeat(searchConfig.rounds) { round ->
+                val roundDevices = performSingleSearch(searchConfig.roundTimeout)
+                foundDevices.addAll(roundDevices)
+                
+                // 检查是否满足提前结束条件
+                if (shouldEarlyExit(foundDevices, startTime, round)) {
+                    break
+                }
+                
+                // 短暂间隔后进行下一轮
+                delay(searchConfig.roundInterval)
+            }
+            
+            return@withContext SearchResult.Success(foundDevices.toList())
+        }
+    }
+    
+    private fun determineSearchStrategy(): SearchConfig {
+        return when {
+            isHighEndDevice() -> SearchConfig(
+                rounds = 2, 
+                roundTimeout = 4000, 
+                roundInterval = 1000
+            )
+            isLowEndDevice() -> SearchConfig(
+                rounds = 1, 
+                roundTimeout = 8000, 
+                roundInterval = 0
+            )
+            else -> SearchConfig(
+                rounds = 3, 
+                roundTimeout = 3000, 
+                roundInterval = 500
+            )
+        }
+    }
+    
+    private fun shouldEarlyExit(
+        devices: Set<Device>, 
+        startTime: Long, 
+        currentRound: Int
+    ): Boolean {
+        val elapsed = System.currentTimeMillis() - startTime
+        return when {
+            devices.size >= 5 && elapsed > 3000 -> true  // 发现足够设备
+            devices.any { it.isTV } && elapsed > 2000 -> true  // 发现电视设备
+            else -> false
+        }
+    }
+}
+
+data class SearchConfig(
+    val rounds: Int,           // 搜索轮数
+    val roundTimeout: Long,    // 每轮超时时间
+    val roundInterval: Long    // 轮次间隔
+)
+
+sealed class SearchResult {
+    data class Success(val devices: List<Device>) : SearchResult()
+    data class Timeout(val partialDevices: List<Device>) : SearchResult()
+    data class Error(val message: String) : SearchResult()
+}
+```
+
+### 3. 优雅的协程封装
 ```kotlin
 class DLNACastHelper {
-    // 封装搜索为协程
-    suspend fun searchDevices(timeout: Long = 10000): List<Device> {
-        return suspendCoroutine { continuation ->
-            DLNACast.search(timeout) { devices ->
-                continuation.resume(devices)
-            }
-        }
-    }
     
-    // 封装投屏为协程
-    suspend fun castVideo(url: String, title: String? = null): Boolean {
+    // 协程版本 - 一次性返回结果
+    suspend fun searchDevices(
+        timeout: Long = 10000,
+        minWaitTime: Long = 3000
+    ): List<Device> {
         return suspendCoroutine { continuation ->
-            DLNACast.cast(url, title) { success ->
-                continuation.resume(success)
-            }
-        }
-    }
-    
-    // 使用示例
-    suspend fun performCast() {
-        try {
-            val devices = searchDevices()
-            if (devices.isNotEmpty()) {
-                val success = castVideo("http://example.com/video.mp4")
-                if (success) {
-                    println("投屏成功")
+            val foundDevices = mutableSetOf<Device>()
+            val startTime = System.currentTimeMillis()
+            var searchCompleted = false
+            
+            // 启动搜索
+            fun startSearch() {
+                DLNACast.search(2000) { newDevices ->
+                    if (searchCompleted) return@search
+                    
+                    foundDevices.addAll(newDevices)
+                    val elapsed = System.currentTimeMillis() - startTime
+                    
+                    // 检查完成条件
+                    when {
+                        elapsed >= timeout -> {
+                            // 超时完成
+                            searchCompleted = true
+                            continuation.resume(foundDevices.toList())
+                        }
+                        elapsed >= minWaitTime && foundDevices.isNotEmpty() -> {
+                            // 已等待足够时间且有设备，再等待一轮确保完整
+                            Handler().postDelayed({
+                                if (!searchCompleted) {
+                                    searchCompleted = true
+                                    continuation.resume(foundDevices.toList())
+                                }
+                            }, 2000)
+                        }
+                        else -> {
+                            // 继续搜索
+                            Handler().postDelayed({ startSearch() }, 1000)
+                        }
+                    }
                 }
             }
-        } catch (e: Exception) {
-            println("操作失败: ${e.message}")
+            
+            startSearch()
+        }
+    }
+    
+    // 带进度的搜索
+    suspend fun searchWithProgress(
+        onProgress: (devices: List<Device>, elapsedTime: Long) -> Unit
+    ): List<Device> {
+        return suspendCoroutine { continuation ->
+            val foundDevices = mutableSetOf<Device>()
+            val startTime = System.currentTimeMillis()
+            
+            fun searchRound() {
+                DLNACast.search(3000) { newDevices ->
+                    foundDevices.addAll(newDevices)
+                    val elapsed = System.currentTimeMillis() - startTime
+                    
+                    // 报告进度
+                    onProgress(foundDevices.toList(), elapsed)
+                    
+                    // 检查是否继续
+                    if (elapsed < 10000) {
+                        Handler().postDelayed({ searchRound() }, 1000)
+                    } else {
+                        continuation.resume(foundDevices.toList())
+                    }
+                }
+            }
+            
+            searchRound()
         }
     }
 }
 ```
 
-### 2. 回调链管理
+### 4. 实际使用示例
 ```kotlin
-class CastWorkflow {
-    private var currentCallback: ((Boolean) -> Unit)? = null
+class CastActivity : AppCompatActivity() {
     
-    fun startCastWorkflow(url: String, onComplete: (Boolean) -> Unit) {
-        currentCallback = onComplete
-        
-        // 步骤1: 搜索设备
-        DLNACast.search { devices ->
-            if (devices.isEmpty()) {
-                onComplete(false)
-                return@search
-            }
+    private val castHelper = DLNACastHelper()
+    
+    // 方式1: 简单一次性搜索
+    private fun searchDevicesSimple() {
+        lifecycleScope.launch {
+            showLoading("正在搜索设备...")
             
-            // 步骤2: 选择最佳设备
-            val targetDevice = selectBestDevice(devices)
-            
-            // 步骤3: 投屏
-            DLNACast.castToDevice(targetDevice, url) { success ->
-                if (success) {
-                    // 步骤4: 验证播放状态
-                    verifyPlayback { verified ->
-                        onComplete(verified)
-                    }
+            try {
+                val devices = castHelper.searchDevices(
+                    timeout = 10000,
+                    minWaitTime = 3000
+                )
+                
+                hideLoading()
+                
+                if (devices.isNotEmpty()) {
+                    showDeviceList(devices)
+                    showMessage("发现 ${devices.size} 个设备")
                 } else {
-                    onComplete(false)
+                    showMessage("未发现可用设备")
                 }
+                
+            } catch (e: Exception) {
+                hideLoading()
+                showError("搜索失败: ${e.message}")
             }
         }
     }
     
-    private fun selectBestDevice(devices: List<Device>): Device {
-        return devices.firstOrNull { it.isTV } ?: devices.first()
+    // 方式2: 带进度的搜索
+    private fun searchWithProgress() {
+        lifecycleScope.launch {
+            showProgressDialog("搜索中...")
+            
+            try {
+                val devices = castHelper.searchWithProgress { currentDevices, elapsed ->
+                    // 实时更新进度
+                    updateProgress("已发现 ${currentDevices.size} 个设备 (${elapsed}ms)")
+                }
+                
+                hideProgressDialog()
+                showDeviceList(devices)
+                
+            } catch (e: Exception) {
+                hideProgressDialog()
+                showError("搜索失败: ${e.message}")
+            }
+        }
     }
     
-    private fun verifyPlayback(callback: (Boolean) -> Unit) {
-        Handler().postDelayed({
-            DLNACast.control(MediaAction.GET_STATE) { success ->
-                if (success) {
-                    val state = DLNACast.getState()
-                    callback(state.playbackState == PlaybackState.PLAYING)
-                } else {
-                    callback(false)
-                }
+    // 方式3: 智能搜索 - 自动选择最佳设备
+    private fun smartSearch() {
+        lifecycleScope.launch {
+            val devices = castHelper.searchDevices()
+            
+            val bestDevice = when {
+                devices.any { it.isTV } -> devices.first { it.isTV }
+                devices.isNotEmpty() -> devices.first()
+                else -> null
             }
-        }, 2000)
+            
+            bestDevice?.let { device ->
+                showMessage("已自动选择: ${device.name}")
+                castToDevice(device)
+            } ?: showMessage("未发现可用设备")
+        }
     }
 }
 ```

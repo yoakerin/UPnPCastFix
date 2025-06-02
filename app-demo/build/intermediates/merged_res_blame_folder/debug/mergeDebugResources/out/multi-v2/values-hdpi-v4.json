@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.yinnho.upnpcast.demo.app-demo-mergeDebugResources-31:/values-hdpi-v4/values-hdpi-v4.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\8684c\\.gradle\\caches\\8.11.1\\transforms\\213bbae870aa6510c53c3e4e96c81cb6\\transformed\\appcompat-1.7.0\\res\\values-hdpi-v4\\values-hdpi-v4.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "6",
+                        "endColumns": "13",
+                        "endOffsets": "327"
+                    }
+                }
+            ]
+        }
+    ]
+}

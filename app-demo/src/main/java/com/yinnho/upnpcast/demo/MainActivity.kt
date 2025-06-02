@@ -175,18 +175,20 @@ class MainActivity : AppCompatActivity() {
         statusView.text = "状态: 搜索中..."
         discoveredDevices.clear()
         
-        DLNACast.search(timeout = 10000) { devices: List<DLNACast.Device> ->
+        DLNACast.search(timeout = 5000) { devices: List<DLNACast.Device> ->
             runOnUiThread {
-                devices.forEach { device: DLNACast.Device ->
-                    if (!discoveredDevices.any { it.id == device.id }) {
-                        discoveredDevices.add(device)
-                        log("📱 发现设备: ${device.name}")
-                    }
-                }
+                discoveredDevices.clear()
+                discoveredDevices.addAll(devices)
+                log("📱 实时更新: 发现 ${devices.size} 个设备")
                 updateDeviceList()
-                statusView.text = "状态: 搜索完成 (${discoveredDevices.size}个设备)"
+                statusView.text = "状态: 搜索中... (${discoveredDevices.size}个设备)"
             }
         }
+        
+        // 5秒后更新为搜索完成状态
+        Handler(Looper.getMainLooper()).postDelayed({
+            statusView.text = "状态: 搜索完成 (${discoveredDevices.size}个设备)"
+        }, 5100) // 稍微延后一点确保最后一次回调已处理
     }
 
     private fun updateDeviceList() {
