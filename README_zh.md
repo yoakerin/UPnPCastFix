@@ -165,7 +165,7 @@ data class State(
 
 ## 贡献
 
-欢迎贡献！请查看我们的[最佳实践指南](docs/best_practices.md)了解开发指导原则。
+欢迎贡献！请查看我们的[贡献指南](CONTRIBUTING.md)了解开发指导原则和如何开始。
 
 ## 支持
 
