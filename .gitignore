@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+# 忽略本地IDE配置
+.idea/
+.vscode/
