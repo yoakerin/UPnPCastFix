@@ -8,6 +8,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.yinnho.upnpcast.DLNACast
 import kotlin.random.Random
@@ -29,6 +30,13 @@ class PerformanceActivity : AppCompatActivity() {
 
         supportActionBar?.title = "性能监控"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        // 现代化的返回按钮处理
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                finish()
+            }
+        })
 
         // 先初始化DLNACast，避免闪退
         try {
@@ -202,7 +210,7 @@ class PerformanceActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
+        onBackPressedDispatcher.onBackPressed()
         return true
     }
 } 
