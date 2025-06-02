@@ -153,6 +153,8 @@ data class State(
 - 🎯 **[Demo App](app-demo/)** - Working example application with complete API demonstration
 - 📖 **[API Reference](#api-reference)** - Complete API documentation above
 - 📋 **[Changelog](CHANGELOG.md)** - Version history and updates
+- 🤔 **[FAQ](docs/FAQ.md)** - Frequently asked questions and troubleshooting
+- 🎯 **[Best Practices](docs/BEST_PRACTICES.md)** - Async callbacks, device management, and optimization guides
 
 ## Device Compatibility
 

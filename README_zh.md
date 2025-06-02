@@ -153,6 +153,8 @@ data class State(
 - 🎯 **[演示应用](app-demo/)** - 完整的示例程序，包含所有API演示
 - 📖 **[API参考](#api参考)** - 上方的完整API文档
 - 📋 **[更新日志](CHANGELOG.md)** - 版本历史和更新
+- 🤔 **[常见问题](docs/FAQ.md)** - 常见问题解答和故障排除
+- 🎯 **[最佳实践](docs/BEST_PRACTICES.md)** - 异步回调、设备管理和优化指南
 
 ## 设备兼容性
 
