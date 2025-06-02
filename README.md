@@ -39,7 +39,7 @@ allprojects {
 Add dependency:
 ```gradle
 dependencies {
-    implementation 'com.github.yinnho:UPnPCast:v1.0.1'
+    implementation 'com.github.yinnho:UPnPCast:v1.0.2'
 }
 ```
 
