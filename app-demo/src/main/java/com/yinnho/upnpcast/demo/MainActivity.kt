@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
@@ -944,7 +944,7 @@ class MainActivity : AppCompatActivity() {
             null
         }
     }
-
+    
     override fun onDestroy() {
         super.onDestroy()
         DLNACast.release()

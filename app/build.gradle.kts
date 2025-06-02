@@ -2,7 +2,6 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("maven-publish")
-    id("signing")
 }
 
 android {
@@ -36,7 +35,7 @@ android {
     // Simplified build type configuration
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         debug {
@@ -52,9 +51,6 @@ android {
     
     kotlinOptions {
         jvmTarget = "17"
-        freeCompilerArgs += listOf(
-            "-opt-in=kotlin.RequiresOptIn"
-        )
     }
     
     // Library doesn't need ViewBinding
@@ -62,11 +58,10 @@ android {
         buildConfig = false
     }
 
-    // Add sources and documentation packaging
+    // 简化的发布配置，适合JitPack
     publishing {
         singleVariant("release") {
             withSourcesJar()
-            withJavadocJar()
         }
     }
 }
@@ -83,70 +78,27 @@ dependencies {
     // JSON parsing
     implementation(libs.gson)
     
-    // Test dependencies - JUnit 5 and Mockito
+    // Test dependencies
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.junit.jupiter.engine)
-    testImplementation(libs.junit.jupiter.params) // Parameterized test support
+    testImplementation(libs.junit.jupiter.params)
     testImplementation(libs.mockito.core) 
-    testImplementation(libs.mockito.junit.jupiter) // Mockito's JUnit5 support
+    testImplementation(libs.mockito.junit.jupiter)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
 
-// Maven release configuration
-publishing {
-    publications {
-        register<MavenPublication>("release") {
-            groupId = "yinnho.com"
-            artifactId = "upnpcast"
-            version = "1.0.0"
-
-            afterEvaluate {
+// 简化的发布配置 - JitPack会自动处理
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
                 from(components["release"])
-            }
-
-            pom {
-                name.set("UPnPCast")
-                description.set("Modern Android DLNA/UPnP screen casting library, as a replacement for the deprecated Cling project")
-                url.set("https://github.com/yinnho/UPnPCast")
                 
-                licenses {
-                    license {
-                        name.set("MIT License")
-                        url.set("https://opensource.org/licenses/MIT")
-                    }
-                }
-                
-                developers {
-                    developer {
-                        id.set("yinnho")
-                        name.set("UPnPCast Team")
-                        email.set("dev@upnpcast.com")
-                    }
-                }
-                
-                scm {
-                    connection.set("scm:git:git://github.com/yinnho/UPnPCast.git")
-                    developerConnection.set("scm:git:ssh://github.com/yinnho/UPnPCast.git")
-                    url.set("https://github.com/yinnho/UPnPCast/tree/main")
-                }
+                groupId = "com.github.yinnho"
+                artifactId = "UPnPCast" 
+                version = "1.0.1"
             }
         }
     }
-    
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/yinnho/UPnPCast")
-            credentials {
-                username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
-                password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
-            }
-        }
-    }
-}
-
-// Signing configuration (for Maven Central)
-signing {
-    sign(publishing.publications["release"])
 }
