@@ -3,9 +3,6 @@ package com.yinnho.upnpcast.internal
 import android.content.Context
 import android.util.Log
 import com.yinnho.upnpcast.DLNACast
-import com.yinnho.upnpcast.DLNAResult
-import com.yinnho.upnpcast.DLNADeviceList
-import com.yinnho.upnpcast.DLNADeviceSelector
 import java.lang.ref.WeakReference
 import kotlinx.coroutines.runBlocking
 
@@ -21,16 +18,16 @@ internal object DLNACastImpl {
     private var contextRef: WeakReference<Context>? = null
     
     @Volatile
-    private var currentDeviceListCallback: DLNADeviceList? = null
+    private var currentDeviceListCallback: ((devices: List<DLNACast.Device>) -> Unit)? = null
     
     // 搜索超时标志
     @Volatile
     private var searchCompleted = false
     
-    // 已通知过的设备ID集合，用于增量回调
+    // 已通知过的设备ID集合，用于增量回�?
     private val notifiedDeviceIds = mutableSetOf<String>()
     
-    // 设备发现监听器
+    // 设备发现监听�?
     private val deviceListener = object : RegistryListener {
         override fun deviceAdded(registry: Registry, device: RemoteDevice) {
             // 增量回调：只通知新发现的设备
@@ -38,7 +35,7 @@ internal object DLNACastImpl {
         }
         
         override fun deviceRemoved(registry: Registry, device: RemoteDevice) {
-            // 设备移除：更新已通知集合并回调变化
+            // 设备移除：更新已通知集合并回调变�?
             handleDeviceRemoved(device)
         }
         
@@ -56,7 +53,7 @@ internal object DLNACastImpl {
         registry?.addListener(deviceListener)
     }
     
-    fun cast(url: String, title: String?, callback: DLNAResult) {
+    fun cast(url: String, title: String?, callback: (success: Boolean) -> Unit) {
         ensureInitialized {
             search(10000L) { devices: List<DLNACast.Device> ->
                 if (devices.isNotEmpty()) {
@@ -69,9 +66,9 @@ internal object DLNACastImpl {
         }
     }
     
-    fun castTo(url: String, title: String?, deviceSelector: DLNADeviceSelector) {
+    fun castTo(url: String, title: String?, deviceSelector: (devices: List<DLNACast.Device>) -> DLNACast.Device?) {
         ensureInitialized {
-            // 直接获取当前已发现的设备，不再重新搜索
+            // 直接获取当前已发现的设备，不再重新搜�?
             val currentDevices = getAllDevices()
             if (currentDevices.isNotEmpty()) {
                 val selectedDevice = deviceSelector(currentDevices)
@@ -92,13 +89,13 @@ internal object DLNACastImpl {
         }
     }
     
-    fun castToDevice(device: DLNACast.Device, url: String, title: String?, callback: DLNAResult) {
+    fun castToDevice(device: DLNACast.Device, url: String, title: String?, callback: (success: Boolean) -> Unit) {
         Log.d(TAG, "castToDevice called: device=${device.name}, url=$url, title=$title")
         ensureInitialized {
             // 先检查设备是否在注册表中
             val existingDevice = registry?.getDevices()?.find { it.id == device.id }
             if (existingDevice != null) {
-                // 设备存在，直接投屏
+                // 设备存在，直接投�?
                 connectAndPlay(device, url, title ?: "Media", callback)
             } else {
                 // 设备不存在，先搜索再投屏
@@ -116,18 +113,18 @@ internal object DLNACastImpl {
         }
     }
     
-    fun search(timeout: Long, callback: DLNADeviceList) {
+    fun search(timeout: Long, callback: (devices: List<DLNACast.Device>) -> Unit) {
         ensureInitialized {
             currentDeviceListCallback = callback
             searchCompleted = false
             notifiedDeviceIds.clear()
             registry?.startDiscovery()
             
-            // 超时回调：只有在设备数量有变化时才回调
+            // 超时回调：只有在设备数量有变化时才回�?
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                 searchCompleted = true
                 val currentDevices = getAllDevices()
-                // 优化：只有设备数量变化时才执行超时回调
+                // 优化：只有设备数量变化时才执行超时回�?
                 if (currentDevices.size != notifiedDeviceIds.size) {
                     callback(currentDevices)
                 }
@@ -136,7 +133,7 @@ internal object DLNACastImpl {
         }
     }
     
-    fun control(action: DLNACast.MediaAction, value: Any?, callback: DLNAResult) {
+    fun control(action: DLNACast.MediaAction, value: Any?, callback: (success: Boolean) -> Unit) {
         val device = currentDevice
         if (device == null) {
             callback(false)
@@ -160,11 +157,11 @@ internal object DLNACastImpl {
                             controller.setMuteAsync(mute)
                         }
                         DLNACast.MediaAction.SEEK -> {
-                            // 简化实现，如需要可以扩展
+                            // 简化实现，如需要可以扩�?
                             true
                         }
                         DLNACast.MediaAction.GET_STATE -> {
-                            // 返回状态查询结果
+                            // 返回状态查询结�?
                             true
                         }
                     }
@@ -226,7 +223,7 @@ internal object DLNACastImpl {
             ?: devices.first()
     }
     
-    private fun connectAndPlay(device: DLNACast.Device, url: String, title: String, callback: DLNAResult) {
+    private fun connectAndPlay(device: DLNACast.Device, url: String, title: String, callback: (success: Boolean) -> Unit) {
         try {
             val remoteDevice = convertToRemoteDevice(device)
             if (connectToDevice(remoteDevice)) {
@@ -256,7 +253,7 @@ internal object DLNACastImpl {
         }
     }
     
-    private fun playMedia(device: RemoteDevice, url: String, title: String, callback: DLNAResult) {
+    private fun playMedia(device: RemoteDevice, url: String, title: String, callback: (success: Boolean) -> Unit) {
         val controller = DlnaMediaController.getController(device)
         Thread {
             try {
@@ -279,7 +276,7 @@ internal object DLNACastImpl {
     }
     
     private fun notifyNewDevicesOnly() {
-        currentDeviceListCallback?.let { callback: DLNADeviceList ->
+        currentDeviceListCallback?.let { callback: (devices: List<DLNACast.Device>) -> Unit ->
             // 只有在搜索未完成时才回调
             if (!searchCompleted) {
                 val devices = getAllDevices()
@@ -298,7 +295,7 @@ internal object DLNACastImpl {
     // ================ 类型转换方法 ================
     
     private fun convertToDevice(remoteDevice: RemoteDevice): DLNACast.Device {
-        // 根据制造商和型号判断设备类型
+        // 根据制造商和型号判断设备类�?
         val manufacturer = remoteDevice.manufacturer.lowercase()
         val model = (remoteDevice.details["modelName"] as? String ?: "").lowercase()
         

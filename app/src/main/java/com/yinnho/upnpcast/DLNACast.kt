@@ -4,21 +4,6 @@ import android.content.Context
 import com.yinnho.upnpcast.internal.DLNACastImpl
 
 /**
- * 操作结果回调
- */
-typealias DLNAResult = (success: Boolean) -> Unit
-
-/**
- * 设备列表回调
- */
-typealias DLNADeviceList = (devices: List<DLNACast.Device>) -> Unit
-
-/**
- * 设备选择回调
- */
-typealias DLNADeviceSelector = (devices: List<DLNACast.Device>) -> DLNACast.Device?
-
-/**
  * DLNACast - 极简DLNA投屏API
  * 
  * 🎯 单文件导入，功能全覆盖：
@@ -134,7 +119,7 @@ object DLNACast {
      * @param title 媒体标题（可选）
      * @param callback 成功/失败回调
      */
-    fun cast(url: String, title: String? = null, callback: DLNAResult = {}) {
+    fun cast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {}) {
         DLNACastImpl.cast(url, title, callback)
     }
     
@@ -145,7 +130,7 @@ object DLNACast {
      * @param title 媒体标题（可选）
      * @param deviceSelector 设备选择回调，返回null表示取消
      */
-    fun castTo(url: String, title: String? = null, deviceSelector: DLNADeviceSelector) {
+    fun castTo(url: String, title: String? = null, deviceSelector: (devices: List<Device>) -> Device?) {
         DLNACastImpl.castTo(url, title, deviceSelector)
     }
     
@@ -157,7 +142,7 @@ object DLNACast {
      * @param title 媒体标题（可选）
      * @param callback 成功/失败回调
      */
-    fun castToDevice(device: Device, url: String, title: String? = null, callback: DLNAResult = {}) {
+    fun castToDevice(device: Device, url: String, title: String? = null, callback: (success: Boolean) -> Unit = {}) {
         DLNACastImpl.castToDevice(device, url, title, callback)
     }
     
@@ -167,7 +152,7 @@ object DLNACast {
      * @param timeout 搜索超时时间（毫秒），默认10秒
      * @param callback 设备列表回调（增量回调，每发现一个设备就回调一次）
      */
-    fun search(timeout: Long = 10000, callback: DLNADeviceList) {
+    fun search(timeout: Long = 10000, callback: (devices: List<Device>) -> Unit) {
         DLNACastImpl.search(timeout, callback)
     }
     
@@ -186,7 +171,7 @@ object DLNACast {
      * DLNACast.control(MediaAction.MUTE, true)     // 静音
      * ```
      */
-    fun control(action: MediaAction, value: Any? = null, callback: DLNAResult = {}) {
+    fun control(action: MediaAction, value: Any? = null, callback: (success: Boolean) -> Unit = {}) {
         DLNACastImpl.control(action, value, callback)
     }
     
