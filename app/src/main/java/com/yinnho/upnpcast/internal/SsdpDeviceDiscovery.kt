@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * SSDP device discoverer
  */
 internal class SsdpDeviceDiscovery(
-    private val registry: Registry,
+    private val onDeviceFound: (RemoteDevice) -> Unit,
     private val executor: Executor = Executors.newSingleThreadExecutor { r ->
         Thread(r, "SSDP-Discovery").apply {
             isDaemon = true
@@ -217,16 +217,13 @@ internal class SsdpDeviceDiscovery(
             } else if (nts == "ssdp:byebye") {
                 val usn = extractHeader(message, "USN")
                 if (usn != null) {
-                    registry.getDevice(usn)?.let { device ->
-                        registry.removeDevice(device)
-                        
-                        val headers = parseSsdpHeaders(message)
-                        val location = headers["location"]
-                        if (location != null) {
-                            synchronized(processedLock) {
-                                processedLocations.remove(location)
-                                deviceTimeouts.remove(location)
-                            }
+                    // 设备离线，移除相关缓存
+                    val headers = parseSsdpHeaders(message)
+                    val location = headers["location"]
+                    if (location != null) {
+                        synchronized(processedLock) {
+                            processedLocations.remove(location)
+                            deviceTimeouts.remove(location)
                         }
                     }
                 }
@@ -281,12 +278,6 @@ internal class SsdpDeviceDiscovery(
                 
                 val deviceId = location
                 
-                // 检查设备是否已存在
-                val existingDevice = registry.getDevice(deviceId)
-                if (existingDevice != null) {
-                    return
-                }
-                
                 // 异步解析设备描述信息
                 searchScope.launch {
                     try {
@@ -299,7 +290,7 @@ internal class SsdpDeviceDiscovery(
                             deviceInfo = deviceInfo
                         )
                         
-                        registry.addDevice(device)
+                        onDeviceFound(device)
                         
                     } catch (e: Exception) {
                         Log.e(TAG, "Failed to process device description: $location", e)
@@ -314,9 +305,7 @@ internal class SsdpDeviceDiscovery(
                         if (isStructuralError(e)) {
                             val fallbackDevice = createFallbackDevice(deviceId, fromAddress.hostAddress ?: "unknown", location)
                             
-                            if (registry.getDevice(deviceId) == null) {
-                                registry.addDevice(fallbackDevice)
-                            }
+                            onDeviceFound(fallbackDevice)
                             
                             synchronized(processedLock) {
                                 processedLocations[location] = System.currentTimeMillis()
