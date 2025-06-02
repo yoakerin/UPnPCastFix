@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<androidx.constraintlayout.widget.ConstraintLayout 
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+    
+    <!-- 设备信息卡片 -->
+    <LinearLayout
+        android:id="@+id/device_info_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#f0f0f0"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintTop_toTopOf="parent">
+        
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="连接的设备"
+            android:textSize="14sp"
+            android:textColor="@android:color/darker_gray" />
+            
+        <TextView
+            android:id="@+id/connected_device_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="设备名称"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+    
+    <TextView
+        android:id="@+id/url_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="视频链接:"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/device_info_card" />
+        
+    <EditText
+        android:id="@+id/url_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="输入视频URL或选择示例"
+        android:inputType="textUri"
+        android:layout_marginTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/url_label" />
+        
+    <!-- 示例URL按钮 -->
+    <LinearLayout
+        android:id="@+id/sample_urls_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/url_input">
+        
+        <Button
+            android:id="@+id/btn_sample_video1"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="示例视频1"
+            android:textSize="10sp"
+            android:layout_marginEnd="4dp"
+            style="@style/Widget.AppCompat.Button.Small" />
+            
+        <Button
+            android:id="@+id/btn_sample_video2"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="示例视频2"
+            android:textSize="10sp"
+            android:layout_marginStart="4dp"
+            style="@style/Widget.AppCompat.Button.Small" />
+    </LinearLayout>
+        
+    <TextView
+        android:id="@+id/title_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="视频标题:"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/sample_urls_layout" />
+        
+    <EditText
+        android:id="@+id/title_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="输入视频标题"
+        android:inputType="text"
+        android:layout_marginTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/title_label" />
+    
+    <!-- 媒体信息卡片 -->
+    <LinearLayout
+        android:id="@+id/media_info_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#e8f4f8"
+        android:padding="16dp"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/title_input">
+        
+        <TextView
+            android:id="@+id/media_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="当前媒体"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+            
+        <TextView
+            android:id="@+id/playback_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="未播放"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            android:textColor="@android:color/darker_gray" />
+    </LinearLayout>
+        
+    <!-- 进度控制 -->
+    <LinearLayout
+        android:id="@+id/progress_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/media_info_card">
+        
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            
+            <TextView
+                android:id="@+id/current_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00:00"
+                android:textSize="12sp" />
+                
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+                
+            <TextView
+                android:id="@+id/total_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00:00"
+                android:textSize="12sp" />
+        </LinearLayout>
+        
+        <SeekBar
+            android:id="@+id/seek_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+        
+    <!-- 播放控制按钮 -->
+    <LinearLayout
+        android:id="@+id/controls_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/progress_layout">
+        
+        <Button
+            android:id="@+id/btn_play"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="▶ 播放"
+            android:layout_margin="4dp" />
+            
+        <Button
+            android:id="@+id/btn_pause"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="⏸ 暂停"
+            android:layout_margin="4dp" />
+            
+        <Button
+            android:id="@+id/btn_resume"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="⏵ 继续"
+            android:layout_margin="4dp" />
+            
+        <Button
+            android:id="@+id/btn_stop"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="⏹ 停止"
+            android:layout_margin="4dp" />
+    </LinearLayout>
+    
+    <!-- 音量控制 -->
+    <LinearLayout
+        android:id="@+id/volume_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="24dp"
+        android:padding="16dp"
+        android:background="#f9f9f9"
+        app:layout_constraintTop_toBottomOf="@id/controls_layout">
+        
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="音量控制"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="8dp" />
+        
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            
+            <Button
+                android:id="@+id/btn_volume_down"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔉"
+                android:textSize="18sp"
+                android:minWidth="48dp"
+                android:layout_marginEnd="8dp" />
+                
+            <SeekBar
+                android:id="@+id/volume_seekbar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="100"
+                android:progress="50" />
+                
+            <Button
+                android:id="@+id/btn_volume_up"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔊"
+                android:textSize="18sp"
+                android:minWidth="48dp"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+        
+        <TextView
+            android:id="@+id/volume_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="音量: 50%"
+            android:textSize="12sp"
+            android:gravity="center"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+    
+    <!-- 底部间距 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        app:layout_constraintTop_toBottomOf="@id/volume_layout" />
+        
+</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

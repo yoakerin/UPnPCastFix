@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.9.2" type="partial_results">
+    <map id="UnsafeIntentLaunch">
+            <map id="unprotected">
+                <entry
+                    name="com.yinnho.upnpcast.demo.MainActivity"
+                    boolean="true"/>
+            </map>
+    </map>
+    <map id="UnusedResources">
+        <location id="R.layout.activity_media_control"
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_media_control.xml"
+            line="2"
+            column="1"
+            startOffset="39"
+            endLine="292"
+            endColumn="14"
+            endOffset="10320"/>
+        <location id="R.layout.activity_settings"
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_settings.xml"
+            line="2"
+            column="1"
+            startOffset="40"
+            endLine="93"
+            endColumn="16"
+            endOffset="3068"/>
+        <location id="R.layout.fragment_test_helper"
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+            line="2"
+            column="1"
+            startOffset="40"
+            endLine="114"
+            endColumn="53"
+            endOffset="4211"/>
+        <entry
+            name="model"
+            string="id[main_layout(D),title_bar(U),title(D),btn_refresh(D),btn_settings(D),search_status_layout(U),progress_bar(U),search_status_text(U),device_count(U),device_list(U),empty_state_layout(U),device_info_card(D),connected_device_name(D),url_label(D),url_input(D),sample_urls_layout(D),btn_sample_video1(D),btn_sample_video2(D),title_label(D),title_input(D),media_info_card(D),media_title(D),playback_status(D),progress_layout(D),current_time(D),total_time(D),seek_bar(D),controls_layout(D),btn_play(D),btn_pause(D),btn_resume(D),btn_stop(D),volume_layout(D),btn_volume_down(D),volume_seekbar(D),btn_volume_up(D),volume_text(D),switch_auto_connect(D),switch_enable_logging(D),seekbar_search_timeout(D),text_timeout_value(D),btn_clear_cache(D),btn_back(D),controls(D),btn_start_record(D),btn_stop_record(D),btn_run_auto_test(D),label_test_status(D),tv_test_status(D),label_memory(D),tv_memory_status(D),label_cache(D),tv_cache_stats(D),device_name(U),device_manufacturer(U),device_ip_port(U),device_udn(U)],layout[activity_main(U),activity_media_control(D),activity_settings(D),fragment_test_helper(D),item_device(U)],mipmap[ic_launcher(R),ic_launcher_round(R)],style[Theme_AppCompat_Light(R),Widget_AppCompat_Button_Small(R)];39^41^1^5^9,3a^b^d^e^41^f^12^13^14^17^1b^20,3c^2^2b^2e^2f^30^31^32^33;;;"/>
+    </map>
+
+</incidents>

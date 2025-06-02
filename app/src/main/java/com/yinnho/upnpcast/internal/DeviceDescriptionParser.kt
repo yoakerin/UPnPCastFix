@@ -1,28 +1,38 @@
 package com.yinnho.upnpcast.internal
 
 import android.util.Log
-import com.yinnho.upnpcast.RemoteDevice
+import java.net.URL
+import javax.xml.parsers.DocumentBuilderFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
-import java.net.URL
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
+import java.util.LinkedHashMap
 
 /**
- * Device description information parser
- * Extracts real device name, manufacturer and other information from description.xml
+ * Device description parser
  */
 class DeviceDescriptionParser {
     companion object {
         private const val TAG = "DeviceDescriptionParser"
-        private const val CONNECT_TIMEOUT = 5000 // 5 seconds connection timeout
-        private const val READ_TIMEOUT = 10000    // 10 seconds read timeout
+        private const val CONNECT_TIMEOUT = 5000
+        private const val READ_TIMEOUT = 10000
+        private const val CACHE_MAX_SIZE = 50
         
-        // Cache parsed device information to avoid duplicate requests
-        private val deviceCache = ConcurrentHashMap<String, DeviceInfo>()
+        private val SERVICE_PATTERN = "<service>(.*?)</service>".toRegex(setOf(RegexOption.DOT_MATCHES_ALL, RegexOption.IGNORE_CASE))
+        
+        private val deviceCache = object : LinkedHashMap<String, DeviceInfo>(16, 0.75f, true) {
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, DeviceInfo>?): Boolean {
+                return size > CACHE_MAX_SIZE
+            }
+        }
+        
+        fun clearCache() {
+            synchronized(deviceCache) {
+                deviceCache.clear()
+            }
+        }
     }
     
     data class DeviceInfo(
@@ -42,33 +52,30 @@ class DeviceDescriptionParser {
     )
     
     /**
-     * Asynchronously parse device description information
+     * 解析设备描述信息
      */
     suspend fun parseDeviceDescription(locationUrl: String): DeviceInfo? {
         return withContext(Dispatchers.IO) {
             try {
-                // Check cache
-                deviceCache[locationUrl]?.let { 
-                    Log.d(TAG, "Using cached device info: $locationUrl")
-                    return@withContext it 
+                val cachedInfo = synchronized(deviceCache) {
+                    deviceCache[locationUrl]
                 }
                 
-                Log.d(TAG, "Starting to parse device description: $locationUrl")
+                if (cachedInfo != null) {
+                    return@withContext cachedInfo
+                }
                 
-                // Download XML content
                 val xmlContent = downloadXmlContent(locationUrl)
                 if (xmlContent.isEmpty()) {
-                    Log.w(TAG, "Unable to download description file: $locationUrl")
                     return@withContext null
                 }
                 
-                // Parse XML content
                 val deviceInfo = parseXmlContent(xmlContent)
                 
-                // Cache result
                 if (deviceInfo != null) {
-                    deviceCache[locationUrl] = deviceInfo
-                    Log.d(TAG, "Parsing successful and cached: ${deviceInfo.friendlyName} (${deviceInfo.manufacturer})")
+                    synchronized(deviceCache) {
+                        deviceCache[locationUrl] = deviceInfo
+                    }
                 }
                 
                 deviceInfo
@@ -80,58 +87,62 @@ class DeviceDescriptionParser {
     }
     
     /**
-     * Download XML description file content
+     * 下载XML内容
      */
-    private fun downloadXmlContent(locationUrl: String): String {
-        var connection: HttpURLConnection? = null
-        try {
-            val url = URL(locationUrl)
-            connection = url.openConnection() as HttpURLConnection
-            connection.connectTimeout = CONNECT_TIMEOUT
-            connection.readTimeout = READ_TIMEOUT
-            connection.requestMethod = "GET"
-            connection.setRequestProperty("User-Agent", "UPnPCast/1.0")
-            
-            val responseCode = connection.responseCode
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                Log.w(TAG, "HTTP request failed, status code: $responseCode for $locationUrl")
-                return ""
+    private suspend fun downloadXmlContent(locationUrl: String): String {
+        val maxRetries = 3
+        
+        for (attempt in 1..maxRetries) {
+            var connection: HttpURLConnection? = null
+            try {
+                val url = URL(locationUrl)
+                connection = url.openConnection() as HttpURLConnection
+                connection.connectTimeout = CONNECT_TIMEOUT
+                connection.readTimeout = READ_TIMEOUT
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("User-Agent", "UPnPCast/1.0")
+                
+                val responseCode = connection.responseCode
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+                    if (attempt == maxRetries) {
+                        return ""
+                    }
+                    kotlinx.coroutines.delay(1000L * attempt)
+                    continue
+                }
+                
+                BufferedReader(InputStreamReader(connection.inputStream, "UTF-8")).use { reader ->
+                    return reader.readText()
+                }
+            } catch (e: Exception) {
+                if (attempt < maxRetries) {
+                    kotlinx.coroutines.delay(1000L * attempt)
+                }
+            } finally {
+                connection?.disconnect()
             }
-            
-            BufferedReader(InputStreamReader(connection.inputStream, "UTF-8")).use { reader ->
-                return reader.readText()
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to download description file: $locationUrl", e)
-            return ""
-        } finally {
-            connection?.disconnect()
         }
+        
+        return ""
     }
     
     /**
-     * Parse XML content to extract device information
+     * 解析XML内容
      */
     private fun parseXmlContent(xmlContent: String): DeviceInfo? {
         try {
-            // Simple regex parsing to avoid XML library dependencies
             val friendlyName = extractXmlValue(xmlContent, "friendlyName") ?: "DLNA Device"
             val manufacturer = extractXmlValue(xmlContent, "manufacturer") ?: "Unknown"
             val modelName = extractXmlValue(xmlContent, "modelName") ?: "Unknown Model"
             val deviceType = extractXmlValue(xmlContent, "deviceType") ?: "Unknown"
             
-            // Parse service list
             val services = parseServices(xmlContent)
             
-            // Smart device name processing
-            val processedName = processDeviceName(friendlyName, manufacturer, modelName)
-            val processedManufacturer = processManufacturer(manufacturer, friendlyName)
-            
             return DeviceInfo(
-                friendlyName = processedName,
-                manufacturer = processedManufacturer,
-                modelName = modelName,
-                deviceType = deviceType,
+                friendlyName = friendlyName.trim(),
+                manufacturer = manufacturer.trim(),
+                modelName = modelName.trim(),
+                deviceType = deviceType.trim(),
                 services = services
             )
         } catch (e: Exception) {
@@ -141,15 +152,13 @@ class DeviceDescriptionParser {
     }
     
     /**
-     * Parse service list
+     * 解析服务列表
      */
     private fun parseServices(xmlContent: String): List<ServiceInfo> {
         val services = mutableListOf<ServiceInfo>()
         
         try {
-            // Find all service blocks
-            val servicePattern = "<service>(.*?)</service>".toRegex(setOf(RegexOption.DOT_MATCHES_ALL, RegexOption.IGNORE_CASE))
-            val serviceMatches = servicePattern.findAll(xmlContent)
+            val serviceMatches = SERVICE_PATTERN.findAll(xmlContent)
             
             for (serviceMatch in serviceMatches) {
                 val serviceXml = serviceMatch.groupValues[1]
@@ -160,7 +169,6 @@ class DeviceDescriptionParser {
                 val eventSubURL = extractXmlValue(serviceXml, "eventSubURL") ?: ""
                 val descriptorURL = extractXmlValue(serviceXml, "SCPDURL") ?: ""
                 
-                // Only care about DLNA related services
                 if (serviceType.contains("AVTransport", ignoreCase = true) ||
                     serviceType.contains("RenderingControl", ignoreCase = true) ||
                     serviceType.contains("ConnectionManager", ignoreCase = true)) {
@@ -172,8 +180,6 @@ class DeviceDescriptionParser {
                         eventSubURL = eventSubURL,
                         descriptorURL = descriptorURL
                     ))
-                    
-                    Log.d(TAG, "Parsed service: $serviceType")
                 }
             }
         } catch (e: Exception) {
@@ -184,85 +190,32 @@ class DeviceDescriptionParser {
     }
     
     /**
-     * Extract value of specified tag from XML
+     * 提取XML标签值
      */
     private fun extractXmlValue(xmlContent: String, tagName: String): String? {
         try {
-            val pattern = "<$tagName[^>]*>([^<]+)</$tagName>".toRegex(RegexOption.IGNORE_CASE)
-            val matchResult = pattern.find(xmlContent)
-            return matchResult?.groupValues?.get(1)?.trim()
+            val startTag = "<$tagName"
+            val endTag = "</$tagName>"
+            
+            val startIndex = xmlContent.indexOf(startTag, ignoreCase = true)
+            if (startIndex == -1) return null
+            
+            val tagEndIndex = xmlContent.indexOf('>', startIndex)
+            if (tagEndIndex == -1) return null
+            
+            val endIndex = xmlContent.indexOf(endTag, tagEndIndex, ignoreCase = true)
+            if (endIndex == -1) return null
+            
+            val content = xmlContent.substring(tagEndIndex + 1, endIndex).trim()
+            return if (content.isNotBlank()) content else null
+            
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to extract XML tag: $tagName", e)
             return null
         }
     }
     
     /**
-     * Process device name to provide a more friendly display
-     */
-    private fun processDeviceName(friendlyName: String, manufacturer: String, modelName: String): String {
-        return when {
-            friendlyName.isNotBlank() && friendlyName != "Unknown" -> {
-                // If the device name already contains manufacturer information, use it directly
-                if (manufacturer.isNotBlank() && 
-                    !friendlyName.contains(manufacturer, ignoreCase = true)) {
-                    "$manufacturer $friendlyName"
-                } else {
-                    friendlyName
-                }
-            }
-            modelName.isNotBlank() && modelName != "Unknown Model" -> {
-                if (manufacturer.isNotBlank() && manufacturer != "Unknown") {
-                    "$manufacturer $modelName"
-                } else {
-                    modelName
-                }
-            }
-            manufacturer.isNotBlank() && manufacturer != "Unknown" -> {
-                "$manufacturer Device"
-            }
-            else -> "DLNA Device"
-        }
-    }
-    
-    /**
-     * Process manufacturer information to provide standardized manufacturer name
-     */
-    private fun processManufacturer(manufacturer: String, friendlyName: String): String {
-        return when {
-            manufacturer.isNotBlank() && manufacturer != "Unknown" -> {
-                // Standardize manufacturer name
-                when (manufacturer.lowercase()) {
-                    "xiaomi", "小米" -> "Xiaomi"
-                    "samsung" -> "Samsung"
-                    "lg electronics" -> "LG"
-                    "sony" -> "Sony"
-                    "panasonic" -> "Panasonic"
-                    "tcl" -> "TCL"
-                    "hisense" -> "Hisense"
-                    else -> manufacturer
-                }
-            }
-            friendlyName.isNotBlank() -> {
-                // Infer manufacturer from device name
-                when {
-                    friendlyName.contains("小米", ignoreCase = true) ||
-                    friendlyName.contains("xiaomi", ignoreCase = true) -> "Xiaomi"
-                    friendlyName.contains("samsung", ignoreCase = true) -> "Samsung"
-                    friendlyName.contains("lg", ignoreCase = true) -> "LG"
-                    friendlyName.contains("sony", ignoreCase = true) -> "Sony"
-                    friendlyName.contains("tcl", ignoreCase = true) -> "TCL"
-                    friendlyName.contains("海信", ignoreCase = true) ||
-                    friendlyName.contains("hisense", ignoreCase = true) -> "Hisense"
-                    else -> "Unknown"
-                }
-            }
-            else -> "Unknown"
-        }
-    }
-    
-    /**
-     * Create enhanced RemoteDevice containing real device information
+     * 创建增强的RemoteDevice
      */
     fun createEnhancedDevice(
         id: String,
@@ -283,17 +236,9 @@ class DeviceDescriptionParser {
                 "modelName" to info.modelName,
                 "deviceType" to info.deviceType,
                 "locationUrl" to locationUrl,
-                "location" to locationUrl,  // Add compatibility field
-                "services" to info.services  // Add service information
+                "location" to locationUrl,
+                "services" to info.services
             )
         )
-    }
-    
-    /**
-     * Clear cache
-     */
-    fun clearCache() {
-        deviceCache.clear()
-        Log.d(TAG, "Device info cache cleared")
     }
 } 

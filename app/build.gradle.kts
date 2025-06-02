@@ -84,11 +84,11 @@ dependencies {
     implementation(libs.gson)
     
     // 测试依赖 - JUnit 5和Mockito
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.1") // 参数化测试支持
-    testImplementation("org.mockito:mockito-core:5.10.0") 
-    testImplementation("org.mockito:mockito-junit-jupiter:5.10.0") // Mockito的JUnit5支持
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.engine)
+    testImplementation(libs.junit.jupiter.params) // 参数化测试支持
+    testImplementation(libs.mockito.core) 
+    testImplementation(libs.mockito.junit.jupiter) // Mockito的JUnit5支持
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }

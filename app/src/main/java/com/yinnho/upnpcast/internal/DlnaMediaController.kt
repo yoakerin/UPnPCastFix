@@ -1,16 +1,17 @@
 package com.yinnho.upnpcast.internal
 
 import android.util.Log
-import com.yinnho.upnpcast.RemoteDevice
 import kotlinx.coroutines.*
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.ConcurrentHashMap
+import java.util.Locale
 
 /**
- * DLNA media controller - Actual control logic copied from backup
- * Responsible for SOAP communication with DLNA devices to execute playback control
+ * DLNA media controller - SOAP control implementation
  */
 internal class DlnaMediaController(private val device: RemoteDevice) {
     
@@ -28,164 +29,114 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
         }
         
         fun removeController(deviceId: String) {
-            deviceControllers.remove(deviceId)
+            deviceControllers.remove(deviceId)?.release()
         }
+        
+        fun clearAllControllers() {
+            deviceControllers.values.forEach { it.release() }
+            deviceControllers.clear()
+        }
+        
+        fun getControllerCount(): Int = deviceControllers.size
+    }
+    
+    @Volatile
+    private var isReleased = false
+    
+    private fun checkAvailable(): Boolean {
+        return !isReleased && coroutineScope.isActive
     }
     
     /**
-     * Build AVTransport URL for validation
+     * 通用的服务URL构建方法
      */
-    fun buildAVTransportUrl(): String? {
+    private fun buildServiceUrl(serviceTypePattern: String, defaultPath: String): String? {
         return try {
-            // Try to get AVTransport control URL from device service information
             val services = device.details["services"] as? List<*>
             if (services != null) {
-                Log.d(TAG, "Found ${services.size} services")
-                
-                // Look for AVTransport service
                 for (service in services) {
                     if (service is DeviceDescriptionParser.ServiceInfo) {
-                        Log.d(TAG, "Checking service: ${service.serviceType}")
-                        
-                        if (service.serviceType.contains("AVTransport", ignoreCase = true)) {
+                        if (service.serviceType.contains(serviceTypePattern, ignoreCase = true)) {
                             var controlUrl = service.controlURL
                             
-                            // If controlURL is not a complete URL, need to combine with device base URL
                             if (!controlUrl.startsWith("http://") && !controlUrl.startsWith("https://")) {
                                 val location = device.details["location"] as? String
                                 if (location != null) {
-                                    val baseUrl = if (location.startsWith("http://")) {
-                                        val afterProtocol = location.substring(7)
-                                        val hostAndPort = if (afterProtocol.contains("/")) {
-                                            afterProtocol.substringBefore("/")
-                                        } else {
-                                            afterProtocol
-                                        }
-                                        "http://$hostAndPort"
+                                    val url = java.net.URL(location)
+                                    val baseUrl = "http://${device.address}:${url.port}"
+                                    controlUrl = if (controlUrl.startsWith("/")) {
+                                        "$baseUrl$controlUrl"
                                     } else {
-                                        "http://${device.address}"
+                                        "$baseUrl/$controlUrl"
                                     }
-                                    // Ensure controlUrl starts with /, add if not
-                                    val normalizedPath = if (controlUrl.startsWith("/")) {
-                                        controlUrl
-                                    } else {
-                                        "/$controlUrl"
-                                    }
-                                    controlUrl = "$baseUrl$normalizedPath"
                                 }
                             }
-                            
-                            Log.d(TAG, "Found AVTransport control URL: $controlUrl")
                             return controlUrl
                         }
                     }
                 }
             }
             
-            // Fallback to default URL
-            val defaultUrl = "http://${device.address}:8080/AVTransport/control"
-            Log.d(TAG, "Using default AVTransport URL: $defaultUrl")
-            defaultUrl
+            val location = device.details["location"] as? String
+            val port = if (location != null) {
+                try {
+                    val url = java.net.URL(location)
+                    url.port
+                } catch (e: Exception) {
+                    return null
+                }
+            } else {
+                return null
+            }
+            
+            "http://${device.address}:$port/$defaultPath"
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to build AVTransport URL", e)
             null
         }
     }
-    
-    /**
-     * Play media - Synchronous wrapper for async method
-     */
-    fun playMedia(url: String, title: String): Boolean {
-        return runBlocking {
-            playMediaDirect(url, title)
-        }
+
+    fun buildAVTransportUrl(): String? {
+        return buildServiceUrl("AVTransport", "AVTransport/control")
     }
     
     /**
-     * Stop playback - Synchronous wrapper
+     * 播放媒体
      */
-    fun stopPlayback(): Boolean {
-        return runBlocking {
-            stopDirect()
-        }
-    }
-    
-    /**
-     * Pause playback - Synchronous wrapper
-     */
-    fun pausePlayback(): Boolean {
-        return runBlocking {
-            pause()
-        }
-    }
-    
-    /**
-     * Resume playback - Synchronous wrapper
-     */
-    fun resumePlayback(): Boolean {
-        return runBlocking {
-            play()
-        }
-    }
-    
-    /**
-     * Seek to position - Synchronous wrapper
-     */
-    fun seekTo(positionMs: Long): Boolean {
-        return runBlocking {
-            seek(positionMs)
-        }
-    }
-    
-    /**
-     * Play media - Core logic copied from backup
-     */
-    private suspend fun playMediaDirect(
+    suspend fun playMediaDirect(
         mediaUrl: String, 
         title: String, 
         episodeLabel: String = "", 
         positionMs: Long = 0
     ): Boolean = withContext(Dispatchers.IO) {
+        if (!checkAvailable()) return@withContext false
+        
         try {
-            Log.d(TAG, "Starting to play media: $title on ${device.displayName}")
+            val setUriSuccess = setMediaUri(mediaUrl, createMetadata(title, episodeLabel, mediaUrl))
+            if (!setUriSuccess) return@withContext false
             
-            // 1. Set media URI
-            val setUriSuccess = setAVTransportURI(mediaUrl, createMetadata(title, episodeLabel))
-            if (!setUriSuccess) {
-                Log.e(TAG, "Failed to set media URI")
-                return@withContext false
-            }
-            
-            // 2. Start playing
             val playSuccess = play()
-            if (!playSuccess) {
-                Log.e(TAG, "Failed to start playing")
-                return@withContext false
-            }
+            if (!playSuccess) return@withContext false
             
-            // 3. If need to seek to a specific position
             if (positionMs > 0) {
-                delay(1000) // Wait for playback to start
+                delay(1000)
                 seek(positionMs)
             }
             
-            Log.d(TAG, "Playback succeeded: $title")
             true
-            
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to play media: ${e.message}", e)
+            Log.e(TAG, "Failed to play media: ${e.message}")
             false
         }
     }
     
     /**
-     * Stop playing - Copied from backup
+     * 停止播放
      */
-    private suspend fun stopDirect(): Boolean = withContext(Dispatchers.IO) {
+    suspend fun stopDirect(): Boolean = withContext(Dispatchers.IO) {
+        if (!checkAvailable()) return@withContext false
+        
         try {
-            Log.d(TAG, "Stopping playback: ${device.displayName}")
-            
-            val success = sendSoapAction(
+            sendSoapAction(
                 action = "Stop",
                 serviceType = "urn:schemas-upnp-org:service:AVTransport:1",
                 body = """
@@ -194,24 +145,18 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
                     </u:Stop>
                 """.trimIndent()
             )
-            
-            if (success) {
-                Log.d(TAG, "Stopped playback successfully")
-            } else {
-                Log.w(TAG, "Failed to stop playback")
-            }
-            
-            success
         } catch (e: Exception) {
-            Log.e(TAG, "Exception stopping playback: ${e.message}", e)
+            Log.e(TAG, "Exception stopping playback: ${e.message}")
             false
         }
     }
     
     /**
-     * Pause playing
+     * 暂停播放
      */
-    private suspend fun pause(): Boolean = withContext(Dispatchers.IO) {
+    suspend fun pause(): Boolean = withContext(Dispatchers.IO) {
+        if (!checkAvailable()) return@withContext false
+        
         try {
             sendSoapAction(
                 action = "Pause",
@@ -223,15 +168,17 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
                 """.trimIndent()
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to pause playback: ${e.message}", e)
+            Log.e(TAG, "Failed to pause playback: ${e.message}")
             false
         }
     }
     
     /**
-     * Start playing
+     * 开始播放
      */
-    private suspend fun play(): Boolean = withContext(Dispatchers.IO) {
+    suspend fun play(): Boolean = withContext(Dispatchers.IO) {
+        if (!checkAvailable()) return@withContext false
+        
         try {
             sendSoapAction(
                 action = "Play",
@@ -244,33 +191,15 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
                 """.trimIndent()
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to start playing: ${e.message}", e)
+            Log.e(TAG, "Failed to start playing: ${e.message}")
             false
         }
     }
     
     /**
-     * Set volume - Synchronous wrapper
+     * 设置媒体URI
      */
-    fun setVolume(volume: Int): Boolean {
-        return runBlocking {
-            setVolumeAsync(volume)
-        }
-    }
-    
-    /**
-     * Set mute - Synchronous wrapper
-     */
-    fun setMute(mute: Boolean): Boolean {
-        return runBlocking {
-            setMuteAsync(mute)
-        }
-    }
-    
-    /**
-     * Set media URI - Copied from backup
-     */
-    private suspend fun setAVTransportURI(mediaUrl: String, metadata: String): Boolean = withContext(Dispatchers.IO) {
+    private suspend fun setMediaUri(mediaUrl: String, metadata: String): Boolean = withContext(Dispatchers.IO) {
         try {
             sendSoapAction(
                 action = "SetAVTransportURI",
@@ -278,19 +207,19 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
                 body = """
                     <u:SetAVTransportURI xmlns:u="urn:schemas-upnp-org:service:AVTransport:1">
                         <InstanceID>0</InstanceID>
-                        <CurrentURI>$mediaUrl</CurrentURI>
-                        <CurrentURIMetaData>$metadata</CurrentURIMetaData>
+                        <CurrentURI>${escapeXmlUrl(mediaUrl)}</CurrentURI>
+                        <CurrentURIMetaData><![CDATA[$metadata]]></CurrentURIMetaData>
                     </u:SetAVTransportURI>
                 """.trimIndent()
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to set media URI: ${e.message}", e)
+            Log.e(TAG, "Failed to set media URI: ${e.message}")
             false
         }
     }
     
     /**
-     * Seek to playback position
+     * 跳转到指定位置
      */
     private suspend fun seek(positionMs: Long): Boolean = withContext(Dispatchers.IO) {
         try {
@@ -302,20 +231,22 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
                     <u:Seek xmlns:u="urn:schemas-upnp-org:service:AVTransport:1">
                         <InstanceID>0</InstanceID>
                         <Unit>REL_TIME</Unit>
-                        <Target>$timeString</Target>
+                        <Target>${escapeXmlContent(timeString)}</Target>
                     </u:Seek>
                 """.trimIndent()
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to seek to playback position: ${e.message}", e)
+            Log.e(TAG, "Failed to seek: ${e.message}")
             false
         }
     }
     
     /**
-     * Set volume
+     * 设置音量
      */
-    private suspend fun setVolumeAsync(volume: Int): Boolean = withContext(Dispatchers.IO) {
+    suspend fun setVolumeAsync(volume: Int): Boolean = withContext(Dispatchers.IO) {
+        if (!checkAvailable()) return@withContext false
+        
         try {
             val clampedVolume = volume.coerceIn(0, 100)
             sendRenderingControlAction(
@@ -329,15 +260,17 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
                 """.trimIndent()
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to set volume: ${e.message}", e)
+            Log.e(TAG, "Failed to set volume: ${e.message}")
             false
         }
     }
     
     /**
-     * Set mute
+     * 设置静音
      */
-    private suspend fun setMuteAsync(mute: Boolean): Boolean = withContext(Dispatchers.IO) {
+    suspend fun setMuteAsync(mute: Boolean): Boolean = withContext(Dispatchers.IO) {
+        if (!checkAvailable()) return@withContext false
+        
         try {
             val muteValue = if (mute) "1" else "0"
             sendRenderingControlAction(
@@ -351,142 +284,195 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
                 """.trimIndent()
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to set mute: ${e.message}", e)
+            Log.e(TAG, "Failed to set mute: ${e.message}")
             false
         }
     }
     
     /**
-     * Send SOAP request - Simplified version
+     * HTTP SOAP请求
      */
-    private suspend fun sendSoapAction(action: String, serviceType: String, body: String): Boolean = withContext(Dispatchers.IO) {
+    private suspend fun sendHttpSoapRequest(
+        url: String, 
+        soapAction: String, 
+        soapEnvelope: String
+    ): Boolean = withContext(Dispatchers.IO) {
+        var connection: HttpURLConnection? = null
         try {
-            val avTransportUrl = buildAVTransportUrl() ?: return@withContext false
-            Log.d(TAG, "Sending SOAP request: $action to $avTransportUrl")
-            
-            val soapEnvelope = """
-                <?xml version="1.0" encoding="utf-8"?>
-                <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-                    <s:Body>
-                        $body
-                    </s:Body>
-                </s:Envelope>
-            """.trimIndent()
-            
-            val url = URL(avTransportUrl)
-            val connection = url.openConnection() as HttpURLConnection
+            connection = URL(url).openConnection() as HttpURLConnection
             connection.requestMethod = "POST"
             connection.setRequestProperty("Content-Type", "text/xml; charset=utf-8")
-            connection.setRequestProperty("SOAPAction", "\"$serviceType#$action\"")
+            connection.setRequestProperty("SOAPAction", "\"$soapAction\"")
             connection.setRequestProperty("User-Agent", "UPnPCast/1.0")
             connection.doOutput = true
-            connection.connectTimeout = 5000
-            connection.readTimeout = 10000
+            connection.connectTimeout = 10000
+            connection.readTimeout = 15000
             
-            // Send request
-            OutputStreamWriter(connection.outputStream, "UTF-8").use { writer ->
-                writer.write(soapEnvelope)
-                writer.flush()
+            connection.outputStream.use { outputStream ->
+                OutputStreamWriter(outputStream, "UTF-8").use { writer ->
+                    writer.write(soapEnvelope)
+                    writer.flush()
+                }
             }
             
-            val responseCode = connection.responseCode
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                val errorStream = connection.errorStream
-                val errorMessage = errorStream?.bufferedReader()?.readText()
-                Log.w(TAG, "SOAP request failed: $action, Response code: $responseCode, Error: $errorMessage")
-            } else {
-                Log.d(TAG, "SOAP request succeeded: $action")
-            }
-            
-            responseCode == HttpURLConnection.HTTP_OK
+            connection.responseCode == HttpURLConnection.HTTP_OK
             
         } catch (e: Exception) {
-            Log.e(TAG, "SOAP request exception: $action, ${e.message}", e)
+            Log.e(TAG, "SOAP request failed: $soapAction, ${e.message}")
             false
+        } finally {
+            connection?.disconnect()
         }
     }
-    
+
     /**
-     * Send RenderingControl SOAP request
+     * 发送SOAP动作 - 带重试
+     */
+    suspend fun sendSoapAction(action: String, serviceType: String, body: String): Boolean = withContext(Dispatchers.IO) {
+        val maxRetries = 3
+        
+        for (attempt in 1..maxRetries) {
+            try {
+                val avTransportUrl = buildAVTransportUrl() ?: return@withContext false
+                
+                val soapEnvelope = """
+                    <?xml version="1.0" encoding="utf-8"?>
+                    <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+                        <s:Body>
+                            $body
+                        </s:Body>
+                    </s:Envelope>
+                """.trimIndent()
+                
+                val success = sendHttpSoapRequest(avTransportUrl, "$serviceType#$action", soapEnvelope)
+                if (success || attempt == maxRetries) {
+                    return@withContext success
+                }
+                
+                delay(1000L * attempt)
+                
+            } catch (e: Exception) {
+                if (attempt < maxRetries) {
+                    delay(1000L * attempt)
+                }
+            }
+        }
+        
+        false
+    }
+
+    /**
+     * 发送RenderingControl SOAP动作
      */
     private suspend fun sendRenderingControlAction(action: String, body: String): Boolean = withContext(Dispatchers.IO) {
         try {
-            val renderingControlUrl = "http://${device.address}:8080/RenderingControl/control"
-            Log.d(TAG, "Sending RenderingControl request: $action to $renderingControlUrl")
+            val renderingControlUrl = buildServiceUrl("RenderingControl", "RenderingControl/control")
+                ?: return@withContext false
             
-            val soapEnvelope = """
-                <?xml version="1.0" encoding="utf-8"?>
-                <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-                    <s:Body>
-                        $body
-                    </s:Body>
-                </s:Envelope>
-            """.trimIndent()
+            val maxRetries = 3
             
-            val url = URL(renderingControlUrl)
-            val connection = url.openConnection() as HttpURLConnection
-            connection.requestMethod = "POST"
-            connection.setRequestProperty("Content-Type", "text/xml; charset=utf-8")
-            connection.setRequestProperty("SOAPAction", "\"urn:schemas-upnp-org:service:RenderingControl:1#$action\"")
-            connection.setRequestProperty("User-Agent", "UPnPCast/1.0")
-            connection.doOutput = true
-            connection.connectTimeout = 5000
-            connection.readTimeout = 10000
-            
-            // Send request
-            OutputStreamWriter(connection.outputStream, "UTF-8").use { writer ->
-                writer.write(soapEnvelope)
-                writer.flush()
+            for (attempt in 1..maxRetries) {
+                try {
+                    val soapEnvelope = """
+                        <?xml version="1.0" encoding="utf-8"?>
+                        <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+                            <s:Body>
+                                $body
+                            </s:Body>
+                        </s:Envelope>
+                    """.trimIndent()
+                    
+                    val success = sendHttpSoapRequest(renderingControlUrl, "urn:schemas-upnp-org:service:RenderingControl:1#$action", soapEnvelope)
+                    if (success || attempt == maxRetries) {
+                        return@withContext success
+                    }
+                    
+                    delay(1000L * attempt)
+                    
+                } catch (e: Exception) {
+                    if (attempt < maxRetries) {
+                        delay(1000L * attempt)
+                    }
+                }
             }
             
-            val responseCode = connection.responseCode
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                val errorStream = connection.errorStream
-                val errorMessage = errorStream?.bufferedReader()?.readText()
-                Log.w(TAG, "RenderingControl request failed: $action, Response code: $responseCode, Error: $errorMessage")
-            } else {
-                Log.d(TAG, "RenderingControl request succeeded: $action")
-            }
-            
-            responseCode == HttpURLConnection.HTTP_OK
+            false
             
         } catch (e: Exception) {
-            Log.e(TAG, "RenderingControl request exception: $action, ${e.message}", e)
+            Log.e(TAG, "RenderingControl request failed: $action, ${e.message}")
             false
         }
     }
     
     /**
-     * Create DIDL-Lite metadata - Copied from backup
+     * XML转义
      */
-    private fun createMetadata(title: String, episodeLabel: String): String {
-        val displayTitle = if (episodeLabel.isNotEmpty()) "$title - $episodeLabel" else title
-        return """
-            &lt;DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"&gt;
-                &lt;item id="1" parentID="0" restricted="1"&gt;
-                    &lt;dc:title&gt;$displayTitle&lt;/dc:title&gt;
-                    &lt;upnp:class&gt;object.item.videoItem&lt;/upnp:class&gt;
-                &lt;/item&gt;
-            &lt;/DIDL-Lite&gt;
-        """.trimIndent()
+    private fun escapeXmlContent(text: String): String {
+        return text
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+            .replace("'", "&apos;")
     }
     
     /**
-     * Format time as HH:MM:SS format
+     * URL转义
+     */
+    private fun escapeXmlUrl(url: String): String {
+        return url
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+    }
+    
+    /**
+     * 创建DIDL-Lite metadata - 精简版
+     */
+    private fun createMetadata(title: String, episodeLabel: String, mediaUrl: String = ""): String {
+        val displayTitle = if (episodeLabel.isNotEmpty()) "$title - $episodeLabel" else title
+        val safeDisplayTitle = escapeXmlContent(displayTitle)
+        val safeMediaUrl = escapeXmlUrl(mediaUrl)
+        
+        val mediaType = when {
+            mediaUrl.contains(".mp4", ignoreCase = true) -> "video/mp4"
+            mediaUrl.contains(".mkv", ignoreCase = true) -> "video/x-matroska"
+            mediaUrl.contains(".m3u8", ignoreCase = true) -> "application/vnd.apple.mpegurl"
+            mediaUrl.contains(".mp3", ignoreCase = true) -> "audio/mpeg"
+            else -> "video/mp4"
+        }
+        
+        val upnpClass = if (mediaType.startsWith("video") || mediaType.contains("mpegurl")) {
+            "object.item.videoItem"
+        } else {
+            "object.item.audioItem.musicTrack"
+        }
+        
+        return """<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/">
+    <item id="1" parentID="0" restricted="1">
+        <dc:title>$safeDisplayTitle</dc:title>
+        <upnp:class>$upnpClass</upnp:class>
+        <res protocolInfo="http-get:*:$mediaType:*">$safeMediaUrl</res>
+    </item>
+</DIDL-Lite>"""
+    }
+    
+    /**
+     * 时间格式化
      */
     private fun formatTime(positionMs: Long): String {
         val totalSeconds = positionMs / 1000
         val hours = totalSeconds / 3600
         val minutes = (totalSeconds % 3600) / 60
         val seconds = totalSeconds % 60
-        return String.format("%02d:%02d:%02d", hours, minutes, seconds)
+        return String.format(Locale.ROOT, "%02d:%02d:%02d", hours, minutes, seconds)
     }
     
     /**
-     * Release resources
+     * 释放资源
      */
     fun release() {
-        Log.d(TAG, "Releasing DlnaMediaController resources")
         coroutineScope.cancel()
+        isReleased = true
     }
 } 

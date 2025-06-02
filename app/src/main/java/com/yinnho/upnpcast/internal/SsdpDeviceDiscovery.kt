@@ -1,25 +1,26 @@
 package com.yinnho.upnpcast.internal
 
 import android.util.Log
-import com.yinnho.upnpcast.Registry
-import com.yinnho.upnpcast.internal.RegistryImpl
-import com.yinnho.upnpcast.RemoteDevice
-import java.net.*
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicBoolean
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import java.net.DatagramPacket
+import java.net.InetAddress
+import java.net.InetSocketAddress
+import java.net.MulticastSocket
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * SSDP device discoverer - Actual working code copied from backup
- * Responsible for network communication of DLNA device discovery
+ * SSDP device discoverer
  */
 internal class SsdpDeviceDiscovery(
-    private val registry: RegistryImpl,
+    private val registry: Registry,
     private val executor: Executor = Executors.newSingleThreadExecutor { r ->
         Thread(r, "SSDP-Discovery").apply {
             isDaemon = true
@@ -30,101 +31,89 @@ internal class SsdpDeviceDiscovery(
     private val TAG = "SsdpDeviceDiscovery"
 
     companion object {
-        // Network configuration - Copied from backup
-        private const val MULTICAST_TTL = 4
-        private const val DEFAULT_MULTICAST_ADDRESS = "239.255.255.250"
-        private const val DEFAULT_MULTICAST_PORT = 1900
-        
-        // Search targets - Copied from backup
-        private val SEARCH_TARGETS = listOf(
-            "ssdp:all",                                   // All devices
-            "upnp:rootdevice",                            // Root devices
-            "urn:schemas-upnp-org:device:MediaRenderer:1" // Media renderer
-        )
-
         private const val MULTICAST_ADDRESS = "239.255.255.250"
         private const val MULTICAST_PORT = 1900
-        private const val SEARCH_TIMEOUT = 3000L
+        private const val SOCKET_TIMEOUT_MS = 5000
+        private const val DEVICE_TIMEOUT_MS = 300000L
+        private const val MAX_PROCESSED_LOCATIONS = 200
+        
+        private val SEARCH_TARGETS = arrayOf(
+            "upnp:rootdevice",
+            "urn:schemas-upnp-org:device:MediaRenderer:1",
+            "ssdp:all"
+        )
     }
 
-    // State and network
     private val isShutdown = AtomicBoolean(false)
     private var socket: MulticastSocket? = null
-    
-    // Multicast configuration
-    private val multicastAddress = DEFAULT_MULTICAST_ADDRESS
-    private val multicastPort = DEFAULT_MULTICAST_PORT
-    private val multicastGroup by lazy { InetSocketAddress(multicastAddress, multicastPort) }
-
-    // Add device description parser
+    private val multicastGroup by lazy { InetSocketAddress(MULTICAST_ADDRESS, MULTICAST_PORT) }
     private val descriptionParser = DeviceDescriptionParser()
-
-    // Add coroutine scope for async device description parsing
     private val searchScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    // Add response deduplication mechanism - Record processed location URLs
-    private val processedLocations = mutableSetOf<String>()
+    // LRU缓存防止内存泄漏
+    private val processedLocations = object : LinkedHashMap<String, Long>(16, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Long>?): Boolean {
+            return size > MAX_PROCESSED_LOCATIONS
+        }
+    }
     private val processedLock = Any()
-
-    // Add device timeout management
     private val deviceTimeouts = ConcurrentHashMap<String, Long>()
-    private val DEVICE_TIMEOUT_MS = 60000L // 1 minute timeout
 
     /**
-     * Initialize Socket - Copied from backup
+     * 初始化Socket
      */
     private fun initializeSocket() {
         if (socket != null) return
         
         try {
-            socket = MulticastSocket(multicastPort).apply {
+            socket = MulticastSocket(MULTICAST_PORT).apply {
                 reuseAddress = true
-                timeToLive = MULTICAST_TTL
+                timeToLive = 4
                 joinGroup(multicastGroup, null)
             }
-            Log.d(TAG, "SSDP Socket initialized successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize socket", e)
         }
     }
 
     /**
-     * Close Socket - Copied from backup
+     * 关闭Socket
      */
     private fun closeSocket() {
-        try {
-            socket?.let { s ->
-                s.leaveGroup(multicastGroup, null)
+        socket?.let { s ->
+            try {
+                try {
+                    s.leaveGroup(multicastGroup, null)
+                } catch (e: Exception) {
+                    // 继续执行关闭操作
+                }
                 s.close()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to close socket", e)
+            } finally {
                 socket = null
             }
-            Log.d(TAG, "SSDP Socket closed")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to close socket", e)
         }
     }
 
     /**
-     * Start device search - Core logic copied from backup
+     * 开始设备搜索
      */
     fun startSearch() {
         if (isShutdown.get()) return
 
-        Log.d(TAG, "Starting SSDP device search")
         initializeSocket()
 
         executor.execute {
             SEARCH_TARGETS.forEach { target ->
                 sendSearchRequest(target)
             }
-            
-            // Start response listener
             startResponseListener()
         }
     }
 
     /**
-     * Send search request - Copied from backup
+     * 发送搜索请求
      */
     private fun sendSearchRequest(target: String) {
         if (isShutdown.get()) return
@@ -132,7 +121,7 @@ internal class SsdpDeviceDiscovery(
         try {
             val message = """
                 M-SEARCH * HTTP/1.1
-                HOST: $multicastAddress:$multicastPort
+                HOST: $MULTICAST_ADDRESS:$MULTICAST_PORT
                 MAN: "ssdp:discover"
                 MX: 3
                 ST: $target
@@ -140,23 +129,22 @@ internal class SsdpDeviceDiscovery(
                 
             """.trimIndent()
             
-            val bytes = message.toByteArray()
+            val bytes = message.toByteArray(Charsets.UTF_8)
             val packet = DatagramPacket(
                 bytes,
                 bytes.size,
-                InetAddress.getByName(multicastAddress),
-                multicastPort
+                InetAddress.getByName(MULTICAST_ADDRESS),
+                MULTICAST_PORT
             )
             
             socket?.send(packet)
-            Log.d(TAG, "SSDP search request sent: $target")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to send search request: $target", e)
         }
     }
 
     /**
-     * Start response listener - Simplified version
+     * 开始响应监听
      */
     private fun startResponseListener() {
         if (isShutdown.get()) return
@@ -166,17 +154,13 @@ internal class SsdpDeviceDiscovery(
                 val buffer = ByteArray(4096)
                 val packet = DatagramPacket(buffer, buffer.size)
                 
-                // Listen for responses, maximum 30 seconds
-                socket?.soTimeout = 30000
+                socket?.soTimeout = SOCKET_TIMEOUT_MS
                 
                 while (!isShutdown.get()) {
                     try {
                         socket?.receive(packet)
                         processResponse(packet)
                     } catch (e: Exception) {
-                        if (!isShutdown.get()) {
-                            Log.w(TAG, "Response receive timeout or failed", e)
-                        }
                         break
                     }
                 }
@@ -187,20 +171,12 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * Process SSDP response - Simplified version, adapted from backup
+     * 处理SSDP响应
      */
     private fun processResponse(packet: DatagramPacket) {
         try {
-            val message = String(packet.data, 0, packet.length)
+            val message = String(packet.data, 0, packet.length, Charsets.UTF_8)
             val fromAddress = packet.address
-            
-            // Pre-check if same location already processed - Fast filtering
-            if (isLocationAlreadyProcessed(message)) {
-                // Don't print log, silently skip
-                return
-            }
-            
-            Log.d(TAG, "Received SSDP response: ${fromAddress.hostAddress}")
             
             when {
                 message.startsWith("HTTP/1.1 200 OK", ignoreCase = true) -> {
@@ -216,42 +192,42 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * Fast check if location already processed (avoid full header parsing)
-     */
-    private fun isLocationAlreadyProcessed(message: String): Boolean {
-        try {
-            // Fast regex match for location header, avoid full header parsing
-            val locationPattern = "location:\\s*([^\\r\\n]+)".toRegex(RegexOption.IGNORE_CASE)
-            val match = locationPattern.find(message)
-            val location = match?.groupValues?.get(1)?.trim()
-            
-            if (location != null) {
-                synchronized(processedLock) {
-                    return processedLocations.contains(location)
-                }
-            }
-            return false
-        } catch (e: Exception) {
-            // Don't skip if parsing fails, continue processing
-            return false
-        }
-    }
-
-    /**
-     * Process NOTIFY message - Simplified version
+     * 处理NOTIFY消息
      */
     private fun processNotify(message: String, fromAddress: InetAddress) {
         try {
             val nts = extractHeader(message, "NTS")
             if (nts == "ssdp:alive") {
-                // Process device online
-                processSsdpResponse(message, fromAddress)
+                val headers = parseSsdpHeaders(message)
+                val location = headers["location"]
+                
+                if (location != null) {
+                    synchronized(processedLock) {
+                        if (processedLocations.containsKey(location)) {
+                            // 设备已知，只更新时间戳
+                            processedLocations[location] = System.currentTimeMillis()
+                            deviceTimeouts[location] = System.currentTimeMillis()
+                            return
+                        }
+                    }
+                    
+                    // 新设备，进行完整处理
+                    processSsdpResponse(message, fromAddress)
+                }
             } else if (nts == "ssdp:byebye") {
-                // Process device offline
                 val usn = extractHeader(message, "USN")
                 if (usn != null) {
                     registry.getDevice(usn)?.let { device ->
                         registry.removeDevice(device)
+                        
+                        val headers = parseSsdpHeaders(message)
+                        val location = headers["location"]
+                        if (location != null) {
+                            synchronized(processedLock) {
+                                processedLocations.remove(location)
+                                deviceTimeouts.remove(location)
+                            }
+                        }
                     }
                 }
             }
@@ -261,7 +237,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * Extract HTTP header information - Utility method
+     * 提取HTTP头信息
      */
     private fun extractHeader(message: String, headerName: String): String? {
         val regex = "$headerName:\\s*(.+)".toRegex(RegexOption.IGNORE_CASE)
@@ -269,7 +245,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * Parse SSDP header information
+     * 解析SSDP头信息
      */
     private fun parseSsdpHeaders(message: String): Map<String, String> {
         val headers = mutableMapOf<String, String>()
@@ -285,7 +261,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * Process SSDP response - Use DeviceDescriptionParser to parse real device information
+     * 处理SSDP响应
      */
     private fun processSsdpResponse(response: String, fromAddress: InetAddress) {
         try {
@@ -294,52 +270,59 @@ internal class SsdpDeviceDiscovery(
             val usn = headers["usn"]
             
             if (location != null && usn != null) {
-                // Again check and mark processed (prevent concurrent competition)
+                // 检查和标记已处理
                 synchronized(processedLock) {
-                    if (processedLocations.contains(location)) {
-                        return  // Silent skip
+                    if (processedLocations.containsKey(location)) {
+                        return
                     }
-                    // Mark as processed and record timestamp
-                    processedLocations.add(location)
+                    processedLocations[location] = System.currentTimeMillis()
                     deviceTimeouts[location] = System.currentTimeMillis()
                 }
                 
-                Log.d(TAG, "Starting to process new device: USN=$usn, Location=$location")
+                val deviceId = location
                 
-                // Use location URL as device unique identifier, avoid multiple services of same device
-                val deviceId = location // Use location URL as unique identifier
-                
-                // Check if device already exists (based on location)
+                // 检查设备是否已存在
                 val existingDevice = registry.getDevice(deviceId)
                 if (existingDevice != null) {
-                    Log.d(TAG, "Device already exists in registry, skipping: $location")
                     return
                 }
                 
-                // Async parse device description information
+                // 异步解析设备描述信息
                 searchScope.launch {
                     try {
-                        // Parse device description information
                         val deviceInfo = descriptionParser.parseDeviceDescription(location)
                         
-                        // Create enhanced device object
                         val device = descriptionParser.createEnhancedDevice(
-                            id = deviceId,  // Use location as ID
+                            id = deviceId,
                             address = fromAddress.hostAddress ?: "unknown",
                             locationUrl = location,
                             deviceInfo = deviceInfo
                         )
                         
-                        // Add to registry
                         registry.addDevice(device)
                         
-                        Log.d(TAG, "Device description parsing completed: ${device.displayName} (${device.manufacturer}) at $location")
                     } catch (e: Exception) {
                         Log.e(TAG, "Failed to process device description: $location", e)
                         
-                        // Create fallback device information if description parsing fails
-                        val fallbackDevice = createFallbackDevice(deviceId, fromAddress.hostAddress ?: "unknown", location)
-                        registry.addDevice(fallbackDevice)
+                        // 解析失败时从缓存中移除
+                        synchronized(processedLock) {
+                            processedLocations.remove(location)
+                            deviceTimeouts.remove(location)
+                        }
+                        
+                        // 对于结构性错误创建fallback设备
+                        if (isStructuralError(e)) {
+                            val fallbackDevice = createFallbackDevice(deviceId, fromAddress.hostAddress ?: "unknown", location)
+                            
+                            if (registry.getDevice(deviceId) == null) {
+                                registry.addDevice(fallbackDevice)
+                            }
+                            
+                            synchronized(processedLock) {
+                                processedLocations[location] = System.currentTimeMillis()
+                                deviceTimeouts[location] = System.currentTimeMillis()
+                            }
+                        }
                     }
                 }
             }
@@ -349,11 +332,29 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * Create fallback device information (when description parsing fails)
+     * 判断是否为结构性错误
+     */
+    private fun isStructuralError(exception: Exception): Boolean {
+        return when (exception) {
+            is java.net.MalformedURLException,
+            is java.io.FileNotFoundException,
+            is java.net.UnknownHostException -> true
+            is java.net.SocketTimeoutException,
+            is java.net.ConnectException,
+            is java.io.IOException -> false
+            else -> {
+                val message = exception.message?.lowercase() ?: ""
+                "xml" in message || "parse" in message
+            }
+        }
+    }
+
+    /**
+     * 创建fallback设备信息
      */
     private fun createFallbackDevice(deviceId: String, address: String, location: String): RemoteDevice {
         return RemoteDevice(
-            id = deviceId,  // Use location as ID
+            id = deviceId,
             displayName = "DLNA device",
             manufacturer = "Unknown",
             address = address,
@@ -368,19 +369,14 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * Stop search - Don't clean up cache, maintain device stability
+     * 停止搜索
      */
     fun stopSearch() {
-        Log.d(TAG, "Stopping SSDP device search")
-        // Don't clean up processed location cache, maintain device list stability
-        // processedLocations.clear() // Commented out this line
-        
-        // Clean up timeout devices
         cleanupTimeoutDevices()
     }
 
     /**
-     * Clean up timeout devices
+     * 清理超时设备
      */
     private fun cleanupTimeoutDevices() {
         val currentTime = System.currentTimeMillis()
@@ -396,26 +392,33 @@ internal class SsdpDeviceDiscovery(
                 isTimeout
             }
         }
-        
-        if (timeoutDevices.isNotEmpty()) {
-            Log.d(TAG, "Cleaned up ${timeoutDevices.size} timeout devices")
-        }
     }
 
     /**
-     * Shutdown discoverer - Completely clean up
+     * 关闭discoverer
      */
     fun shutdown() {
         if (isShutdown.getAndSet(true)) return
         
-        Log.d(TAG, "Shutting down SSDP device discoverer")
+        try {
+            searchScope.cancel()
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to cancel search scope", e)
+        }
         
-        // Completely clean up all caches
+        try {
+            if (executor is ExecutorService) {
+                executor.shutdown()
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to shutdown executor", e)
+        }
+        
+        closeSocket()
+        
         synchronized(processedLock) {
             processedLocations.clear()
             deviceTimeouts.clear()
         }
-        
-        closeSocket()
     }
 } 

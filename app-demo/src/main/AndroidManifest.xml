@@ -16,8 +16,9 @@
         android:theme="@style/Theme.AppCompat.Light"
         tools:replace="android:theme,android:label">
         
+        <!-- 启动页面 -->
         <activity
-            android:name=".MainActivity"
+            android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,7 +26,20 @@
             </intent-filter>
         </activity>
         
-        <activity android:name=".MediaControlActivity" />
-        <activity android:name=".SettingsActivity" />
+        <!-- 主页面 -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+            
+        <!-- API演示页面 -->
+        <activity
+            android:name=".ApiDemoActivity"
+            android:exported="false" />
+            
+        <!-- 性能监控页面 -->
+        <activity
+            android:name=".PerformanceActivity"
+            android:exported="false" />
+        
     </application>
 </manifest>

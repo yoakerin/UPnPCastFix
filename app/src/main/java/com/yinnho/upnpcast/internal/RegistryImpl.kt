@@ -1,13 +1,14 @@
 package com.yinnho.upnpcast.internal
 
+import android.content.Context
 import android.util.Log
-import com.yinnho.upnpcast.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.*
 
 /**
- * Device registry implementation - Using actual SSDP discovery functionality
+ * Device registry implementation
  */
 internal class RegistryImpl : Registry {
     
@@ -35,24 +36,20 @@ internal class RegistryImpl : Registry {
     
     override fun addListener(listener: RegistryListener) {
         listeners.add(listener)
-        Log.d(TAG, "Registry listener added, current listener count: ${listeners.size}")
     }
     
     override fun removeListener(listener: RegistryListener) {
         listeners.remove(listener)
-        Log.d(TAG, "Registry listener removed, current listener count: ${listeners.size}")
     }
     
     override fun startDiscovery() {
         if (isDiscovering.compareAndSet(false, true)) {
-            Log.d(TAG, "Starting device discovery - Using actual SSDP")
             ssdpDiscovery.startSearch()
         }
     }
     
     override fun stopDiscovery() {
         if (isDiscovering.compareAndSet(true, false)) {
-            Log.d(TAG, "Stopping device discovery")
             ssdpDiscovery.stopSearch()
         }
     }
@@ -61,14 +58,11 @@ internal class RegistryImpl : Registry {
     
     /**
      * Add device to registry
-     * Called by SsdpDeviceDiscovery
      */
     override fun addDevice(device: RemoteDevice) {
         val existing = devices.put(device.id, device)
         
         if (existing == null) {
-            Log.d(TAG, "New device discovered: ${device.displayName} (${device.id})")
-            // Notify listeners
             listeners.forEach { listener ->
                 try {
                     listener.deviceAdded(this, device)
@@ -77,8 +71,6 @@ internal class RegistryImpl : Registry {
                 }
             }
         } else {
-            Log.d(TAG, "Device updated: ${device.displayName} (${device.id})")
-            // Notify listeners of device update
             listeners.forEach { listener ->
                 try {
                     listener.deviceUpdated(this, device)
@@ -91,13 +83,10 @@ internal class RegistryImpl : Registry {
     
     /**
      * Remove device from registry
-     * Called by SsdpDeviceDiscovery
      */
     override fun removeDevice(device: RemoteDevice) {
         val removed = devices.remove(device.id)
         if (removed != null) {
-            Log.d(TAG, "Device went offline: ${device.displayName} (${device.id})")
-            // Notify listeners
             listeners.forEach { listener ->
                 try {
                     listener.deviceRemoved(this, device)
@@ -109,10 +98,9 @@ internal class RegistryImpl : Registry {
     }
     
     /**
-     * Shutdown registry and release resources
+     * Shutdown registry
      */
     internal fun shutdown() {
-        Log.d(TAG, "Shutting down device registry")
         stopDiscovery()
         ssdpDiscovery.shutdown()
         devices.clear()
@@ -120,11 +108,9 @@ internal class RegistryImpl : Registry {
     }
     
     /**
-     * Clear all device cache
+     * Clear device cache
      */
     internal fun clearDevices() {
-        Log.d(TAG, "Clearing all device cache, current device count: ${devices.size}")
         devices.clear()
-        Log.d(TAG, "Device cache cleared")
     }
 } 

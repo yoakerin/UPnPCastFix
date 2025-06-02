@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.yinnho.upnpcast.demo.app-demo-mergeDebugResources-31:/values-watch-v20/values-watch-v20.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\8684c\\.gradle\\caches\\8.11.1\\transforms\\213bbae870aa6510c53c3e4e96c81cb6\\transformed\\appcompat-1.7.0\\res\\values-watch-v20\\values-watch-v20.xml",
+                    "from": {
+                        "startLines": "2,5,8",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "55,214,385",
+                        "endLines": "4,7,10",
+                        "endColumns": "12,12,12",
+                        "endOffsets": "209,380,553"
+                    }
+                }
+            ]
+        }
+    ]
+}
