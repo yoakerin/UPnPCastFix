@@ -110,12 +110,8 @@ class ApiDemoActivity : AppCompatActivity() {
             runOnUiThread {
                 logMessage("📱 搜索结果: 发现 ${devices.size} 个设备")
                 devices.forEachIndexed { index, device ->
-                    val typeIcon = when {
-                        device.isTV -> "📺"
-                        device.isBox -> "📱"
-                        else -> "📲"
-                    }
-                    logMessage("  [$index] $typeIcon ${device.name} (${device.manufacturer})")
+                    val typeIcon = if (device.isTV) "📺" else "📱"
+                    logMessage("  [$index] $typeIcon ${device.name} (${device.address})")
                 }
             }
         }

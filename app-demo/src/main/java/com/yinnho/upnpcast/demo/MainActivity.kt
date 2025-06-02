@@ -194,12 +194,8 @@ class MainActivity : AppCompatActivity() {
             deviceListView.text = "未发现设备"
         } else {
             val deviceText = discoveredDevices.mapIndexed { index: Int, device: DLNACast.Device ->
-                val icon = when {
-                    device.isTV -> "📺"
-                    device.isBox -> "📱"
-                    else -> "📲"
-                }
-                "${index + 1}. $icon ${device.name}\n   制造商: ${device.manufacturer}\n   类型: ${device.model}"
+                val icon = if (device.isTV) "📺" else "📱"
+                "${index + 1}. $icon ${device.name}\n   地址: ${device.address}"
             }.joinToString("\n\n")
             deviceListView.text = "$deviceText\n\n💡 点击此处可选择设备进行投屏"
         }
@@ -208,12 +204,8 @@ class MainActivity : AppCompatActivity() {
     private fun showDeviceSelectionDialog() {
         Log.d(TAG, "showDeviceSelectionDialog() called with ${discoveredDevices.size} devices")
         val deviceNames = discoveredDevices.map { device ->
-            val icon = when {
-                device.isTV -> "📺"
-                device.isBox -> "📱"
-                else -> "📲"
-            }
-            "$icon ${device.name} (${device.manufacturer})"
+            val icon = if (device.isTV) "📺" else "📱"
+            "$icon ${device.name} (${device.address})"
         }.toTypedArray()
 
         AlertDialog.Builder(this)
@@ -782,15 +774,8 @@ class MainActivity : AppCompatActivity() {
             state.currentDevice?.let { device ->
                 append("\n📱 设备详情:\n")
                 append("  • ID: ${device.id}\n")
-                append("  • 制造商: ${device.manufacturer}\n")
-                append("  • 型号: ${device.model}\n")
                 append("  • 地址: ${device.address}\n")
-                append("  • 类型: ${when {
-                    device.isTV -> "电视"
-                    device.isBox -> "盒子"
-                    else -> "其他设备"
-                }}\n")
-                append("  • 优先级: ${device.priority}")
+                append("  • 类型: ${if (device.isTV) "电视" else "媒体设备"}\n")
             }
         }
         

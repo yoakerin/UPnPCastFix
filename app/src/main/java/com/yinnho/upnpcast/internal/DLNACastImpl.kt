@@ -218,9 +218,8 @@ internal object DLNACastImpl {
     }
     
     private fun selectBestDevice(devices: List<DLNACast.Device>): DLNACast.Device {
-        return devices.find { it.isTV } 
-            ?: devices.find { it.isBox } 
-            ?: devices.first()
+        // 优先选择电视设备，其次选择第一个设备
+        return devices.find { it.isTV } ?: devices.first()
     }
     
     private fun connectAndPlay(device: DLNACast.Device, url: String, title: String, callback: (success: Boolean) -> Unit) {
@@ -271,7 +270,7 @@ internal object DLNACastImpl {
     private fun getAllDevices(): List<DLNACast.Device> {
         return registry?.getDevices()
             ?.map { convertToDevice(it) }
-            ?.sortedByDescending { it.priority }
+            ?.sortedByDescending { it.isTV } // TV设备优先
             ?: emptyList()
     }
     
@@ -295,7 +294,7 @@ internal object DLNACastImpl {
     // ================ 类型转换方法 ================
     
     private fun convertToDevice(remoteDevice: RemoteDevice): DLNACast.Device {
-        // 根据制造商和型号判断设备类型
+        // 根据制造商和型号判断是否为电视设备
         val manufacturer = remoteDevice.manufacturer.lowercase()
         val model = (remoteDevice.details["modelName"] as? String ?: "").lowercase()
         
@@ -303,24 +302,11 @@ internal object DLNACastImpl {
                   manufacturer.contains("samsung") || manufacturer.contains("lg") ||
                   manufacturer.contains("sony") || manufacturer.contains("xiaomi")
         
-        val isBox = !isTV && (manufacturer.contains("box") || model.contains("box") ||
-                             manufacturer.contains("roku") || manufacturer.contains("apple"))
-        
-        val priority = when {
-            isTV -> 100
-            isBox -> 80
-            else -> 60
-        }
-        
         return DLNACast.Device(
             id = remoteDevice.id,
             name = remoteDevice.displayName,
             address = remoteDevice.address,
-            manufacturer = remoteDevice.manufacturer,
-            model = remoteDevice.details["modelName"] as? String ?: "Unknown",
-            isTV = isTV,
-            isBox = isBox,
-            priority = priority
+            isTV = isTV
         )
     }
     

@@ -65,14 +65,10 @@ object DLNACast {
      * DLNA设备信息
      */
     data class Device(
-        val id: String,              // 设备唯一标识
-        val name: String,            // 设备显示名称
-        val address: String,         // 设备网络地址
-        val manufacturer: String,    // 制造商
-        val model: String,           // 型号
-        val isTV: Boolean,           // 是否为电视
-        val isBox: Boolean,          // 是否为盒子
-        val priority: Int            // 优先级（TV=100, Box=80, 其他=60）
+        val id: String,         // 设备唯一标识
+        val name: String,       // 设备显示名称
+        val address: String,    // 设备网络地址
+        val isTV: Boolean       // 是否为电视
     )
     
     /**

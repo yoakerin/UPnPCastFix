@@ -66,38 +66,27 @@ class DeviceListAdapter(private val onDeviceClick: (DLNACast.Device) -> Unit) :
                 // 设备名称 + 类型标识
                 deviceName.text = "${device.name} ${getDeviceTypeIcon(device)}"
                 
-                // 制造商 + 型号
-                val manufacturer = if (device.manufacturer.isNotEmpty()) {
-                    "${device.manufacturer} - ${device.model}"
-                } else {
-                    device.model.ifEmpty { "未知厂商" }
-                }
-                deviceManufacturer.text = manufacturer
+                // 设备地址信息
+                deviceManufacturer.text = "地址: ${device.address}"
                 
-                // IP地址
-                deviceIpPort.text = "IP地址: ${device.address}"
+                // IP地址（简化显示）
+                deviceIpPort.text = "ID: ${device.id}"
                 
-                // 设备类型和状态
-                val statusText = buildString {
-                    when {
-                        device.isTV -> append("类型: 智能电视")
-                        device.isBox -> append("类型: 机顶盒")
-                        else -> append("类型: 媒体设备")
-                    }
-                }
+                // 设备类型
+                val statusText = if (device.isTV) "类型: 智能电视" else "类型: 媒体设备"
                 deviceUdn.text = statusText
                 
                 // 根据设备类型设置不同的样式
                 setDeviceTypeStyle(device)
                 
-                Log.d(TAG, "设备详情 - ${device.name}, 优先级: ${device.priority}")
+                Log.d(TAG, "设备详情 - ${device.name}, 类型: ${if (device.isTV) "电视" else "设备"}")
             } catch (e: Exception) {
                 Log.e(TAG, "绑定设备数据时出错", e)
                 
                 // 设置默认值
                 deviceName.text = "设备 (无法获取详情)"
                 deviceManufacturer.text = "未知"
-                deviceIpPort.text = "IP地址: 未知"
+                deviceIpPort.text = "ID: 未知"
                 deviceUdn.text = "类型: 未知"
             }
         }
@@ -106,24 +95,15 @@ class DeviceListAdapter(private val onDeviceClick: (DLNACast.Device) -> Unit) :
          * 获取设备类型图标
          */
         private fun getDeviceTypeIcon(device: DLNACast.Device): String {
-            return when {
-                device.isTV -> "📺"
-                device.isBox -> "📱"
-                else -> "📲"
-            }
+            return if (device.isTV) "📺" else "📱"
         }
         
         /**
          * 根据设备类型设置样式
          */
         private fun setDeviceTypeStyle(device: DLNACast.Device) {
-            // 根据优先级设置背景透明度（高优先级更明显）
-            val alpha = when {
-                device.isTV -> 1.0f
-                device.isBox -> 0.9f
-                else -> 0.7f
-            }
-            
+            // 根据设备类型设置背景透明度（电视设备更明显）
+            val alpha = if (device.isTV) 1.0f else 0.8f
             itemView.alpha = alpha
         }
     }
