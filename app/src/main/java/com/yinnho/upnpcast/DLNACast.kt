@@ -2,38 +2,21 @@ package com.yinnho.upnpcast
 
 import android.content.Context
 import com.yinnho.upnpcast.internal.DLNACastImpl
+import com.yinnho.upnpcast.types.Device as DeviceType
+import com.yinnho.upnpcast.types.MediaAction as MediaActionType
+import com.yinnho.upnpcast.types.PlaybackState as PlaybackStateType
+import com.yinnho.upnpcast.types.State as StateType
+
+// 类型别名定义
+typealias MediaAction = MediaActionType
+typealias PlaybackState = PlaybackStateType  
+typealias Device = DeviceType
+typealias State = StateType
 
 /**
  * DLNACast - 极简DLNA投屏API
  */
 object DLNACast {
-    
-    enum class MediaAction {
-        PLAY, PAUSE, STOP, VOLUME, MUTE, SEEK, GET_STATE
-    }
-    
-    enum class PlaybackState {
-        IDLE, PLAYING, PAUSED, STOPPED, BUFFERING, ERROR
-    }
-    
-    data class Device(
-        val id: String,
-        val name: String,
-        val address: String,
-        val isTV: Boolean
-    )
-    
-    data class State(
-        val isConnected: Boolean,
-        val currentDevice: Device?,
-        val playbackState: PlaybackState,
-        val volume: Int = -1,
-        val isMuted: Boolean = false
-    ) {
-        val isPlaying: Boolean get() = playbackState == PlaybackState.PLAYING
-        val isPaused: Boolean get() = playbackState == PlaybackState.PAUSED
-        val isIdle: Boolean get() = playbackState == PlaybackState.IDLE
-    }
     
     fun init(context: Context) {
         DLNACastImpl.init(context)

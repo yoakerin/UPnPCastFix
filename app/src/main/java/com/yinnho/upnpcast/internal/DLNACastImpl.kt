@@ -2,7 +2,10 @@ package com.yinnho.upnpcast.internal
 
 import android.content.Context
 import android.util.Log
-import com.yinnho.upnpcast.DLNACast
+import com.yinnho.upnpcast.types.Device
+import com.yinnho.upnpcast.types.MediaAction
+import com.yinnho.upnpcast.types.PlaybackState
+import com.yinnho.upnpcast.types.State
 import java.lang.ref.WeakReference
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.ConcurrentHashMap
@@ -22,7 +25,7 @@ internal object DLNACastImpl {
     private var contextRef: WeakReference<Context>? = null
     
     @Volatile
-    private var currentDeviceListCallback: ((devices: List<DLNACast.Device>) -> Unit)? = null
+    private var currentDeviceListCallback: ((devices: List<Device>) -> Unit)? = null
     
     // 搜索超时标志
     @Volatile
@@ -52,7 +55,7 @@ internal object DLNACastImpl {
         }
     }
 
-    fun castTo(url: String, title: String?, deviceSelector: (devices: List<DLNACast.Device>) -> DLNACast.Device?) {
+    fun castTo(url: String, title: String?, deviceSelector: (devices: List<Device>) -> Device?) {
         ensureInitialized {
             val currentDevices = getAllDevices()
             if (currentDevices.isNotEmpty()) {
@@ -69,7 +72,7 @@ internal object DLNACastImpl {
         }
     }
 
-    fun castToDevice(device: DLNACast.Device, url: String, title: String?, callback: (success: Boolean) -> Unit) {
+    fun castToDevice(device: Device, url: String, title: String?, callback: (success: Boolean) -> Unit) {
         ensureInitialized {
             if (devices.containsKey(device.id)) {
                 connectAndPlay(device, url, title ?: "Media", callback)
@@ -83,7 +86,7 @@ internal object DLNACastImpl {
         }
     }
 
-    fun search(timeout: Long, callback: (devices: List<DLNACast.Device>) -> Unit) {
+    fun search(timeout: Long, callback: (devices: List<Device>) -> Unit) {
         ensureInitialized {
             currentDeviceListCallback = callback
             searchCompleted = false
@@ -100,7 +103,7 @@ internal object DLNACastImpl {
         }
     }
 
-    fun control(action: DLNACast.MediaAction, value: Any?, callback: (success: Boolean) -> Unit) {
+    fun control(action: MediaAction, value: Any?, callback: (success: Boolean) -> Unit) {
         val device = currentDevice
         if (device == null) {
             callback(false)
@@ -111,22 +114,22 @@ internal object DLNACastImpl {
             try {
                 val success = runBlocking {
                     when (action) {
-                        DLNACast.MediaAction.PLAY -> controller.play()
-                        DLNACast.MediaAction.PAUSE -> controller.pause()
-                        DLNACast.MediaAction.STOP -> controller.stopDirect()
-                        DLNACast.MediaAction.VOLUME -> {
+                        MediaAction.PLAY -> controller.play()
+                        MediaAction.PAUSE -> controller.pause()
+                        MediaAction.STOP -> controller.stopDirect()
+                        MediaAction.VOLUME -> {
                             val volume = value as? Int ?: return@runBlocking false
                             controller.setVolumeAsync(volume)
                         }
-                        DLNACast.MediaAction.MUTE -> {
+                        MediaAction.MUTE -> {
                             val mute = value as? Boolean ?: true
                             controller.setMuteAsync(mute)
                         }
-                        DLNACast.MediaAction.SEEK -> {
+                        MediaAction.SEEK -> {
                             // 简化实现，如需要可以扩展
                             true
                         }
-                        DLNACast.MediaAction.GET_STATE -> {
+                        MediaAction.GET_STATE -> {
                             // 返回状态查询结果
                             true
                         }
@@ -140,10 +143,10 @@ internal object DLNACastImpl {
         }.start()
     }
 
-    fun getState(): DLNACast.State {
+    fun getState(): State {
         val device = currentDevice?.let { convertToDevice(it) }
-        val playbackState = if (device != null) DLNACast.PlaybackState.PLAYING else DLNACast.PlaybackState.IDLE
-        return DLNACast.State(
+        val playbackState = if (device != null) PlaybackState.PLAYING else PlaybackState.IDLE
+        return State(
             isConnected = device != null,
             currentDevice = device,
             playbackState = playbackState
@@ -171,11 +174,11 @@ internal object DLNACastImpl {
         action()
     }
 
-    private fun selectBestDevice(devices: List<DLNACast.Device>): DLNACast.Device {
+    private fun selectBestDevice(devices: List<Device>): Device {
         return devices.find { it.isTV } ?: devices.first()
     }
 
-    private fun connectAndPlay(device: DLNACast.Device, url: String, title: String, callback: (success: Boolean) -> Unit) {
+    private fun connectAndPlay(device: Device, url: String, title: String, callback: (success: Boolean) -> Unit) {
         try {
             val remoteDevice = devices[device.id] ?: throw IllegalArgumentException("Device not found: ${device.id}")
             val services = remoteDevice.details["services"] as? List<*>
@@ -198,7 +201,7 @@ internal object DLNACastImpl {
         }
     }
 
-    private fun getAllDevices(): List<DLNACast.Device> {
+    private fun getAllDevices(): List<Device> {
         return devices.values.map { convertToDevice(it) }.sortedByDescending { it.isTV }
     }
 
@@ -213,13 +216,13 @@ internal object DLNACastImpl {
         }
     }
 
-    private fun convertToDevice(remoteDevice: RemoteDevice): DLNACast.Device {
+    private fun convertToDevice(remoteDevice: RemoteDevice): Device {
         val manufacturer = remoteDevice.manufacturer.lowercase()
         val model = (remoteDevice.details["modelName"] as? String ?: "").lowercase()
         val isTV = manufacturer.contains("tv") || model.contains("tv") || 
                   manufacturer.contains("samsung") || manufacturer.contains("lg") ||
                   manufacturer.contains("sony") || manufacturer.contains("xiaomi")
-        return DLNACast.Device(
+        return Device(
             id = remoteDevice.id,
             name = remoteDevice.displayName,
             address = remoteDevice.address,
