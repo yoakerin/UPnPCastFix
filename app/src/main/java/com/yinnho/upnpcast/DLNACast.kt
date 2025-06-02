@@ -205,36 +205,4 @@ object DLNACast {
     fun release() {
         DLNACastImpl.release()
     }
-    
-    // ================ 兼容性API (标记为过时) ================
-    
-    @Deprecated("Use cast() instead", ReplaceWith("cast(url, title, callback)"))
-    fun castAuto(url: String, title: String? = null, callback: DLNAResult) = cast(url, title, callback)
-    
-    @Deprecated("Use castTo() instead", ReplaceWith("castTo(url, title, deviceSelector)"))
-    fun castWithSelection(url: String, title: String? = null, deviceSelector: DLNADeviceSelector) = castTo(url, title, deviceSelector)
-    
-    @Deprecated("Use control(MediaAction.PAUSE) instead", ReplaceWith("control(MediaAction.PAUSE, callback = callback)"))
-    fun pause(callback: DLNAResult) = control(MediaAction.PAUSE, callback = callback)
-    
-    @Deprecated("Use control(MediaAction.PLAY) instead", ReplaceWith("control(MediaAction.PLAY, callback = callback)"))
-    fun resume(callback: DLNAResult) = control(MediaAction.PLAY, callback = callback)
-    
-    @Deprecated("Use control(MediaAction.STOP) instead", ReplaceWith("control(MediaAction.STOP, callback = callback)"))
-    fun stop(callback: DLNAResult) = control(MediaAction.STOP, callback = callback)
-    
-    @Deprecated("Use control(MediaAction.VOLUME, volume) instead", ReplaceWith("control(MediaAction.VOLUME, volume, callback)"))
-    fun setVolume(volume: Int, callback: DLNAResult) = control(MediaAction.VOLUME, volume, callback)
-    
-    @Deprecated("Use control(MediaAction.MUTE, mute) instead", ReplaceWith("control(MediaAction.MUTE, mute, callback)"))
-    fun setMute(mute: Boolean, callback: DLNAResult) = control(MediaAction.MUTE, mute, callback)
-    
-    @Deprecated("Use getState().isPlaying instead", ReplaceWith("getState().isPlaying"))
-    fun isPlaying(): Boolean = getState().isPlaying
-    
-    @Deprecated("Use getState().currentDevice instead", ReplaceWith("getState().currentDevice"))
-    fun getCurrentDevice(): Device? = getState().currentDevice
-    
-    @Deprecated("Use getState().playbackState instead", ReplaceWith("getState().playbackState"))
-    fun getCurrentState(): PlaybackState = getState().playbackState
 } 
