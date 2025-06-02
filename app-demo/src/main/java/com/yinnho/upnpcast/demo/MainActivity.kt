@@ -22,9 +22,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.yinnho.upnpcast.DLNACast
-import com.yinnho.upnpcast.Device
-import com.yinnho.upnpcast.MediaAction
-import com.yinnho.upnpcast.PlaybackState
 
 /**
  * 🏠 UPnPCast Demo 主页
@@ -34,13 +31,13 @@ class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
     private lateinit var deviceListView: TextView
     private lateinit var statusView: TextView
-    private val discoveredDevices = mutableListOf<Device>()
+    private val discoveredDevices = mutableListOf<DLNACast.Device>()
     
     // 防止重复显示对话框的标志
     private var isShowingMediaDialog = false
     
     // 当前等待投屏的设备
-    private var currentTargetDevice: Device? = null
+    private var currentTargetDevice: DLNACast.Device? = null
     
     // 文件选择器
     private val filePickerLauncher = registerForActivityResult(
@@ -178,9 +175,9 @@ class MainActivity : AppCompatActivity() {
         statusView.text = "状态: 搜索中..."
         discoveredDevices.clear()
         
-        DLNACast.search(timeout = 10000) { devices: List<Device> ->
+        DLNACast.search(timeout = 10000) { devices: List<DLNACast.Device> ->
             runOnUiThread {
-                devices.forEach { device: Device ->
+                devices.forEach { device: DLNACast.Device ->
                     if (!discoveredDevices.any { it.id == device.id }) {
                         discoveredDevices.add(device)
                         log("📱 发现设备: ${device.name}")
@@ -196,7 +193,7 @@ class MainActivity : AppCompatActivity() {
         if (discoveredDevices.isEmpty()) {
             deviceListView.text = "未发现设备"
         } else {
-            val deviceText = discoveredDevices.mapIndexed { index: Int, device: Device ->
+            val deviceText = discoveredDevices.mapIndexed { index: Int, device: DLNACast.Device ->
                 val icon = if (device.isTV) "📺" else "📱"
                 "${index + 1}. $icon ${device.name}\n   地址: ${device.address}"
             }.joinToString("\n\n")
@@ -237,13 +234,13 @@ class MainActivity : AppCompatActivity() {
         showDeviceSelectionDialog()
     }
 
-    private fun performCastToDevice(targetDevice: Device) {
+    private fun performCastToDevice(targetDevice: DLNACast.Device) {
         Log.d(TAG, "performCastToDevice() called for device: ${targetDevice.name}")
         // 显示媒体选择对话框
         showMediaSelectionDialog(targetDevice)
     }
     
-    private fun showMediaSelectionDialog(targetDevice: Device) {
+    private fun showMediaSelectionDialog(targetDevice: DLNACast.Device) {
         Log.d(TAG, "showMediaSelectionDialog() called for device: ${targetDevice.name}")
         
         if (isShowingMediaDialog) {
@@ -341,7 +338,7 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
     
-    private fun selectLocalFile(targetDevice: Device) {
+    private fun selectLocalFile(targetDevice: DLNACast.Device) {
         Log.d(TAG, "selectLocalFile() called for device: ${targetDevice.name}")
         
         // 显示DLNA协议说明
@@ -380,7 +377,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
     
-    private fun showDLNAProtocolInfo(targetDevice: Device) {
+    private fun showDLNAProtocolInfo(targetDevice: DLNACast.Device) {
         AlertDialog.Builder(this)
             .setTitle("🔬 DLNA技术详解")
             .setMessage("""
@@ -417,7 +414,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
     
-    private fun handleSelectedFile(targetDevice: Device, uri: Uri) {
+    private fun handleSelectedFile(targetDevice: DLNACast.Device, uri: Uri) {
         Log.d(TAG, "handleSelectedFile() called with uri: $uri")
         
         try {
@@ -538,12 +535,12 @@ class MainActivity : AppCompatActivity() {
         return "%.1f %s".format(size, units[unitIndex])
     }
     
-    private fun showLocalFileOptions(targetDevice: Device) {
+    private fun showLocalFileOptions(targetDevice: DLNACast.Device) {
         // 这个方法现在被 selectLocalFile 替代，但保留以防兼容性
         selectLocalFile(targetDevice)
     }
     
-    private fun showLocalFilePathDialog(targetDevice: Device) {
+    private fun showLocalFilePathDialog(targetDevice: DLNACast.Device) {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(50, 20, 50, 20)
@@ -610,7 +607,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
     
-    private fun showFileExamples(targetDevice: Device) {
+    private fun showFileExamples(targetDevice: DLNACast.Device) {
         val examples = """
             📱 常见文件位置示例
             
@@ -646,7 +643,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
     
-    private fun showCustomUrlDialog(targetDevice: Device) {
+    private fun showCustomUrlDialog(targetDevice: DLNACast.Device) {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(50, 20, 50, 20)
@@ -706,7 +703,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
     
-    private fun castMedia(targetDevice: Device, url: String, title: String) {
+    private fun castMedia(targetDevice: DLNACast.Device, url: String, title: String) {
         Log.d(TAG, "MainActivity.castMedia called: device=${targetDevice.name}, url=$url, title=$title")
         log("🎬 开始投屏: $title 到: ${targetDevice.name}")
         log("📺 URL: $url")
@@ -797,14 +794,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    private fun getPlaybackStateDisplay(playbackState: PlaybackState): String {
+    private fun getPlaybackStateDisplay(playbackState: DLNACast.PlaybackState): String {
         return when (playbackState) {
-            PlaybackState.IDLE -> "空闲"
-            PlaybackState.PLAYING -> "🎬 播放中"
-            PlaybackState.PAUSED -> "⏸️ 已暂停"
-            PlaybackState.STOPPED -> "⏹️ 已停止"
-            PlaybackState.BUFFERING -> "⏳ 缓冲中"
-            PlaybackState.ERROR -> "❌ 错误"
+            DLNACast.PlaybackState.IDLE -> "空闲"
+            DLNACast.PlaybackState.PLAYING -> "🎬 播放中"
+            DLNACast.PlaybackState.PAUSED -> "⏸️ 已暂停"
+            DLNACast.PlaybackState.STOPPED -> "⏹️ 已停止"
+            DLNACast.PlaybackState.BUFFERING -> "⏳ 缓冲中"
+            DLNACast.PlaybackState.ERROR -> "❌ 错误"
         }
     }
 
@@ -815,17 +812,17 @@ class MainActivity : AppCompatActivity() {
             .setTitle("媒体控制")
             .setItems(controls) { _, which ->
                 when (which) {
-                    0 -> controlMedia(MediaAction.PLAY, "播放")
-                    1 -> controlMedia(MediaAction.PAUSE, "暂停")
-                    2 -> controlMedia(MediaAction.STOP, "停止")
-                    3 -> controlMedia(MediaAction.VOLUME, "音量", 50)
-                    4 -> controlMedia(MediaAction.MUTE, "静音", true)
+                    0 -> controlMedia(DLNACast.MediaAction.PLAY, "播放")
+                    1 -> controlMedia(DLNACast.MediaAction.PAUSE, "暂停")
+                    2 -> controlMedia(DLNACast.MediaAction.STOP, "停止")
+                    3 -> controlMedia(DLNACast.MediaAction.VOLUME, "音量", 50)
+                    4 -> controlMedia(DLNACast.MediaAction.MUTE, "静音", true)
                 }
             }
             .show()
     }
 
-    private fun controlMedia(action: MediaAction, actionName: String, value: Any? = null) {
+    private fun controlMedia(action: DLNACast.MediaAction, actionName: String, value: Any? = null) {
         DLNACast.control(action, value) { success ->
             runOnUiThread {
                 log("🎮 $actionName ${if (success) "成功" else "失败"}")

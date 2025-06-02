@@ -9,24 +9,24 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.yinnho.upnpcast.Device
+import com.yinnho.upnpcast.DLNACast
 
 /**
  * 设备列表适配器
  */
-class DeviceListAdapter(private val onDeviceClick: (Device) -> Unit) :
+class DeviceListAdapter(private val onDeviceClick: (DLNACast.Device) -> Unit) :
     RecyclerView.Adapter<DeviceListAdapter.DeviceViewHolder>() {
 
     companion object {
         private const val TAG = "DeviceListAdapter"
     }
 
-    private var devices: List<Device> = emptyList()
+    private var devices: List<DLNACast.Device> = emptyList()
 
     /**
      * 更新设备列表
      */
-    fun updateDevices(newDevices: List<Device>) {
+    fun updateDevices(newDevices: List<DLNACast.Device>) {
         val oldDevices = devices
         devices = newDevices.toList()
         
@@ -96,14 +96,14 @@ class DeviceListAdapter(private val onDeviceClick: (Device) -> Unit) :
             }
         }
 
-        fun bind(device: Device) {
+        fun bind(device: DLNACast.Device) {
             nameText.text = device.name
             addressText.text = device.address
             typeIcon.text = getDeviceTypeIcon(device)
             setDeviceTypeStyle(device)
         }
 
-        private fun getDeviceTypeIcon(device: Device): String {
+        private fun getDeviceTypeIcon(device: DLNACast.Device): String {
             return if (device.isTV) {
                 "📺"
             } else {
@@ -111,7 +111,7 @@ class DeviceListAdapter(private val onDeviceClick: (Device) -> Unit) :
             }
         }
 
-        private fun setDeviceTypeStyle(device: Device) {
+        private fun setDeviceTypeStyle(device: DLNACast.Device) {
             val backgroundColor = if (device.isTV) {
                 Color.parseColor("#E8F5E8")  // 浅绿色背景
             } else {
