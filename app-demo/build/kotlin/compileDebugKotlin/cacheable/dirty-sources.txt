@@ -1,5 +1,0 @@
-E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\SplashActivity.kt
-E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\adapter\DeviceListAdapter.kt
-E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MainActivity.kt
-E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt
-E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt

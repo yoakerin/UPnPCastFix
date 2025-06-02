@@ -1,6 +1,7 @@
 package com.yinnho.upnpcast.demo
 
 import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
@@ -11,6 +12,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.yinnho.upnpcast.DLNACast
+import com.yinnho.upnpcast.Device
+import com.yinnho.upnpcast.MediaAction
 
 /**
  * 🎯 UPnPCast API 完整演示
@@ -106,7 +109,7 @@ class ApiDemoActivity : AppCompatActivity() {
         logMessage("}")
         logMessage("```")
         
-        DLNACast.search(timeout = 10000) { devices: List<DLNACast.Device> ->
+        DLNACast.search(timeout = 10000) { devices: List<Device> ->
             runOnUiThread {
                 logMessage("📱 搜索结果: 发现 ${devices.size} 个设备")
                 devices.forEachIndexed { index, device ->
@@ -143,7 +146,7 @@ class ApiDemoActivity : AppCompatActivity() {
     private fun demoCastTo() {
         logMessage("\n🎯 API Demo: DLNACast.castTo()")
         val testUrl = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
-        DLNACast.castTo(testUrl, "智能选择投屏演示") { devices: List<DLNACast.Device> ->
+        DLNACast.castTo(testUrl, "智能选择投屏演示") { devices: List<Device> ->
             logMessage("🤖 设备选择器被调用，可用设备: ${devices.size}")
             val selected = devices.find { it.isTV } ?: devices.firstOrNull()
             if (selected != null) {
@@ -164,18 +167,18 @@ class ApiDemoActivity : AppCompatActivity() {
             .setTitle("选择控制操作")
             .setItems(controlOptions) { _, which ->
                 when (which) {
-                    0 -> demoControlAction(DLNACast.MediaAction.PLAY, "播放")
-                    1 -> demoControlAction(DLNACast.MediaAction.PAUSE, "暂停")
-                    2 -> demoControlAction(DLNACast.MediaAction.STOP, "停止")
+                    0 -> demoControlAction(MediaAction.PLAY, "播放")
+                    1 -> demoControlAction(MediaAction.PAUSE, "暂停")
+                    2 -> demoControlAction(MediaAction.STOP, "停止")
                     3 -> demoVolumeControl()
-                    4 -> demoControlAction(DLNACast.MediaAction.MUTE, "静音", true)
-                    5 -> demoControlAction(DLNACast.MediaAction.GET_STATE, "获取状态")
+                    4 -> demoControlAction(MediaAction.MUTE, "静音", true)
+                    5 -> demoControlAction(MediaAction.GET_STATE, "获取状态")
                 }
             }
             .show()
     }
 
-    private fun demoControlAction(action: DLNACast.MediaAction, actionName: String, value: Any? = null) {
+    private fun demoControlAction(action: MediaAction, actionName: String, value: Any? = null) {
         DLNACast.control(action, value) { success ->
             runOnUiThread {
                 logMessage("🎮 $actionName ${if (success) "成功" else "失败"}")
@@ -185,7 +188,7 @@ class ApiDemoActivity : AppCompatActivity() {
 
     private fun demoVolumeControl() {
         val volume = 50
-        DLNACast.control(DLNACast.MediaAction.VOLUME, volume) { success ->
+        DLNACast.control(MediaAction.VOLUME, volume) { success ->
             runOnUiThread {
                 logMessage("🔊 音量设置为 $volume% ${if (success) "成功" else "失败"}")
             }

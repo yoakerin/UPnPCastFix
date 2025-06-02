@@ -1,110 +1,123 @@
 package com.yinnho.upnpcast.demo.adapter
 
-import android.view.LayoutInflater
+import android.graphics.Color
+import android.graphics.Typeface
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.yinnho.upnpcast.DLNACast
-import com.yinnho.upnpcast.demo.R
-import android.util.Log
+import com.yinnho.upnpcast.Device
 
 /**
- * 设备列表适配器 - 适配新的DLNADevice模型
- * 展示发现的DLNA设备
+ * 设备列表适配器
  */
-class DeviceListAdapter(private val onDeviceClick: (DLNACast.Device) -> Unit) : 
+class DeviceListAdapter(private val onDeviceClick: (Device) -> Unit) :
     RecyclerView.Adapter<DeviceListAdapter.DeviceViewHolder>() {
-    
+
     companion object {
         private const val TAG = "DeviceListAdapter"
     }
-    
-    private var devices: List<DLNACast.Device> = emptyList()
-    
+
+    private var devices: List<Device> = emptyList()
+
     /**
      * 更新设备列表
-     * @param newDevices 新的设备列表
      */
-    fun updateDevices(newDevices: List<DLNACast.Device>) {
-        Log.d(TAG, "收到设备列表更新: ${newDevices.size}个设备")
-        newDevices.forEachIndexed { index, device ->
-            Log.d(TAG, "收到设备[$index]: ${device.name}, ID: ${device.id}")
-        }
+    fun updateDevices(newDevices: List<Device>) {
+        val oldDevices = devices
+        devices = newDevices.toList()
         
-        devices = newDevices
-        notifyDataSetChanged()
-        Log.d(TAG, "设备列表已更新，当前有${devices.size}个设备")
+        // 使用DiffUtil优化列表更新
+        val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize() = oldDevices.size
+            override fun getNewListSize() = newDevices.size
+            
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return oldDevices[oldItemPosition].id == newDevices[newItemPosition].id
+            }
+            
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return oldDevices[oldItemPosition] == newDevices[newItemPosition]
+            }
+        })
+        
+        diffResult.dispatchUpdatesTo(this)
     }
-    
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DeviceViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_device, parent, false)
-        return DeviceViewHolder(view)
+        val itemView = LinearLayout(parent.context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(16, 12, 16, 12)
+            setBackgroundColor(Color.WHITE)
+        }
+        return DeviceViewHolder(itemView)
     }
-    
+
     override fun onBindViewHolder(holder: DeviceViewHolder, position: Int) {
-        val device = devices[position]
-        holder.bind(device)
-        holder.itemView.setOnClickListener { onDeviceClick(device) }
+        holder.bind(devices[position])
     }
-    
-    override fun getItemCount() = devices.size
-    
+
+    override fun getItemCount(): Int = devices.size
+
     inner class DeviceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val deviceName: TextView = itemView.findViewById(R.id.device_name)
-        private val deviceManufacturer: TextView = itemView.findViewById(R.id.device_manufacturer)
-        private val deviceIpPort: TextView = itemView.findViewById(R.id.device_ip_port)
-        private val deviceUdn: TextView = itemView.findViewById(R.id.device_udn)
-        
-        /**
-         * 绑定设备数据到视图
-         * @param device 要展示的设备
-         */
-        fun bind(device: DLNACast.Device) {
-            try {
-                // 设备名称 + 类型标识
-                deviceName.text = "${device.name} ${getDeviceTypeIcon(device)}"
-                
-                // 设备地址信息
-                deviceManufacturer.text = "地址: ${device.address}"
-                
-                // IP地址（简化显示）
-                deviceIpPort.text = "ID: ${device.id}"
-                
-                // 设备类型
-                val statusText = if (device.isTV) "类型: 智能电视" else "类型: 媒体设备"
-                deviceUdn.text = statusText
-                
-                // 根据设备类型设置不同的样式
-                setDeviceTypeStyle(device)
-                
-                Log.d(TAG, "设备详情 - ${device.name}, 类型: ${if (device.isTV) "电视" else "设备"}")
-            } catch (e: Exception) {
-                Log.e(TAG, "绑定设备数据时出错", e)
-                
-                // 设置默认值
-                deviceName.text = "设备 (无法获取详情)"
-                deviceManufacturer.text = "未知"
-                deviceIpPort.text = "ID: 未知"
-                deviceUdn.text = "类型: 未知"
+        private val nameText: TextView
+        private val addressText: TextView
+        private val typeIcon: TextView
+
+        init {
+            val layout = itemView as LinearLayout
+            
+            typeIcon = TextView(itemView.context).apply {
+                textSize = 24f
+                gravity = Gravity.CENTER
+            }
+            layout.addView(typeIcon)
+            
+            nameText = TextView(itemView.context).apply {
+                textSize = 16f
+                setTypeface(null, Typeface.BOLD)
+                setTextColor(Color.parseColor("#333333"))
+            }
+            layout.addView(nameText)
+            
+            addressText = TextView(itemView.context).apply {
+                textSize = 14f
+                setTextColor(Color.parseColor("#666666"))
+            }
+            layout.addView(addressText)
+            
+            itemView.setOnClickListener {
+                if (adapterPosition != RecyclerView.NO_POSITION) {
+                    onDeviceClick(devices[adapterPosition])
+                }
             }
         }
-        
-        /**
-         * 获取设备类型图标
-         */
-        private fun getDeviceTypeIcon(device: DLNACast.Device): String {
-            return if (device.isTV) "📺" else "📱"
+
+        fun bind(device: Device) {
+            nameText.text = device.name
+            addressText.text = device.address
+            typeIcon.text = getDeviceTypeIcon(device)
+            setDeviceTypeStyle(device)
         }
-        
-        /**
-         * 根据设备类型设置样式
-         */
-        private fun setDeviceTypeStyle(device: DLNACast.Device) {
-            // 根据设备类型设置背景透明度（电视设备更明显）
-            val alpha = if (device.isTV) 1.0f else 0.8f
-            itemView.alpha = alpha
+
+        private fun getDeviceTypeIcon(device: Device): String {
+            return if (device.isTV) {
+                "📺"
+            } else {
+                "📱"
+            }
+        }
+
+        private fun setDeviceTypeStyle(device: Device) {
+            val backgroundColor = if (device.isTV) {
+                Color.parseColor("#E8F5E8")  // 浅绿色背景
+            } else {
+                Color.parseColor("#F0F8FF")  // 浅蓝色背景
+            }
+            itemView.setBackgroundColor(backgroundColor)
         }
     }
 }
