@@ -1,11 +1,11 @@
 # UPnPCast
 
-[![Build Status](https://github.com/yinnho/UPnPCast/workflows/CI%2FCD/badge.svg)](https://github.com/yinnho/UPnPCast/actions)
-[![Maven Central](https://img.shields.io/maven-central/v/com.yinnho/upnpcast.svg)](https://search.maven.org/search?q=g:com.yinnho%20AND%20a:upnpcast)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![API](https://img.shields.io/badge/API-24%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=24)
+[![CI/CD](https://github.com/yinnho/UPnPCast/actions/workflows/ci.yml/badge.svg)](https://github.com/yinnho/UPnPCast/actions)
+[![Release](https://img.shields.io/github/v/release/yinnho/UPnPCast)](https://github.com/yinnho/UPnPCast/releases)
+[![License](https://img.shields.io/github/license/yinnho/UPnPCast)](LICENSE)
+[![Maven Central](https://img.shields.io/maven-central/v/yinnho.com/upnpcast)](https://central.sonatype.com/artifact/yinnho.com/upnpcast)
 
-A modern Android DLNA/UPnP casting library as a replacement for the discontinued Cling project.
+🚀 A modern, clean Android DLNA/UPnP casting library designed as a drop-in replacement for the discontinued Cling project.
 
 > **[中文文档](README_zh.md)** | **English Documentation**
 
