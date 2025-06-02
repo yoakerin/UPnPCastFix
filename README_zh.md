@@ -4,6 +4,8 @@
 [![Release](https://img.shields.io/github/v/release/yinnho/UPnPCast)](https://github.com/yinnho/UPnPCast/releases)
 [![License](https://img.shields.io/github/license/yinnho/UPnPCast)](LICENSE)
 [![Maven Central](https://img.shields.io/maven-central/v/yinnho.com/upnpcast)](https://central.sonatype.com/artifact/yinnho.com/upnpcast)
+[![Weekly Downloads](https://jitpack.io/v/yinnho/UPnPCast/week.svg)](https://jitpack.io/#yinnho/UPnPCast)
+[![Monthly Downloads](https://jitpack.io/v/yinnho/UPnPCast/month.svg)](https://jitpack.io/#yinnho/UPnPCast)
 
 🚀 现代化、简洁的Android DLNA/UPnP投屏库，专为替代已停止维护的Cling项目而设计。
 
