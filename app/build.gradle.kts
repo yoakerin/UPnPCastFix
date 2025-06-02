@@ -97,7 +97,7 @@ dependencies {
 publishing {
     publications {
         register<MavenPublication>("release") {
-            groupId = "com.yinnho"
+            groupId = "yinnho.com"
             artifactId = "upnpcast"
             version = "1.0.0"
 
