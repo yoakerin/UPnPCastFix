@@ -23,12 +23,14 @@
 
 ### 安装
 
-#### 方式一：JitPack（推荐）
+#### 方式一：JitPack（推荐 - 立即可用！）
 
 在根目录的 `build.gradle` 中添加：
 ```gradle
 allprojects {
     repositories {
+        google()
+        mavenCentral()
         maven { url 'https://jitpack.io' }
     }
 }
@@ -37,14 +39,14 @@ allprojects {
 添加依赖：
 ```gradle
 dependencies {
-    implementation 'com.github.yinnho:UPnPCast:1.0.0'
+    implementation 'com.github.yinnho:UPnPCast:v1.0.1'
 }
 ```
 
-#### 方式二：Maven Central
+#### 方式二：Maven Central（即将推出）
 ```gradle
 dependencies {
-    implementation 'com.yinnho:upnpcast:1.0.0'
+    implementation 'yinnho.com:upnpcast:1.0.0'
 }
 ```
 

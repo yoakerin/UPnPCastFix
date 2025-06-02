@@ -23,12 +23,14 @@
 
 ### Installation
 
-#### Option 1: JitPack (Recommended)
+#### Option 1: JitPack (Recommended - Available Now!)
 
 Add to your root `build.gradle`:
 ```gradle
 allprojects {
     repositories {
+        google()
+        mavenCentral()
         maven { url 'https://jitpack.io' }
     }
 }
@@ -37,14 +39,14 @@ allprojects {
 Add dependency:
 ```gradle
 dependencies {
-    implementation 'com.github.yinnho:UPnPCast:1.0.0'
+    implementation 'com.github.yinnho:UPnPCast:v1.0.1'
 }
 ```
 
-#### Option 2: Maven Central
+#### Option 2: Maven Central (Coming Soon)
 ```gradle
 dependencies {
-    implementation 'com.yinnho:upnpcast:1.0.0'
+    implementation 'yinnho.com:upnpcast:1.0.0'
 }
 ```
 
