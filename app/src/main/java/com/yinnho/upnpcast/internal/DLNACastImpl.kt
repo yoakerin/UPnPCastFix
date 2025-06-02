@@ -24,10 +24,10 @@ internal object DLNACastImpl {
     @Volatile
     private var searchCompleted = false
     
-    // 已通知过的设备ID集合，用于增量回�?
+    // 已通知过的设备ID集合，用于增量回调
     private val notifiedDeviceIds = mutableSetOf<String>()
     
-    // 设备发现监听�?
+    // 设备发现监听器
     private val deviceListener = object : RegistryListener {
         override fun deviceAdded(registry: Registry, device: RemoteDevice) {
             // 增量回调：只通知新发现的设备
@@ -35,7 +35,7 @@ internal object DLNACastImpl {
         }
         
         override fun deviceRemoved(registry: Registry, device: RemoteDevice) {
-            // 设备移除：更新已通知集合并回调变�?
+            // 设备移除：更新已通知集合并回调变化
             handleDeviceRemoved(device)
         }
         
@@ -68,7 +68,7 @@ internal object DLNACastImpl {
     
     fun castTo(url: String, title: String?, deviceSelector: (devices: List<DLNACast.Device>) -> DLNACast.Device?) {
         ensureInitialized {
-            // 直接获取当前已发现的设备，不再重新搜�?
+            // 直接获取当前已发现的设备，不再重新搜索
             val currentDevices = getAllDevices()
             if (currentDevices.isNotEmpty()) {
                 val selectedDevice = deviceSelector(currentDevices)
@@ -95,7 +95,7 @@ internal object DLNACastImpl {
             // 先检查设备是否在注册表中
             val existingDevice = registry?.getDevices()?.find { it.id == device.id }
             if (existingDevice != null) {
-                // 设备存在，直接投�?
+                // 设备存在，直接投屏
                 connectAndPlay(device, url, title ?: "Media", callback)
             } else {
                 // 设备不存在，先搜索再投屏
@@ -120,11 +120,11 @@ internal object DLNACastImpl {
             notifiedDeviceIds.clear()
             registry?.startDiscovery()
             
-            // 超时回调：只有在设备数量有变化时才回�?
+            // 超时回调：只有在设备数量有变化时才回调
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                 searchCompleted = true
                 val currentDevices = getAllDevices()
-                // 优化：只有设备数量变化时才执行超时回�?
+                // 优化：只有设备数量变化时才执行超时回调
                 if (currentDevices.size != notifiedDeviceIds.size) {
                     callback(currentDevices)
                 }
@@ -157,11 +157,11 @@ internal object DLNACastImpl {
                             controller.setMuteAsync(mute)
                         }
                         DLNACast.MediaAction.SEEK -> {
-                            // 简化实现，如需要可以扩�?
+                            // 简化实现，如需要可以扩展
                             true
                         }
                         DLNACast.MediaAction.GET_STATE -> {
-                            // 返回状态查询结�?
+                            // 返回状态查询结果
                             true
                         }
                     }
@@ -295,7 +295,7 @@ internal object DLNACastImpl {
     // ================ 类型转换方法 ================
     
     private fun convertToDevice(remoteDevice: RemoteDevice): DLNACast.Device {
-        // 根据制造商和型号判断设备类�?
+        // 根据制造商和型号判断设备类型
         val manufacturer = remoteDevice.manufacturer.lowercase()
         val model = (remoteDevice.details["modelName"] as? String ?: "").lowercase()
         
