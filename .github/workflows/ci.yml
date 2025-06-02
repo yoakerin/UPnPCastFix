@@ -2,9 +2,9 @@ name: CI/CD
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
   release:
     types: [ published ]
 
@@ -22,7 +22,7 @@ jobs:
         distribution: 'temurin'
 
     - name: Cache Gradle packages
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.gradle/caches
@@ -44,7 +44,7 @@ jobs:
       run: ./gradlew assembleRelease
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: build-artifacts
         path: |
@@ -66,7 +66,7 @@ jobs:
         distribution: 'temurin'
 
     - name: Cache Gradle packages
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.gradle/caches
@@ -84,19 +84,14 @@ jobs:
         USERNAME: ${{ github.actor }}
         TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Create release assets
-      run: |
-        mkdir -p release-assets
-        cp app/build/outputs/aar/*.aar release-assets/
-        cp app/build/libs/*-sources.jar release-assets/ || true
-        cp app/build/libs/*-javadoc.jar release-assets/ || true
+    - name: Build release artifacts
+      run: ./gradlew assembleRelease publishToMavenLocal
 
-    - name: Upload release assets
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload release artifacts
+      uses: actions/upload-artifact@v4
       with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: release-assets/
-        asset_name: upnpcast-${{ github.event.release.tag_name }}.zip
-        asset_content_type: application/zip 
+        name: release-artifacts
+        path: |
+          app/build/outputs/aar/*
+          app/build/libs/*-sources.jar
+          app/build/libs/*-javadoc.jar 
