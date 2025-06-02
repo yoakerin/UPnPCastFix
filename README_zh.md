@@ -41,7 +41,7 @@ allprojects {
 添加依赖：
 ```gradle
 dependencies {
-    implementation 'com.github.yinnho:UPnPCast:v1.0.2'
+    implementation 'com.github.yinnho:UPnPCast:1.0.3'
 }
 ```
 
@@ -64,21 +64,36 @@ class MainActivity : AppCompatActivity() {
         // 初始化
         DLNACast.init(this)
         
-        // 搜索设备
-        DLNACast.search { devices ->
-            devices.forEach { device ->
-                Log.d("DLNA", "发现设备: ${device.name}")
-            }
-        }
+        // 搜索设备 - 实时累积更新
+        searchDevices()
         
-        // 投屏媒体
-        DLNACast.cast("http://your-video.mp4", "视频标题") { success ->
+        // 或使用智能投屏，自动选择设备
+        performSmartCast()
+    }
+    
+    private fun searchDevices() {
+        // 实时设备发现，返回累积的设备列表
+        DLNACast.search(timeout = 5000) { devices ->
+            // 每次发现新设备时调用，返回累积的全部设备
+            updateDeviceList(devices) // 直接替换列表即可
+            Log.d("DLNA", "发现 ${devices.size} 个设备")
+        }
+    }
+    
+    private fun performSmartCast() {
+        // 智能投屏 - 自动查找并选择最佳设备
+        DLNACast.smartCast("http://your-video.mp4", "视频标题") { success ->
             if (success) {
-                Log.d("DLNA", "投屏成功!")
+                Log.d("DLNA", "智能投屏开始!")
             }
+        } { devices ->
+            // 设备选择器：优先选择电视设备
+            devices.firstOrNull { it.isTV } ?: devices.firstOrNull()
         }
-        
-        // 控制播放
+    }
+    
+    // 控制播放
+    private fun controlPlayback() {
         DLNACast.control(DLNACast.MediaAction.PAUSE) { success ->
             Log.d("DLNA", "暂停: $success")
         }
@@ -99,8 +114,8 @@ class MainActivity : AppCompatActivity() {
 // 初始化库
 DLNACast.init(context: Context)
 
-// 搜索设备
-DLNACast.search(timeout: Long = 10000, callback: (devices: List<Device>) -> Unit)
+// 搜索设备 - 实时累积更新
+DLNACast.search(timeout: Long = 5000, callback: (devices: List<Device>) -> Unit)
 
 // 自动投屏到可用设备
 DLNACast.cast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
@@ -177,4 +192,4 @@ data class State(
 
 - 📖 在[演示应用](app-demo/)中查看详细的使用示例
 - 🐛 在[GitHub Issues](https://github.com/yinnho/UPnPCast/issues)报告问题
-- 💡 欢迎功能请求！ 
+- 💡 欢迎功能请求！
