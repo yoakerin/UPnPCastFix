@@ -7,24 +7,7 @@
 
 A modern Android DLNA/UPnP casting library as a replacement for the discontinued Cling project.
 
-## 📖 Documentation Quick Navigation
-
-| 📋 **What you need** | 📂 **Where to find it** | ⏱️ **Time needed** |
-|---------------------|------------------------|-------------------|
-| **🚀 Get started quickly** | This README → [Quick Start](#quick-start) | 5 minutes |
-| **📚 Complete API reference** | [docs/API.md](docs/API.md) | 10 minutes |
-| **💡 Real-world examples** | [docs/api/usage_examples.md](docs/api/usage_examples.md) | 15 minutes |
-| **🔧 Fix problems** | [docs/api/troubleshooting.md](docs/api/troubleshooting.md) | When needed |
-| **🏗️ Architecture & design** | [docs/api/api_design_guide.md](docs/api/api_design_guide.md) | 20 minutes |
-| **🌍 Internationalization** | [docs/INTERNATIONALIZATION.md](docs/INTERNATIONALIZATION.md) | When needed |
-| **✨ Best practices** | [docs/best_practices.md](docs/best_practices.md) | 30 minutes |
-| **🎯 Working demo app** | [app-demo/](app-demo/) | Try it now |
-
-> **👉 New to UPnPCast?** Start with [Quick Start](#quick-start) below, then check the [API reference](docs/API.md) and [examples](docs/api/usage_examples.md).
-> 
-> **👉 Having issues?** Go straight to [troubleshooting guide](docs/api/troubleshooting.md).
-> 
-> **👉 Want to contribute?** Read [best practices](docs/best_practices.md) and [design guide](docs/api/api_design_guide.md).
+> **[中文文档](README_zh.md)** | **English Documentation**
 
 ## Features
 
@@ -68,222 +51,124 @@ dependencies {
 ### Basic Usage
 
 ```kotlin
+import com.yinnho.upnpcast.DLNACast
+
 class MainActivity : AppCompatActivity() {
-    private lateinit var dlnaManager: DLNACastManager
-    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Initialize DLNA manager
-        dlnaManager = DLNACastManager.getInstance(this)
+        // Initialize
+        DLNACast.init(this)
         
-        // Set up listeners
-        dlnaManager.setCastListener(object : CastListener {
-            override fun onDeviceListUpdated(devices: List<RemoteDevice>) {
-                // Update UI with discovered devices
-                showDevices(devices)
+        // Search for devices
+        DLNACast.search { devices ->
+            devices.forEach { device ->
+                Log.d("DLNA", "Found: ${device.name}")
             }
-            
-            override fun onConnected(device: RemoteDevice) {
-                // Device connected successfully
-                Toast.makeText(this@MainActivity, "Connected to ${device.displayName}", Toast.LENGTH_SHORT).show()
-            }
-            
-            override fun onDisconnected() {
-                // Device disconnected
-            }
-            
-            override fun onError(error: DLNAException) {
-                // Handle errors
-                Log.e("DLNA", "Error: ${error.message}")
-            }
-        })
+        }
         
-        // Start device discovery
-        dlnaManager.startSearch()
-    }
-    
-    private fun castMedia() {
-        val mediaUrl = "http://example.com/video.mp4"
-        val success = dlnaManager.playMedia(mediaUrl, "My Video")
-        if (success) {
-            // Media casting started
+        // Cast media
+        DLNACast.cast("http://your-video.mp4", "Video Title") { success ->
+            if (success) {
+                Log.d("DLNA", "Casting started!")
+            }
+        }
+        
+        // Control playback
+        DLNACast.control(DLNACast.MediaAction.PAUSE) { success ->
+            Log.d("DLNA", "Paused: $success")
         }
     }
     
     override fun onDestroy() {
         super.onDestroy()
-        dlnaManager.release()
+        DLNACast.release()
     }
 }
 ```
 
 ## API Reference
 
-### Core Classes
-
-#### DLNACastManager
-Main entry point for all DLNA operations.
+### Core Methods
 
 ```kotlin
-// Get singleton instance
-val dlnaManager = DLNACastManager.getInstance(context)
+// Initialize the library
+DLNACast.init(context: Context)
 
-// Device discovery
-dlnaManager.startSearch(timeoutMs = 30000)
-dlnaManager.stopSearch()
+// Search for devices
+DLNACast.search(timeout: Long = 10000, callback: (devices: List<Device>) -> Unit)
 
-// Device connection
-dlnaManager.connectToDevice(device)
-dlnaManager.disconnect()
+// Auto cast to available device
+DLNACast.cast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
 
-// Media playback
-dlnaManager.playMedia(url, title)
-dlnaManager.pause()
-dlnaManager.resume()
-dlnaManager.stop()
-dlnaManager.setVolume(50)
-dlnaManager.setMute(true)
+// Smart cast with device selection
+DLNACast.smartCast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {}, deviceSelector: (devices: List<Device>) -> Device?)
 
-// Get information
-val devices = dlnaManager.getAllDevices()
-val currentDevice = dlnaManager.getCurrentDevice()
-val state = dlnaManager.getCurrentState()
+// Cast to specific device
+DLNACast.castToDevice(device: Device, url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
+
+// Control media playback
+DLNACast.control(action: MediaAction, value: Any? = null, callback: (success: Boolean) -> Unit = {})
+
+// Get current state
+DLNACast.getState(): State
+
+// Release resources
+DLNACast.release()
 ```
 
-#### RemoteDevice
-Represents a discovered DLNA device.
+### Data Types
 
 ```kotlin
-data class RemoteDevice(
+data class Device(
     val id: String,
-    val displayName: String,
-    val manufacturer: String,
+    val name: String,
     val address: String,
-    val details: Map<String, Any>
+    val isTV: Boolean
+)
+
+enum class MediaAction {
+    PLAY, PAUSE, STOP, VOLUME, MUTE, SEEK, GET_STATE
+}
+
+enum class PlaybackState {
+    IDLE, PLAYING, PAUSED, STOPPED, BUFFERING, ERROR
+}
+
+data class State(
+    val isConnected: Boolean,
+    val currentDevice: Device?,
+    val playbackState: PlaybackState,
+    val volume: Int = -1,
+    val isMuted: Boolean = false
 )
 ```
 
-#### Listeners
+## Documentation
 
-```kotlin
-interface CastListener {
-    fun onDeviceListUpdated(devices: List<RemoteDevice>)
-    fun onConnected(device: RemoteDevice)
-    fun onDisconnected()
-    fun onError(error: DLNAException)
-}
+- 🎯 **[Demo App](app-demo/)** - Working example application with complete API demonstration
+- 📖 **[API Reference](#api-reference)** - Complete API documentation above
+- 📋 **[Changelog](CHANGELOG.md)** - Version history and updates
 
-interface PlaybackStateListener {
-    fun onStateChanged(state: PlaybackState)
-    fun onPositionChanged(position: Long)
-}
-```
+## Device Compatibility
 
-## Advanced Usage
-
-### Custom Error Handling
-
-```kotlin
-dlnaManager.setCastListener(object : CastListener {
-    override fun onError(error: DLNAException) {
-        when (error.errorType) {
-            DLNAErrorType.DEVICE_NOT_FOUND -> {
-                // No devices available
-            }
-            DLNAErrorType.CONNECTION_FAILED -> {
-                // Failed to connect to device
-            }
-            DLNAErrorType.PLAYBACK_ERROR -> {
-                // Media playback failed
-            }
-            DLNAErrorType.NETWORK_ERROR -> {
-                // Network connectivity issues
-            }
-        }
-    }
-})
-```
-
-### Device Filtering
-
-```kotlin
-// Filter devices by manufacturer
-val xiaomiDevices = dlnaManager.getAllDevices()
-    .filter { it.manufacturer.contains("Xiaomi", ignoreCase = true) }
-
-// Filter by device capabilities
-val mediaRenderers = dlnaManager.getAllDevices()
-    .filter { device ->
-        val services = device.details["services"] as? List<*>
-        services?.any { service ->
-            service.toString().contains("MediaRenderer", ignoreCase = true)
-        } ?: false
-    }
-```
-
-## Compatibility
-
-### Tested Devices
-- ✅ Xiaomi TV (Native DLNA + iQiYi Cast)
+- ✅ Xiaomi TV (Native DLNA + Mi Cast)
 - ✅ Samsung Smart TV
-- ✅ LG Smart TV
+- ✅ LG Smart TV  
 - ✅ Sony Bravia TV
 - ✅ Android TV boxes
 - ✅ Windows Media Player
-
-### Android Requirements
-- **Minimum SDK**: API 24 (Android 7.0)
-- **Target SDK**: API 34 (Android 14)
-- **Permissions**: 
-  - `INTERNET`
-  - `ACCESS_NETWORK_STATE`
-  - `ACCESS_WIFI_STATE`
-  - `CHANGE_WIFI_MULTICAST_STATE`
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### Development Setup
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yinnho/UPnPCast.git
-cd UPnPCast
-```
-
-2. Open in Android Studio
-3. Build the project:
-```bash
-./gradlew build
-```
-
-4. Run tests:
-```bash
-./gradlew test
-```
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for detailed release notes.
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
+## Contributing
 
-- Built as a modern replacement for the discontinued [Cling](http://4thline.org/projects/cling/) project
-- Inspired by UPnP/DLNA specifications and Android media framework
-- Special thanks to the Android community for testing and feedback
+We welcome contributions! Please see our [best practices guide](docs/best_practices.md) for development guidelines.
 
 ## Support
 
-- 📚 [API Documentation](docs/API.md)
-- 🐛 [Issue Tracker](https://github.com/yinnho/UPnPCast/issues)
-- 💬 [Discussions](https://github.com/yinnho/UPnPCast/discussions)
-
----
-
-**Made with ❤️ for the Android community**
+- 📖 Detailed usage examples in the [demo app](app-demo/) 
+- 🐛 Report issues on [GitHub Issues](https://github.com/yinnho/UPnPCast/issues)
+- 💡 Feature requests are welcome!

@@ -1,7 +1,7 @@
 package com.yinnho.upnpcast.types
 
 /**
- * DLNA设备信息
+ * DLNA device information
  */
 data class Device(
     val id: String,
@@ -11,21 +11,21 @@ data class Device(
 )
 
 /**
- * 媒体控制动作
+ * Media control actions
  */
 enum class MediaAction {
     PLAY, PAUSE, STOP, VOLUME, MUTE, SEEK, GET_STATE
 }
 
 /**
- * 播放状态
+ * Playback states
  */
 enum class PlaybackState {
     IDLE, PLAYING, PAUSED, STOPPED, BUFFERING, ERROR
 }
 
 /**
- * DLNACast状态信息
+ * DLNACast state information
  */
 data class State(
     val isConnected: Boolean,

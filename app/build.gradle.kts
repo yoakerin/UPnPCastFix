@@ -12,28 +12,28 @@ android {
     defaultConfig {
         minSdk = 24
         
-        // 版本信息设置
+        // Version information setting
         version = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
-        // 添加ProGuard消费者规则
+        // Add ProGuard consumer rules
         consumerProguardFiles("consumer-rules.pro")
     }
 
-    // 测试配置
+    // Test configuration
     testOptions {
         unitTests.all {
             it.enabled = true
         }
     }
     
-    // 简化lint配置
+    // Simplified lint configuration
     lint {
         abortOnError = false
     }
 
-    // 简化构建类型配置
+    // Simplified build type configuration
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -44,7 +44,7 @@ android {
         }
     }
     
-    // Java版本配置
+    // Java version configuration
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -57,12 +57,12 @@ android {
         )
     }
     
-    // 库不需要ViewBinding
+    // Library doesn't need ViewBinding
     buildFeatures {
         buildConfig = false
     }
 
-    // 添加源码和文档打包
+    // Add sources and documentation packaging
     publishing {
         singleVariant("release") {
             withSourcesJar()
@@ -72,28 +72,28 @@ android {
 }
 
 dependencies {
-    // 核心依赖，使用Version Catalog
+    // Core dependencies, using Version Catalog
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     
-    // 网络相关
+    // Network related
     implementation(libs.okhttp)
     
-    // JSON解析
+    // JSON parsing
     implementation(libs.gson)
     
-    // 测试依赖 - JUnit 5和Mockito
+    // Test dependencies - JUnit 5 and Mockito
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.junit.jupiter.engine)
-    testImplementation(libs.junit.jupiter.params) // 参数化测试支持
+    testImplementation(libs.junit.jupiter.params) // Parameterized test support
     testImplementation(libs.mockito.core) 
-    testImplementation(libs.mockito.junit.jupiter) // Mockito的JUnit5支持
+    testImplementation(libs.mockito.junit.jupiter) // Mockito's JUnit5 support
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
 
-// Maven发布配置
+// Maven release configuration
 publishing {
     publications {
         register<MavenPublication>("release") {
@@ -107,7 +107,7 @@ publishing {
 
             pom {
                 name.set("UPnPCast")
-                description.set("现代化的Android DLNA/UPnP投屏库，作为停止维护的Cling项目的替代品")
+                description.set("Modern Android DLNA/UPnP screen casting library, as a replacement for the deprecated Cling project")
                 url.set("https://github.com/yinnho/UPnPCast")
                 
                 licenses {
@@ -146,7 +146,7 @@ publishing {
     }
 }
 
-// 签名配置（用于Maven Central）
+// Signing configuration (for Maven Central)
 signing {
     sign(publishing.publications["release"])
 }

@@ -48,7 +48,7 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
     }
     
     /**
-     * 通用的服务URL构建方法
+     * Generic service URL builder method
      */
     private fun buildServiceUrl(serviceTypePattern: String, defaultPath: String): String? {
         return try {
@@ -290,7 +290,7 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
     }
     
     /**
-     * HTTP SOAP请求
+     * HTTP SOAP request
      */
     private suspend fun sendHttpSoapRequest(
         url: String, 
@@ -326,7 +326,7 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
     }
 
     /**
-     * 发送SOAP动作 - 带重试
+     * 发送SOAP action - with retries
      */
     suspend fun sendSoapAction(action: String, serviceType: String, body: String): Boolean = withContext(Dispatchers.IO) {
         val maxRetries = 3
@@ -362,7 +362,7 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
     }
 
     /**
-     * 发送RenderingControl SOAP动作
+     * 发送RenderingControl SOAP action
      */
     private suspend fun sendRenderingControlAction(action: String, body: String): Boolean = withContext(Dispatchers.IO) {
         try {
@@ -405,7 +405,7 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
     }
     
     /**
-     * XML转义
+     * XML escape
      */
     private fun escapeXmlContent(text: String): String {
         return text
@@ -417,7 +417,7 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
     }
     
     /**
-     * URL转义
+     * URL escape
      */
     private fun escapeXmlUrl(url: String): String {
         return url
@@ -427,7 +427,7 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
     }
     
     /**
-     * 创建DIDL-Lite metadata - 精简版
+     * Create DIDL-Lite metadata - simplified version
      */
     private fun createMetadata(title: String, episodeLabel: String, mediaUrl: String = ""): String {
         val displayTitle = if (episodeLabel.isNotEmpty()) "$title - $episodeLabel" else title
@@ -458,7 +458,7 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
     }
     
     /**
-     * 时间格式化
+     * Time format
      */
     private fun formatTime(positionMs: Long): String {
         val totalSeconds = positionMs / 1000
@@ -469,7 +469,7 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
     }
     
     /**
-     * 释放资源
+     * Release resources
      */
     fun release() {
         coroutineScope.cancel()

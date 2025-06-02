@@ -1,15 +1,15 @@
 package com.yinnho.upnpcast.internal
 
 /**
- * 远程设备信息 - 极简版
+ * Remote device information - Simplified version
  */
 data class RemoteDevice(
-    val id: String,                    // 设备唯一标识（使用location URL）
-    val displayName: String,           // 显示名称
-    val address: String,              // 设备地址
-    val manufacturer: String = "",     // 制造商
-    val model: String = "",           // 型号
-    val details: Map<String, Any> = emptyMap()  // 设备详细信息（location, usn, server等）
+    val id: String,                    // Unique device identifier (using location URL)
+    val displayName: String,           // Display name
+    val address: String,              // Device address
+    val manufacturer: String = "",     // Manufacturer
+    val model: String = "",           // Model
+    val details: Map<String, Any> = emptyMap()  // Device details (location, usn, server, etc.)
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

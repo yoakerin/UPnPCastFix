@@ -7,7 +7,7 @@
 
 一个现代化的Android DLNA/UPnP投屏库，作为停止维护的Cling项目的替代品。
 
-> [English Documentation](README.md) | **中文文档**
+> **中文文档** | **[English Documentation](README.md)**
 
 ## 功能特性
 
@@ -51,222 +51,124 @@ dependencies {
 ### 基本用法
 
 ```kotlin
+import com.yinnho.upnpcast.DLNACast
+
 class MainActivity : AppCompatActivity() {
-    private lateinit var dlnaManager: DLNACastManager
-    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // 初始化DLNA管理器
-        dlnaManager = DLNACastManager.getInstance(this)
+        // 初始化
+        DLNACast.init(this)
         
-        // 设置监听器
-        dlnaManager.setCastListener(object : CastListener {
-            override fun onDeviceListUpdated(devices: List<RemoteDevice>) {
-                // 更新UI显示发现的设备
-                showDevices(devices)
+        // 搜索设备
+        DLNACast.search { devices ->
+            devices.forEach { device ->
+                Log.d("DLNA", "发现设备: ${device.name}")
             }
-            
-            override fun onConnected(device: RemoteDevice) {
-                // 设备连接成功
-                Toast.makeText(this@MainActivity, "已连接到 ${device.displayName}", Toast.LENGTH_SHORT).show()
-            }
-            
-            override fun onDisconnected() {
-                // 设备断开连接
-            }
-            
-            override fun onError(error: DLNAException) {
-                // 处理错误
-                Log.e("DLNA", "错误: ${error.message}")
-            }
-        })
+        }
         
-        // 开始设备发现
-        dlnaManager.startSearch()
-    }
-    
-    private fun castMedia() {
-        val mediaUrl = "http://example.com/video.mp4"
-        val success = dlnaManager.playMedia(mediaUrl, "我的视频")
-        if (success) {
-            // 开始投屏
+        // 投屏媒体
+        DLNACast.cast("http://your-video.mp4", "视频标题") { success ->
+            if (success) {
+                Log.d("DLNA", "投屏成功!")
+            }
+        }
+        
+        // 控制播放
+        DLNACast.control(DLNACast.MediaAction.PAUSE) { success ->
+            Log.d("DLNA", "暂停: $success")
         }
     }
     
     override fun onDestroy() {
         super.onDestroy()
-        dlnaManager.release()
+        DLNACast.release()
     }
 }
 ```
 
 ## API参考
 
-### 核心类
-
-#### DLNACastManager
-所有DLNA操作的主要入口点。
+### 核心方法
 
 ```kotlin
-// 获取单例实例
-val dlnaManager = DLNACastManager.getInstance(context)
+// 初始化库
+DLNACast.init(context: Context)
 
-// 设备发现
-dlnaManager.startSearch(timeoutMs = 30000)
-dlnaManager.stopSearch()
+// 搜索设备
+DLNACast.search(timeout: Long = 10000, callback: (devices: List<Device>) -> Unit)
 
-// 设备连接
-dlnaManager.connectToDevice(device)
-dlnaManager.disconnect()
+// 自动投屏到可用设备
+DLNACast.cast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
 
-// 媒体播放
-dlnaManager.playMedia(url, title)
-dlnaManager.pause()
-dlnaManager.resume()
-dlnaManager.stop()
-dlnaManager.setVolume(50)
-dlnaManager.setMute(true)
+// 智能投屏，支持设备选择
+DLNACast.smartCast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {}, deviceSelector: (devices: List<Device>) -> Device?)
 
-// 获取信息
-val devices = dlnaManager.getAllDevices()
-val currentDevice = dlnaManager.getCurrentDevice()
-val state = dlnaManager.getCurrentState()
+// 投屏到指定设备
+DLNACast.castToDevice(device: Device, url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
+
+// 控制媒体播放
+DLNACast.control(action: MediaAction, value: Any? = null, callback: (success: Boolean) -> Unit = {})
+
+// 获取当前状态
+DLNACast.getState(): State
+
+// 释放资源
+DLNACast.release()
 ```
 
-#### RemoteDevice
-表示发现的DLNA设备。
+### 数据类型
 
 ```kotlin
-data class RemoteDevice(
-    val id: String,           // 设备唯一标识
-    val displayName: String,  // 显示名称
-    val manufacturer: String, // 制造商
+data class Device(
+    val id: String,           // 设备ID
+    val name: String,         // 设备名称
     val address: String,      // IP地址
-    val details: Map<String, Any> // 详细信息
+    val isTV: Boolean         // 是否为电视
+)
+
+enum class MediaAction {
+    PLAY, PAUSE, STOP, VOLUME, MUTE, SEEK, GET_STATE
+}
+
+enum class PlaybackState {
+    IDLE, PLAYING, PAUSED, STOPPED, BUFFERING, ERROR
+}
+
+data class State(
+    val isConnected: Boolean,      // 是否已连接
+    val currentDevice: Device?,    // 当前设备
+    val playbackState: PlaybackState, // 播放状态
+    val volume: Int = -1,          // 音量
+    val isMuted: Boolean = false   // 是否静音
 )
 ```
 
-#### 监听器
+## 文档
 
-```kotlin
-interface CastListener {
-    fun onDeviceListUpdated(devices: List<RemoteDevice>) // 设备列表更新
-    fun onConnected(device: RemoteDevice)                // 设备连接成功
-    fun onDisconnected()                                 // 设备断开连接
-    fun onError(error: DLNAException)                   // 错误回调
-}
+- 🎯 **[演示应用](app-demo/)** - 完整的示例程序，包含所有API演示
+- 📖 **[API参考](#api参考)** - 上方的完整API文档
+- 📋 **[更新日志](CHANGELOG.md)** - 版本历史和更新
 
-interface PlaybackStateListener {
-    fun onStateChanged(state: PlaybackState)            // 播放状态变化
-    fun onPositionChanged(position: Long)               // 播放位置变化
-}
-```
+## 设备兼容性
 
-## 高级用法
-
-### 自定义错误处理
-
-```kotlin
-dlnaManager.setCastListener(object : CastListener {
-    override fun onError(error: DLNAException) {
-        when (error.errorType) {
-            DLNAErrorType.DEVICE_NOT_FOUND -> {
-                // 没有可用设备
-            }
-            DLNAErrorType.CONNECTION_FAILED -> {
-                // 设备连接失败
-            }
-            DLNAErrorType.PLAYBACK_ERROR -> {
-                // 媒体播放失败
-            }
-            DLNAErrorType.NETWORK_ERROR -> {
-                // 网络连接问题
-            }
-        }
-    }
-})
-```
-
-### 设备过滤
-
-```kotlin
-// 按制造商过滤设备
-val xiaomiDevices = dlnaManager.getAllDevices()
-    .filter { it.manufacturer.contains("小米", ignoreCase = true) }
-
-// 按设备功能过滤
-val mediaRenderers = dlnaManager.getAllDevices()
-    .filter { device ->
-        val services = device.details["services"] as? List<*>
-        services?.any { service ->
-            service.toString().contains("MediaRenderer", ignoreCase = true)
-        } ?: false
-    }
-```
-
-## 兼容性
-
-### 已测试设备
-- ✅ 小米电视（原生DLNA + 奇异果投屏）
+- ✅ 小米电视 (原生DLNA + 小米投屏)
 - ✅ 三星智能电视
-- ✅ LG智能电视
+- ✅ LG智能电视  
 - ✅ 索尼Bravia电视
 - ✅ Android TV盒子
 - ✅ Windows Media Player
 
-### Android要求
-- **最低SDK**: API 24 (Android 7.0)
-- **目标SDK**: API 34 (Android 14)
-- **权限**: 
-  - `INTERNET`
-  - `ACCESS_NETWORK_STATE`
-  - `ACCESS_WIFI_STATE`
-  - `CHANGE_WIFI_MULTICAST_STATE`
+## 许可证
+
+本项目采用MIT许可证 - 详见 [LICENSE](LICENSE) 文件。
 
 ## 贡献
 
-我们欢迎贡献！请查看我们的[贡献指南](CONTRIBUTING.md)了解详情。
-
-### 开发环境设置
-
-1. 克隆仓库：
-```bash
-git clone https://github.com/yinnho/UPnPCast.git
-cd UPnPCast
-```
-
-2. 在Android Studio中打开
-3. 构建项目：
-```bash
-./gradlew build
-```
-
-4. 运行测试：
-```bash
-./gradlew test
-```
-
-## 更新日志
-
-详细发布说明请查看 [CHANGELOG.md](CHANGELOG.md)。
-
-## 许可证
-
-本项目采用MIT许可证 - 详情请查看 [LICENSE](LICENSE) 文件。
-
-## 致谢
-
-- 作为停止维护的 [Cling](http://4thline.org/projects/cling/) 项目的现代化替代品
-- 灵感来自UPnP/DLNA规范和Android媒体框架
-- 特别感谢Android社区的测试和反馈
+欢迎贡献！请查看我们的[最佳实践指南](docs/best_practices.md)了解开发指导原则。
 
 ## 支持
 
-- 📚 [API文档](docs/API.md)
-- 🐛 [问题跟踪](https://github.com/yinnho/UPnPCast/issues)
-- 💬 [讨论区](https://github.com/yinnho/UPnPCast/discussions)
-
----
-
-**为Android社区用❤️制作** 
+- 📖 在[演示应用](app-demo/)中查看详细的使用示例
+- 🐛 在[GitHub Issues](https://github.com/yinnho/UPnPCast/issues)报告问题
+- 💡 欢迎功能请求！ 

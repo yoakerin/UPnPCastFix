@@ -11,14 +11,14 @@ import kotlinx.coroutines.runBlocking
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * DLNACast的内部实现类
- * 包含所有具体的DLNA投屏逻辑
+ * Internal implementation class for DLNACast
+ * Contains all concrete DLNA casting logic
  */
 internal object DLNACastImpl {
     
     private const val TAG = "DLNACastImpl"
     
-    // 内置设备存储，替代Registry
+    // Built-in device storage, replacing Registry
     private val devices = ConcurrentHashMap<String, RemoteDevice>()
     private var ssdpDiscovery: SsdpDeviceDiscovery? = null
     private var currentDevice: RemoteDevice? = null
@@ -27,11 +27,11 @@ internal object DLNACastImpl {
     @Volatile
     private var currentDeviceListCallback: ((devices: List<Device>) -> Unit)? = null
     
-    // 搜索超时标志
+    // Search timeout flag
     @Volatile
     private var searchCompleted = false
     
-    // 已通知过的设备ID集合，用于增量回调
+    // Set of notified device IDs for incremental callbacks
     private val notifiedDeviceIds = mutableSetOf<String>()
 
     fun init(context: Context) {
@@ -67,6 +67,23 @@ internal object DLNACastImpl {
                     deviceSelector(devices)?.let { device ->
                         connectAndPlay(device, url, title ?: "Media") { }
                     }
+                }
+            }
+        }
+    }
+
+    fun castTo(url: String, title: String?, callback: (success: Boolean) -> Unit, deviceSelector: (devices: List<Device>) -> Device?) {
+        ensureInitialized {
+            val currentDevices = getAllDevices()
+            if (currentDevices.isNotEmpty()) {
+                deviceSelector(currentDevices)?.let { device ->
+                    connectAndPlay(device, url, title ?: "Media", callback)
+                } ?: callback(false)
+            } else {
+                search(5000L) { devices ->
+                    deviceSelector(devices)?.let { device ->
+                        connectAndPlay(device, url, title ?: "Media", callback)
+                    } ?: callback(false)
                 }
             }
         }
@@ -126,11 +143,11 @@ internal object DLNACastImpl {
                             controller.setMuteAsync(mute)
                         }
                         MediaAction.SEEK -> {
-                            // 简化实现，如需要可以扩展
+                            // Simplified implementation, can be extended if needed
                             true
                         }
                         MediaAction.GET_STATE -> {
-                            // 返回状态查询结果
+                            // Return status query result
                             true
                         }
                     }

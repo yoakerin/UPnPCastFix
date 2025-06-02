@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.yinnho.upnpcast.DLNACast
 
 /**
- * 📚 API使用演示页面
+ * 📚 API Demo Page - Complete Functionality Version
  */
 class ApiDemoActivity : AppCompatActivity() {
 
@@ -23,13 +23,13 @@ class ApiDemoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        supportActionBar?.title = "API演示"
+        supportActionBar?.title = "API Demo"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         
         createLayout()
         
-        logMessage("📚 API演示页面启动")
-        logMessage("演示所有DLNACast API的用法")
+        logMessage("📚 API Demo page started")
+        logMessage("Demonstrating all DLNACast API usage")
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -128,27 +128,35 @@ class ApiDemoActivity : AppCompatActivity() {
         
         val testUrl = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
         logMessage("测试URL: $testUrl")
-        logMessage("调用: DLNACast.castTo(url, title) { devices ->")
+        logMessage("调用: DLNACast.smartCast(url, title, callback) { devices ->")
         
-        DLNACast.castTo(testUrl, "智能选择投屏演示") { devices: List<DLNACast.Device> ->
-            logMessage("📱 可用设备数量: ${devices.size}")
-            logMessage("🤖 设备选择逻辑: 优先选择电视设备")
-            
-            val selectedDevice = devices.find { it.isTV } ?: devices.firstOrNull()
-            if (selectedDevice != null) {
-                logMessage("✅ 已选择: ${selectedDevice.name}")
-                selectedDevice
-            } else {
-                logMessage("❌ 未找到可用设备")
-                null
+        DLNACast.smartCast(testUrl, "智能选择投屏演示", { success ->
+            runOnUiThread {
+                logMessage("🎯 投屏结果: ${if (success) "✅ 成功" else "❌ 失败"}")
             }
+        }) { devices: List<DLNACast.Device> ->
+            runOnUiThread {
+                logMessage("📱 可用设备数量: ${devices.size}")
+                logMessage("🤖 设备选择逻辑: 优先选择电视设备")
+                
+                val selectedDevice = devices.find { it.isTV } ?: devices.firstOrNull()
+                if (selectedDevice != null) {
+                    logMessage("✅ 已选择: ${selectedDevice.name}")
+                } else {
+                    logMessage("❌ 未找到可用设备")
+                }
+            }
+            
+            // 返回选择的设备
+            val selectedDevice = devices.find { it.isTV } ?: devices.firstOrNull()
+            selectedDevice
         }
     }
 
     private fun demoControl() {
         logMessage("\n🎮 === 媒体控制API演示 ===")
         
-        val controls = arrayOf("播放", "暂停", "停止", "获取状态", "静音", "获取状态")
+        val controls = arrayOf("播放", "暂停", "停止", "获取状态", "静音", "音量控制")
         
         AlertDialog.Builder(this)
             .setTitle("选择控制动作")
@@ -157,9 +165,9 @@ class ApiDemoActivity : AppCompatActivity() {
                     0 -> demoControlAction(DLNACast.MediaAction.PLAY, "播放")
                     1 -> demoControlAction(DLNACast.MediaAction.PAUSE, "暂停")
                     2 -> demoControlAction(DLNACast.MediaAction.STOP, "停止")
-                    3 -> demoGetState()
+                    3 -> demoControlAction(DLNACast.MediaAction.GET_STATE, "获取状态")
                     4 -> demoControlAction(DLNACast.MediaAction.MUTE, "静音", true)
-                    5 -> demoControlAction(DLNACast.MediaAction.GET_STATE, "获取状态")
+                    5 -> demoVolumeControl()
                 }
             }
             .show()
@@ -208,12 +216,16 @@ class ApiDemoActivity : AppCompatActivity() {
 
     private fun logMessage(message: String) {
         logMessages.add(message)
-        logTextView.text = logMessages.joinToString("\n")
-        
-        // 自动滚动到底部
-        logTextView.post {
-            val scrollView = findViewById<ScrollView>(android.R.id.content)
-            scrollView?.fullScroll(ScrollView.FOCUS_DOWN)
+        runOnUiThread {
+            if (::logTextView.isInitialized) {
+                logTextView.text = logMessages.joinToString("\n")
+                
+                // 自动滚动到底部
+                logTextView.post {
+                    val scrollView = logTextView.parent.parent as? ScrollView
+                    scrollView?.fullScroll(ScrollView.FOCUS_DOWN)
+                }
+            }
         }
     }
 } 

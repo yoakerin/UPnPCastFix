@@ -50,7 +50,7 @@ internal class SsdpDeviceDiscovery(
     private val descriptionParser = DeviceDescriptionParser()
     private val searchScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    // LRU缓存防止内存泄漏
+    // LRU cache to prevent memory leaks
     private val processedLocations = object : LinkedHashMap<String, Long>(16, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Long>?): Boolean {
             return size > MAX_PROCESSED_LOCATIONS
@@ -60,7 +60,7 @@ internal class SsdpDeviceDiscovery(
     private val deviceTimeouts = ConcurrentHashMap<String, Long>()
 
     /**
-     * 初始化Socket
+     * Initialize Socket
      */
     private fun initializeSocket() {
         if (socket != null) return
@@ -77,7 +77,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * 关闭Socket
+     * Close Socket
      */
     private fun closeSocket() {
         socket?.let { s ->
@@ -85,7 +85,7 @@ internal class SsdpDeviceDiscovery(
                 try {
                     s.leaveGroup(multicastGroup, null)
                 } catch (e: Exception) {
-                    // 继续执行关闭操作
+                    // Continue with close operation
                 }
                 s.close()
             } catch (e: Exception) {
@@ -97,7 +97,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * 开始设备搜索
+     * Start device discovery
      */
     fun startSearch() {
         if (isShutdown.get()) return
@@ -113,7 +113,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * 发送搜索请求
+     * Send search request
      */
     private fun sendSearchRequest(target: String) {
         if (isShutdown.get()) return
@@ -144,7 +144,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * 开始响应监听
+     * Start response listener
      */
     private fun startResponseListener() {
         if (isShutdown.get()) return
@@ -171,7 +171,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * 处理SSDP响应
+     * Process SSDP response
      */
     private fun processResponse(packet: DatagramPacket) {
         try {
@@ -192,7 +192,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * 处理NOTIFY消息
+     * Process NOTIFY message
      */
     private fun processNotify(message: String, fromAddress: InetAddress) {
         try {
@@ -204,20 +204,20 @@ internal class SsdpDeviceDiscovery(
                 if (location != null) {
                     synchronized(processedLock) {
                         if (processedLocations.containsKey(location)) {
-                            // 设备已知，只更新时间戳
+                            // Device is known, update timestamp
                             processedLocations[location] = System.currentTimeMillis()
                             deviceTimeouts[location] = System.currentTimeMillis()
                             return
                         }
                     }
                     
-                    // 新设备，进行完整处理
+                    // New device, process fully
                     processSsdpResponse(message, fromAddress)
                 }
             } else if (nts == "ssdp:byebye") {
                 val usn = extractHeader(message, "USN")
                 if (usn != null) {
-                    // 设备离线，移除相关缓存
+                    // Device offline, remove related cache
                     val headers = parseSsdpHeaders(message)
                     val location = headers["location"]
                     if (location != null) {
@@ -234,7 +234,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * 提取HTTP头信息
+     * Extract HTTP header information
      */
     private fun extractHeader(message: String, headerName: String): String? {
         val regex = "$headerName:\\s*(.+)".toRegex(RegexOption.IGNORE_CASE)
@@ -242,7 +242,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * 解析SSDP头信息
+     * Parse SSDP header information
      */
     private fun parseSsdpHeaders(message: String): Map<String, String> {
         val headers = mutableMapOf<String, String>()
@@ -258,7 +258,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * 处理SSDP响应
+     * Process SSDP response
      */
     private fun processSsdpResponse(response: String, fromAddress: InetAddress) {
         try {
@@ -267,7 +267,7 @@ internal class SsdpDeviceDiscovery(
             val usn = headers["usn"]
             
             if (location != null && usn != null) {
-                // 检查和标记已处理
+                // Check and mark processed
                 synchronized(processedLock) {
                     if (processedLocations.containsKey(location)) {
                         return
@@ -278,7 +278,7 @@ internal class SsdpDeviceDiscovery(
                 
                 val deviceId = location
                 
-                // 异步解析设备描述信息
+                // Asynchronous device description parsing
                 searchScope.launch {
                     try {
                         val deviceInfo = descriptionParser.parseDeviceDescription(location)
@@ -295,13 +295,13 @@ internal class SsdpDeviceDiscovery(
                     } catch (e: Exception) {
                         Log.e(TAG, "Failed to process device description: $location", e)
                         
-                        // 解析失败时从缓存中移除
+                        // Remove from cache on parsing failure
                         synchronized(processedLock) {
                             processedLocations.remove(location)
                             deviceTimeouts.remove(location)
                         }
                         
-                        // 对于结构性错误创建fallback设备
+                        // Create fallback device for structural errors
                         if (isStructuralError(e)) {
                             val fallbackDevice = createFallbackDevice(deviceId, fromAddress.hostAddress ?: "unknown", location)
                             
@@ -321,7 +321,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * 判断是否为结构性错误
+     * Check if it's a structural error
      */
     private fun isStructuralError(exception: Exception): Boolean {
         return when (exception) {
@@ -339,7 +339,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * 创建fallback设备信息
+     * Create fallback device information
      */
     private fun createFallbackDevice(deviceId: String, address: String, location: String): RemoteDevice {
         return RemoteDevice(
@@ -358,14 +358,14 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * 停止搜索
+     * Stop discovery
      */
     fun stopSearch() {
         cleanupTimeoutDevices()
     }
 
     /**
-     * 清理超时设备
+     * Clean up timeout devices
      */
     private fun cleanupTimeoutDevices() {
         val currentTime = System.currentTimeMillis()
@@ -384,7 +384,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * 关闭discoverer
+     * Shutdown discoverer
      */
     fun shutdown() {
         if (isShutdown.getAndSet(true)) return

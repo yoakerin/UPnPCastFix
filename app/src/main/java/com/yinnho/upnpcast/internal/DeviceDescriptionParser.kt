@@ -52,7 +52,7 @@ class DeviceDescriptionParser {
     )
     
     /**
-     * 解析设备描述信息
+     * Parse device description information
      */
     suspend fun parseDeviceDescription(locationUrl: String): DeviceInfo? {
         return withContext(Dispatchers.IO) {
@@ -87,7 +87,7 @@ class DeviceDescriptionParser {
     }
     
     /**
-     * 下载XML内容
+     * Download XML content
      */
     private suspend fun downloadXmlContent(locationUrl: String): String {
         val maxRetries = 3
@@ -127,7 +127,7 @@ class DeviceDescriptionParser {
     }
     
     /**
-     * 解析XML内容
+     * Parse XML content
      */
     private fun parseXmlContent(xmlContent: String): DeviceInfo? {
         try {
@@ -152,7 +152,7 @@ class DeviceDescriptionParser {
     }
     
     /**
-     * 解析服务列表
+     * Parse service list
      */
     private fun parseServices(xmlContent: String): List<ServiceInfo> {
         val services = mutableListOf<ServiceInfo>()
@@ -190,7 +190,7 @@ class DeviceDescriptionParser {
     }
     
     /**
-     * 提取XML标签值
+     * Extract XML tag value
      */
     private fun extractXmlValue(xmlContent: String, tagName: String): String? {
         try {
