@@ -77,34 +77,27 @@ dependencies {
 - **International Contributors**: English codebase welcomes global developers
 - **Clear Documentation**: Every method now has comprehensive English documentation
 
-## [1.0.4] - 2025-01-14
-
-### 🚀 Major Feature Added
+### 🚀 New Feature: Local File Casting
 - **Local File Casting**: Complete local file casting functionality with automatic HTTP file server
 - **NanoHTTPD Integration**: Lightweight HTTP server for serving local files to DLNA devices
 - **Range Request Support**: Full support for large file streaming with HTTP Range requests
 - **Optimal Device Compatibility**: Uses `application/octet-stream` MIME type for maximum TV compatibility
 
-### 🎯 New APIs
+#### New APIs
 - **`castLocalFile()`**: Two overloads for casting local files directly
   - `castLocalFile(filePath, device, title, callback)` - Cast to specific device
   - `castLocalFile(filePath, title, callback)` - Auto-select best device
 - **`getLocalFileUrl()`**: Generate HTTP URL for local files for manual use
 - **File Server Management**: Automatic startup/shutdown with port conflict handling
 
-### 🏗️ Technical Improvements
+#### Technical Features
 - **Smart Port Selection**: Automatic port selection from 8081-8090 range
 - **Token-based Security**: Secure file access using time-based tokens
 - **Chinese Path Support**: Full support for Chinese filenames and special characters
 - **Memory Optimization**: Streaming file transfer without loading entire files into memory
 - **Resource Management**: Automatic cleanup of file server and resources
 
-### 📱 Demo Enhancements
-- **ApiDemoActivity**: Added comprehensive local file casting demonstrations
-- **MediaControlActivity**: Added local file selection and casting options
-- **Interactive UI**: User-friendly file path input with validation and error handling
-
-### 💡 Usage Examples
+#### Usage Examples
 ```kotlin
 // Simple local file casting
 DLNACast.castLocalFile("/storage/emulated/0/video.mp4", "My Video") { success, message ->
@@ -123,16 +116,6 @@ if (fileUrl != null) {
     }
 }
 ```
-
-### 🔧 Dependencies
-- **Added**: `org.nanohttpd:nanohttpd:2.3.1` for HTTP file server functionality
-- **Compatibility**: Maintains backward compatibility with existing APIs
-
-### 📋 Validated Features
-- ✅ **File Size Support**: From small files (11MB) to large files (300+MB)
-- ✅ **Device Compatibility**: Tested with Xiaomi TV and other DLNA devices
-- ✅ **Format Support**: MP4, MKV, AVI, MP3, and other common media formats
-- ✅ **Network Performance**: Efficient local network streaming with Range support
 
 ## [1.0.3] - 2025-01-14
 

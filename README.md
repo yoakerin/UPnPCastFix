@@ -141,8 +141,13 @@ DLNACast.smartCast(
 DLNACast.castToDevice(device: Device, url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
 
 // Cast local files (NEW!)
-DLNACast.castLocalFile(filePath: String, device: Device, title: String? = null, callback: (success: Boolean, message: String) -> Unit)
-DLNACast.castLocalFile(filePath: String, title: String? = null, callback: (success: Boolean, message: String) -> Unit)
+DLNACast.castLocalFile("/storage/emulated/0/video.mp4", "Local Video") { success, message ->
+    if (success) {
+        println("Local file cast successful")
+    } else {
+        println("Cast failed: $message")
+    }
+}
 
 // Get local file URL for manual use
 DLNACast.getLocalFileUrl(filePath: String): String?
@@ -227,7 +232,7 @@ DLNACast.castToDevice(device, "http://example.com/video.mp4", "My Video") { succ
     // Handle result
 }
 
-// Cast local files (NEW!)
+// Cast local files
 DLNACast.castLocalFile("/storage/emulated/0/video.mp4", "Local Video") { success, message ->
     if (success) {
         println("Local file cast successful")
