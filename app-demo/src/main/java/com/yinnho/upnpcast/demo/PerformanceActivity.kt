@@ -10,6 +10,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.toColorInt
 import com.yinnho.upnpcast.DLNACast
 import kotlin.random.Random
 
@@ -106,7 +107,7 @@ class PerformanceActivity : AppCompatActivity() {
             text = "点击按钮开始测试..."
             textSize = 12f
             setTextColor(Color.GRAY)
-            setBackgroundColor(Color.parseColor("#F5F5F5"))
+            setBackgroundColor("#F5F5F5".toColorInt())
             setPadding(16, 16, 16, 16)
         }
         layout.addView(performanceDetailsView)

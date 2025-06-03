@@ -34,7 +34,4 @@ data class State(
     val volume: Int = -1,
     val isMuted: Boolean = false
 ) {
-    val isPlaying: Boolean get() = playbackState == PlaybackState.PLAYING
-    val isPaused: Boolean get() = playbackState == PlaybackState.PAUSED
-    val isIdle: Boolean get() = playbackState == PlaybackState.IDLE
-} 
+}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.9.2" type="partial_results">
+    <map id="UnsafeIntentLaunch">
+            <map id="unprotected">
+                <entry
+                    name="com.yinnho.upnpcast.demo.SplashActivity"
+                    boolean="true"/>
+            </map>
+    </map>
+    <map id="UnusedResources">
+        <location id="R.layout.activity_main"
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_main.xml"
+            line="2"
+            column="1"
+            startOffset="39"
+            endLine="132"
+            endColumn="53"
+            endOffset="4881"/>
+        <location id="R.layout.activity_settings"
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_settings.xml"
+            line="2"
+            column="1"
+            startOffset="39"
+            endLine="93"
+            endColumn="16"
+            endOffset="2976"/>
+        <location id="R.layout.fragment_test_helper"
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/fragment_test_helper.xml"
+            line="2"
+            column="1"
+            startOffset="39"
+            endLine="114"
+            endColumn="53"
+            endOffset="4098"/>
+        <location id="R.layout.item_device"
+            file="${:app-demo*debug*MAIN*sourceProvider*0*resDir*0}/layout/item_device.xml"
+            line="2"
+            column="1"
+            startOffset="39"
+            endLine="47"
+            endColumn="37"
+            endOffset="1693"/>
+        <entry
+            name="model"
+            string="id[main_layout(D),title_bar(D),title(D),btn_refresh(D),btn_settings(D),search_status_layout(D),progress_bar(D),search_status_text(D),device_count(D),device_list(D),empty_state_layout(D),device_info_card(U),connected_device_name(U),url_label(U),url_input(U),sample_urls_layout(U),btn_sample_video1(U),btn_sample_video2(U),title_label(U),title_input(U),media_info_card(U),media_title(U),playback_status(U),progress_layout(U),current_time(U),total_time(U),seek_bar(U),controls_layout(U),btn_play(U),btn_pause(U),btn_resume(U),btn_stop(U),volume_layout(U),btn_volume_down(D),volume_seekbar(U),btn_volume_up(D),volume_text(U),switch_auto_connect(D),switch_enable_logging(D),seekbar_search_timeout(D),text_timeout_value(D),btn_clear_cache(D),btn_back(D),controls(D),btn_start_record(D),btn_stop_record(D),btn_run_auto_test(D),label_test_status(D),tv_test_status(D),label_memory(D),tv_memory_status(D),label_cache(D),tv_cache_stats(D),device_name(D),device_manufacturer(D),device_ip_port(D),device_udn(D)],layout[activity_main(D),activity_media_control(U),activity_settings(D),fragment_test_helper(D),item_device(D)],mipmap[ic_launcher(R),ic_launcher_round(R)],style[Theme_AppCompat_Light(R),Widget_AppCompat_Button_Small(R)];39^41^1^5^9,3a^b^d^e^41^f^12^13^14^17^1b^20,3c^2^2b^2e^2f^30^31^32^33;;;"/>
+    </map>
+
+</incidents>

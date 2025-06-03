@@ -9,6 +9,7 @@ import android.view.Gravity
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.toColorInt
 import com.yinnho.upnpcast.DLNACast
 
 /**
@@ -26,7 +27,7 @@ class SplashActivity : AppCompatActivity() {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            setBackgroundColor(Color.parseColor("#1E1E1E"))
+            setBackgroundColor("#1E1E1E".toColorInt())
             setPadding(40, 40, 40, 40)
         }
         
@@ -50,7 +51,7 @@ class SplashActivity : AppCompatActivity() {
         val subtitleView = TextView(this).apply {
             text = "Professional DLNA Casting Library"
             textSize = 14f
-            setTextColor(Color.parseColor("#AAAAAA"))
+            setTextColor("#AAAAAA".toColorInt())
             gravity = Gravity.CENTER
         }
         
@@ -58,7 +59,7 @@ class SplashActivity : AppCompatActivity() {
         val versionView = TextView(this).apply {
             text = "v1.0.0 | Built with UPnPCast API"
             textSize = 12f
-            setTextColor(Color.parseColor("#888888"))
+            setTextColor("#888888".toColorInt())
             gravity = Gravity.CENTER
         }
         

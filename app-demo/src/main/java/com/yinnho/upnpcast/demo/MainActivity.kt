@@ -1,15 +1,10 @@
 package com.yinnho.upnpcast.demo
 
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.Typeface
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.MediaStore
-import android.provider.DocumentsContract
-import android.content.ContentUris
 import android.util.Log
 import android.view.Gravity
 import android.view.Menu
@@ -18,37 +13,23 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.toColorInt
 import com.yinnho.upnpcast.DLNACast
 
 /**
- * 🏠 UPnPCast Demo 主页
+ * 🏠 UPnPCast Demo 主页 - 简洁版本
  */
 class MainActivity : AppCompatActivity() {
 
-    private val TAG = "MainActivity"
+    private val tag = "MainActivity"
     private lateinit var deviceListView: TextView
     private lateinit var statusView: TextView
     private val discoveredDevices = mutableListOf<DLNACast.Device>()
     
     // 防止重复显示对话框的标志
     private var isShowingMediaDialog = false
-    
-    // 当前等待投屏的设备
-    private var currentTargetDevice: DLNACast.Device? = null
-    
-    // 文件选择器
-    private val filePickerLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let { selectedUri ->
-            currentTargetDevice?.let { device ->
-                handleSelectedFile(device, selectedUri)
-            }
-        }
-    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,7 +57,7 @@ class MainActivity : AppCompatActivity() {
             text = "🎯 UPnPCast Professional Demo"
             textSize = 20f
             setTypeface(null, Typeface.BOLD)
-            setTextColor(Color.parseColor("#333333"))
+            setTextColor("#333333".toColorInt())
             gravity = Gravity.CENTER
             setPadding(0, 0, 0, 20)
         }
@@ -86,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         statusView = TextView(this).apply {
             text = "状态: 就绪"
             textSize = 14f
-            setTextColor(Color.parseColor("#666666"))
+            setTextColor("#666666".toColorInt())
             setPadding(0, 0, 0, 10)
         }
         layout.addView(statusView)
@@ -121,8 +102,8 @@ class MainActivity : AppCompatActivity() {
         deviceListView = TextView(this).apply {
             text = "尚未搜索设备"
             textSize = 12f
-            setTextColor(Color.parseColor("#666666"))
-            setBackgroundColor(Color.parseColor("#F5F5F5"))
+            setTextColor("#666666".toColorInt())
+            setBackgroundColor("#F5F5F5".toColorInt())
             setPadding(16, 16, 16, 16)
             // 让设备列表可点击
             setOnClickListener {
@@ -165,7 +146,7 @@ class MainActivity : AppCompatActivity() {
     private fun showAboutDialog() {
         AlertDialog.Builder(this)
             .setTitle("关于 UPnPCast")
-            .setMessage("🎯 专业的DLNA投屏库\n\n✨ 特性:\n• 门面模式设计\n• 类型安全API\n• 高性能异步处理\n• 完整的设备发现\n\n🏗️ 架构:\n• 单一入口设计\n• 内部实现隐藏\n• 向后兼容支持")
+            .setMessage("🎯 专业的DLNA投屏库\n\n✨ 特性:\n• 门面模式设计\n• 类型安全API\n• 高性能异步处理\n• 完整的设备发现\n• 本地文件投屏\n\n🏗️ 架构:\n• 单一入口设计\n• 内部实现隐藏\n• 向后兼容支持")
             .setPositiveButton("确定", null)
             .show()
     }
@@ -188,7 +169,7 @@ class MainActivity : AppCompatActivity() {
         // 5秒后更新为搜索完成状态
         Handler(Looper.getMainLooper()).postDelayed({
             statusView.text = "状态: 搜索完成 (${discoveredDevices.size}个设备)"
-        }, 5100) // 稍微延后一点确保最后一次回调已处理
+        }, 5100)
     }
 
     private fun updateDeviceList() {
@@ -204,7 +185,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showDeviceSelectionDialog() {
-        Log.d(TAG, "showDeviceSelectionDialog() called with ${discoveredDevices.size} devices")
+        Log.d(tag, "showDeviceSelectionDialog() called with ${discoveredDevices.size} devices")
         val deviceNames = discoveredDevices.map { device ->
             val icon = if (device.isTV) "📺" else "📱"
             "$icon ${device.name} (${device.address})"
@@ -213,9 +194,9 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("选择投屏设备")
             .setItems(deviceNames) { _, which ->
-                Log.d(TAG, "Device selected: index=$which")
+                Log.d(tag, "Device selected: index=$which")
                 val selectedDevice = discoveredDevices[which]
-                Log.d(TAG, "Selected device: ${selectedDevice.name}")
+                Log.d(tag, "Selected device: ${selectedDevice.name}")
                 performCastToDevice(selectedDevice)
             }
             .setNegativeButton("取消", null)
@@ -223,7 +204,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun testCasting() {
-        Log.d(TAG, "testCasting() called")
+        Log.d(tag, "testCasting() called")
         if (discoveredDevices.isEmpty()) {
             AlertDialog.Builder(this)
                 .setTitle("提示")
@@ -237,84 +218,73 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun performCastToDevice(targetDevice: DLNACast.Device) {
-        Log.d(TAG, "performCastToDevice() called for device: ${targetDevice.name}")
+        Log.d(tag, "performCastToDevice() called for device: ${targetDevice.name}")
         // 显示媒体选择对话框
         showMediaSelectionDialog(targetDevice)
     }
     
     private fun showMediaSelectionDialog(targetDevice: DLNACast.Device) {
-        Log.d(TAG, "showMediaSelectionDialog() called for device: ${targetDevice.name}")
+        Log.d(tag, "showMediaSelectionDialog() called for device: ${targetDevice.name}")
         
         if (isShowingMediaDialog) {
-            Log.w(TAG, "Media dialog is already showing, ignoring duplicate call")
+            Log.w(tag, "Media dialog is already showing, ignoring duplicate call")
             return
         }
         
         isShowingMediaDialog = true
-        Log.d(TAG, "Setting isShowingMediaDialog = true")
+        Log.d(tag, "Setting isShowingMediaDialog = true")
         
-        // 创建垂直布局，包含8个按钮
+        // 创建垂直布局，包含6个按钮
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(20, 20, 20, 20)
         }
         
-        // 8个媒体选项 - 使用在中国可以正常访问的测试URL
+        // 6个媒体选项 - 简化版本
         val mediaOptions = listOf(
             "🎬 Big Buck Bunny (经典)" to {
-                Log.d(TAG, "Big Buck Bunny selected")
+                Log.d(tag, "Big Buck Bunny selected")
                 castMedia(targetDevice, 
                     "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4", 
                     "Big Buck Bunny")
             },
             "🌊 海洋视频 (推荐)" to {
-                Log.d(TAG, "Ocean video selected")
+                Log.d(tag, "Ocean video selected")
                 castMedia(targetDevice, 
                     "http://vjs.zencdn.net/v/oceans.mp4", 
                     "Ocean Video")
             },
             "🎭 Sintel 动画短片" to {
-                Log.d(TAG, "Sintel selected")
+                Log.d(tag, "Sintel selected")
                 castMedia(targetDevice, 
                     "https://media.w3.org/2010/05/sintel/trailer.mp4", 
                     "Sintel Trailer")
             },
             "🚗 西瓜视频Demo" to {
-                Log.d(TAG, "XiGua video selected")
+                Log.d(tag, "XiGua video selected")
                 castMedia(targetDevice, 
                     "https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/xgplayer_doc_video/mp4/xgplayer-demo-360p.mp4", 
                     "XiGua Player Demo")
             },
-            "📺 W3学校示例" to {
-                Log.d(TAG, "W3School example selected")
-                castMedia(targetDevice, 
-                    "http://www.w3school.com.cn/example/html5/mov_bbb.mp4", 
-                    "W3School Example")
-            },
-            "🎪 测试视频5" to {
-                Log.d(TAG, "Test video 5 selected")
-                castMedia(targetDevice, 
-                    "https://www.w3schools.com/html/movie.mp4", 
-                    "W3Schools Movie")
-            },
-            "📱 本地文件投屏说明" to {
-                Log.d(TAG, "Local file info selected")
-                selectLocalFile(targetDevice)
+            "📱 选取本地视频" to {
+                Log.d(tag, "Local file casting selected")
+                showLocalFileCastingOptions(targetDevice)
             },
             "✏️ 手动输入网络URL" to {
-                Log.d(TAG, "Custom URL option selected")
+                Log.d(tag, "Custom URL option selected")
                 showCustomUrlDialog(targetDevice)
             }
         )
         
         // 为每个选项创建按钮
-        mediaOptions.forEach { (text, action) ->
+        mediaOptions.forEach { option ->
+            val text = option.first
+            val action = option.second
             val button = Button(this).apply {
                 this.text = text
                 textSize = 14f
                 setPadding(20, 15, 20, 15)
                 setOnClickListener {
-                    Log.d(TAG, "Button clicked: $text")
                     isShowingMediaDialog = false
                     action()
                 }
@@ -327,322 +297,26 @@ class MainActivity : AppCompatActivity() {
             .setMessage("投屏到: ${targetDevice.name}")
             .setView(layout)
             .setNegativeButton("取消") { _, _ ->
-                Log.d(TAG, "Media selection cancelled")
+                Log.d(tag, "Media selection cancelled")
                 isShowingMediaDialog = false
             }
             .setOnDismissListener {
-                Log.d(TAG, "Media dialog dismissed")
+                Log.d(tag, "Media dialog dismissed")
                 isShowingMediaDialog = false
             }
             .create()
             
-        Log.d(TAG, "Showing media selection dialog with button list")
+        Log.d(tag, "Showing media selection dialog with button list")
         dialog.show()
     }
     
-    private fun selectLocalFile(targetDevice: DLNACast.Device) {
-        Log.d(TAG, "selectLocalFile() called for device: ${targetDevice.name}")
+    private fun showLocalFileCastingOptions(targetDevice: DLNACast.Device) {
+        Log.d(tag, "showLocalFileCastingOptions() called for device: ${targetDevice.name}")
         
-        // 显示DLNA协议说明
-        AlertDialog.Builder(this)
-            .setTitle("📺 DLNA本地文件投屏说明")
-            .setMessage("""
-                🔍 DLNA协议工作原理：
-                
-                ❌ DLNA设备无法直接访问手机本地文件
-                ✅ 需要通过网络协议访问文件：
-                
-                📡 支持的协议：
-                • HTTP：需要在手机上启动HTTP服务器
-                • SMB/CIFS：网络文件共享协议
-                • UPnP媒体服务器
-                
-                🚫 不支持的协议：
-                • file:// (本地文件系统协议)
-                
-                💡 当前解决方案：
-                1. 使用"手动输入URL"功能，输入网络上的媒体地址
-                2. 将文件上传到网盘，获取直链地址
-                3. 使用局域网文件共享服务
-                
-                ⚠️ 提示：
-                本地文件投屏功能需要实现HTTP媒体服务器，
-                目前版本暂不支持，建议使用网络URL。
-            """.trimIndent())
-            .setPositiveButton("手动输入URL") { _, _ ->
-                showCustomUrlDialog(targetDevice)
-            }
-            .setNeutralButton("了解更多") { _, _ ->
-                showDLNAProtocolInfo(targetDevice)
-            }
-            .setNegativeButton("取消", null)
-            .show()
-    }
-    
-    private fun showDLNAProtocolInfo(targetDevice: DLNACast.Device) {
-        AlertDialog.Builder(this)
-            .setTitle("🔬 DLNA技术详解")
-            .setMessage("""
-                📡 DLNA (Digital Living Network Alliance)
-                
-                🏗️ 基础架构：
-                • 基于UPnP (Universal Plug and Play)
-                • 使用HTTP协议传输媒体内容
-                • 设备通过SSDP协议发现彼此
-                
-                🎯 工作流程：
-                1. 📱 控制点(手机) 发现 📺 媒体渲染器(电视)
-                2. 📱 告诉 📺 要播放的媒体URL
-                3. 📺 直接从URL下载并播放媒体
-                
-                🌐 媒体源要求：
-                • 必须是网络可访问的URL
-                • 支持HTTP/HTTPS协议
-                • 设备能直接下载的格式
-                
-                📱 本地文件投屏需要：
-                • 在手机上运行HTTP服务器
-                • 将本地文件通过HTTP提供给设备
-                • 处理网络权限和防火墙
-                
-                💭 这就是为什么：
-                直接使用file://协议无法工作，
-                因为电视无法访问手机的文件系统。
-            """.trimIndent())
-            .setPositiveButton("明白了") { _, _ ->
-                showCustomUrlDialog(targetDevice)
-            }
-            .setNegativeButton("返回", null)
-            .show()
-    }
-    
-    private fun handleSelectedFile(targetDevice: DLNACast.Device, uri: Uri) {
-        Log.d(TAG, "handleSelectedFile() called with uri: $uri")
+        // 使用库内置的视频选择器 - 只需一行代码！
+        DLNACast.showVideoSelector(this, targetDevice)
         
-        try {
-            // 获取文件信息
-            val fileName = getFileName(uri) ?: "选择的文件"
-            val fileSize = getFileSize(uri)
-            
-            // 尝试获取实际文件路径
-            val realPath = getRealPathFromURI(uri)
-            
-            if (realPath != null) {
-                // 显示确认对话框
-                val message = buildString {
-                    append("📱 已选择文件\n\n")
-                    append("📁 文件名: $fileName\n")
-                    if (fileSize > 0) {
-                        append("📊 大小: ${formatFileSize(fileSize)}\n")
-                    }
-                    append("📍 路径: $realPath\n")
-                    append("📺 投屏到: ${targetDevice.name}\n\n")
-                    append("⚠️ 提示: 使用file://协议投屏本地文件")
-                }
-                
-                AlertDialog.Builder(this)
-                    .setTitle("确认投屏")
-                    .setMessage(message)
-                    .setPositiveButton("开始投屏") { _, _ ->
-                        val fileUrl = "file://$realPath"
-                        Log.d(TAG, "Starting cast with file path: $fileUrl")
-                        castMedia(targetDevice, fileUrl, fileName)
-                    }
-                    .setNegativeButton("重新选择") { _, _ ->
-                        selectLocalFile(targetDevice)
-                    }
-                    .setNeutralButton("取消", null)
-                    .show()
-            } else {
-                // 无法获取实际路径，提示用户
-                AlertDialog.Builder(this)
-                    .setTitle("文件路径问题")
-                    .setMessage("""
-                        📱 无法获取文件的实际路径
-                        
-                        🔍 原因：
-                        • 文件可能存储在云端或私有目录
-                        • Android安全限制
-                        
-                        💡 解决方案：
-                        1. 将文件复制到Download目录
-                        2. 使用手动输入路径功能
-                        3. 确保文件在SD卡的公共目录中
-                        
-                        👍 建议：
-                        使用"手动输入路径"功能，输入类似：
-                        file:///storage/emulated/0/Download/视频.mp4
-                    """.trimIndent())
-                    .setPositiveButton("手动输入路径") { _, _ ->
-                        showLocalFilePathDialog(targetDevice)
-                    }
-                    .setNeutralButton("重新选择") { _, _ ->
-                        selectLocalFile(targetDevice)
-                    }
-                    .setNegativeButton("取消", null)
-                    .show()
-            }
-                
-        } catch (e: Exception) {
-            Log.e(TAG, "Error handling selected file", e)
-            AlertDialog.Builder(this)
-                .setTitle("文件处理失败")
-                .setMessage("无法读取选择的文件，请重新选择或检查文件权限\n\n错误信息: ${e.message}")
-                .setPositiveButton("重新选择") { _, _ -> selectLocalFile(targetDevice) }
-                .setNegativeButton("取消", null)
-                .show()
-        }
-    }
-    
-    private fun getFileName(uri: Uri): String? {
-        return try {
-            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-                    if (nameIndex >= 0) cursor.getString(nameIndex) else null
-                } else null
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting file name", e)
-            "未知文件"
-        }
-    }
-    
-    private fun getFileSize(uri: Uri): Long {
-        return try {
-            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    val sizeIndex = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE)
-                    if (sizeIndex >= 0) cursor.getLong(sizeIndex) else -1L
-                } else -1L
-            } ?: -1L
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting file size", e)
-            -1L
-        }
-    }
-    
-    private fun formatFileSize(bytes: Long): String {
-        if (bytes <= 0) return "未知大小"
-        
-        val units = arrayOf("B", "KB", "MB", "GB")
-        var size = bytes.toDouble()
-        var unitIndex = 0
-        
-        while (size >= 1024 && unitIndex < units.size - 1) {
-            size /= 1024
-            unitIndex++
-        }
-        
-        return "%.1f %s".format(size, units[unitIndex])
-    }
-    
-    private fun showLocalFileOptions(targetDevice: DLNACast.Device) {
-        // 这个方法现在被 selectLocalFile 替代，但保留以防兼容性
-        selectLocalFile(targetDevice)
-    }
-    
-    private fun showLocalFilePathDialog(targetDevice: DLNACast.Device) {
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(50, 20, 50, 20)
-        }
-        
-        val pathInput = android.widget.EditText(this).apply {
-            hint = "输入本地文件路径"
-            setText("file:///storage/emulated/0/")
-        }
-        
-        val titleInput = android.widget.EditText(this).apply {
-            hint = "文件标题 (可选)"
-        }
-        
-        val tipText = TextView(this).apply {
-            text = """
-                💡 路径示例：
-                • file:///storage/emulated/0/DCIM/video.mp4
-                • file:///storage/emulated/0/Music/song.mp3
-                • file:///storage/emulated/0/Pictures/photo.jpg
-                
-                ⚠️ 注意：需要文件访问权限
-            """.trimIndent()
-            textSize = 12f
-            setTextColor(Color.parseColor("#666666"))
-            setPadding(0, 10, 0, 0)
-        }
-        
-        layout.addView(TextView(this).apply { 
-            text = "本地文件路径:" 
-            textSize = 14f
-            setPadding(0, 0, 0, 5)
-        })
-        layout.addView(pathInput)
-        
-        layout.addView(TextView(this).apply { 
-            text = "标题:" 
-            textSize = 14f 
-            setPadding(0, 15, 0, 5)
-        })
-        layout.addView(titleInput)
-        layout.addView(tipText)
-        
-        AlertDialog.Builder(this)
-            .setTitle("选择本地文件")
-            .setMessage("投屏到: ${targetDevice.name}")
-            .setView(layout)
-            .setPositiveButton("投屏") { _, _ ->
-                val path = pathInput.text.toString().trim()
-                val title = titleInput.text.toString().trim().ifEmpty { "本地文件" }
-                
-                if (path.isNotEmpty() && path.startsWith("file://")) {
-                    castMedia(targetDevice, path, title)
-                } else {
-                    AlertDialog.Builder(this)
-                        .setTitle("路径错误")
-                        .setMessage("请输入正确的本地文件路径 (file://...)")
-                        .setPositiveButton("重新输入") { _, _ -> showLocalFilePathDialog(targetDevice) }
-                        .setNegativeButton("取消", null)
-                        .show()
-                }
-            }
-            .setNegativeButton("取消", null)
-            .show()
-    }
-    
-    private fun showFileExamples(targetDevice: DLNACast.Device) {
-        val examples = """
-            📱 常见文件位置示例
-            
-            🎬 视频文件：
-            • /storage/emulated/0/DCIM/Camera/
-            • /storage/emulated/0/Movies/
-            • /storage/emulated/0/Download/
-            
-            🎵 音频文件：
-            • /storage/emulated/0/Music/
-            • /storage/emulated/0/Ringtones/
-            • /storage/emulated/0/Notifications/
-            
-            📷 图片文件：
-            • /storage/emulated/0/DCIM/Camera/
-            • /storage/emulated/0/Pictures/
-            • /storage/emulated/0/Screenshots/
-            
-            📄 关于PPT等办公文档：
-            由于DLNA协议限制，无法直接投屏PPT、Word等文档。
-            
-            建议解决方案：
-            1. PPT → 导出为图片 → 投屏图片
-            2. 使用屏幕镜像功能
-            3. 转换为视频格式后投屏
-        """.trimIndent()
-        
-        AlertDialog.Builder(this)
-            .setTitle("文件路径参考")
-            .setMessage(examples)
-            .setPositiveButton("知道了", null)
-            .setNeutralButton("继续选择") { _, _ -> showLocalFilePathDialog(targetDevice) }
-            .show()
+        Log.d(tag, "启动库内置视频选择器, 设备: ${targetDevice.name}")
     }
     
     private fun showCustomUrlDialog(targetDevice: DLNACast.Device) {
@@ -663,7 +337,7 @@ class MainActivity : AppCompatActivity() {
         val tipText = TextView(this).apply {
             text = "💡 支持格式: MP4, MP3, JPG, PNG 等\n📱 示例: http://example.com/video.mp4"
             textSize = 12f
-            setTextColor(Color.parseColor("#666666"))
+            setTextColor("#666666".toColorInt())
             setPadding(0, 10, 0, 0)
         }
         
@@ -706,7 +380,7 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun castMedia(targetDevice: DLNACast.Device, url: String, title: String) {
-        Log.d(TAG, "MainActivity.castMedia called: device=${targetDevice.name}, url=$url, title=$title")
+        Log.d(tag, "MainActivity.castMedia called: device=${targetDevice.name}, url=$url, title=$title")
         log("🎬 开始投屏: $title 到: ${targetDevice.name}")
         log("📺 URL: $url")
         log("🔍 目标设备ID: ${targetDevice.id}")
@@ -808,143 +482,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showMediaControls() {
-        val controls = arrayOf("播放", "暂停", "停止", "设置音量", "静音")
-        
-        AlertDialog.Builder(this)
-            .setTitle("媒体控制")
-            .setItems(controls) { _, which ->
-                when (which) {
-                    0 -> controlMedia(DLNACast.MediaAction.PLAY, "播放")
-                    1 -> controlMedia(DLNACast.MediaAction.PAUSE, "暂停")
-                    2 -> controlMedia(DLNACast.MediaAction.STOP, "停止")
-                    3 -> controlMedia(DLNACast.MediaAction.VOLUME, "音量", 50)
-                    4 -> controlMedia(DLNACast.MediaAction.MUTE, "静音", true)
-                }
-            }
-            .show()
-    }
-
-    private fun controlMedia(action: DLNACast.MediaAction, actionName: String, value: Any? = null) {
-        DLNACast.control(action, value) { success ->
-            runOnUiThread {
-                log("🎮 $actionName ${if (success) "成功" else "失败"}")
-            }
-        }
+        // 启动专门的媒体控制界面
+        MediaControlActivity.start(this)
     }
 
     private fun log(message: String) {
-        Log.d(TAG, message)
-    }
-
-    private fun getRealPathFromURI(uri: Uri): String? {
-        return try {
-            when (uri.scheme) {
-                "file" -> {
-                    uri.path
-                }
-                "content" -> {
-                    // 尝试通过DocumentsContract获取路径
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-                        when {
-                            android.provider.DocumentsContract.isDocumentUri(this, uri) -> {
-                                getPathFromDocumentUri(uri)
-                            }
-                            uri.authority == "com.android.externalstorage.documents" -> {
-                                val docId = android.provider.DocumentsContract.getDocumentId(uri)
-                                val split = docId.split(":")
-                                if (split.size >= 2) {
-                                    val type = split[0]
-                                    if ("primary".equals(type, ignoreCase = true)) {
-                                        "/storage/emulated/0/${split[1]}"
-                                    } else {
-                                        null
-                                    }
-                                } else null
-                            }
-                            else -> {
-                                // 尝试传统方法
-                                getDataColumn(uri, null, null)
-                            }
-                        }
-                    } else {
-                        getDataColumn(uri, null, null)
-                    }
-                }
-                else -> null
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting real path from URI", e)
-            null
-        }
-    }
-    
-    private fun getPathFromDocumentUri(uri: Uri): String? {
-        return try {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-                val docId = android.provider.DocumentsContract.getDocumentId(uri)
-                
-                when (uri.authority) {
-                    "com.android.externalstorage.documents" -> {
-                        val split = docId.split(":")
-                        if (split.size >= 2) {
-                            val type = split[0]
-                            if ("primary".equals(type, ignoreCase = true)) {
-                                "/storage/emulated/0/${split[1]}"
-                            } else {
-                                "/storage/$type/${split[1]}"
-                            }
-                        } else null
-                    }
-                    "com.android.providers.downloads.documents" -> {
-                        val id = docId
-                        if (id.startsWith("raw:")) {
-                            id.substring(4)
-                        } else {
-                            val contentUri = android.content.ContentUris.withAppendedId(
-                                android.net.Uri.parse("content://downloads/public_downloads"),
-                                id.toLongOrNull() ?: return null
-                            )
-                            getDataColumn(contentUri, null, null)
-                        }
-                    }
-                    "com.android.providers.media.documents" -> {
-                        val split = docId.split(":")
-                        if (split.size >= 2) {
-                            val type = split[0]
-                            val contentUri = when (type) {
-                                "image" -> android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                                "video" -> android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-                                "audio" -> android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-                                else -> return null
-                            }
-                            val selection = "_id=?"
-                            val selectionArgs = arrayOf(split[1])
-                            getDataColumn(contentUri, selection, selectionArgs)
-                        } else null
-                    }
-                    else -> null
-                }
-            } else null
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting path from document URI", e)
-            null
-        }
-    }
-    
-    private fun getDataColumn(uri: Uri, selection: String?, selectionArgs: Array<String>?): String? {
-        return try {
-            val column = "_data"
-            val projection = arrayOf(column)
-            contentResolver.query(uri, projection, selection, selectionArgs, null)?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    val columnIndex = cursor.getColumnIndex(column)
-                    if (columnIndex >= 0) cursor.getString(columnIndex) else null
-                } else null
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting data column", e)
-            null
-        }
+        Log.d(tag, message)
     }
     
     override fun onDestroy() {

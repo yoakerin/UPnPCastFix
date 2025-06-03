@@ -13,6 +13,19 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
+    <!-- 本地文件访问权限 -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <!-- Android 13+ 细粒度媒体权限 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
     <permission
         android:name="com.yinnho.upnpcast.demo.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
         android:protectionLevel="signature" />
@@ -59,6 +72,17 @@
         <activity
             android:name="com.yinnho.upnpcast.demo.PerformanceActivity"
             android:exported="false" />
+
+        <!-- 媒体控制页面 -->
+        <activity
+            android:name="com.yinnho.upnpcast.demo.MediaControlActivity"
+            android:exported="false" />
+
+        <!-- 库内置的本地视频选择器 -->
+        <activity
+            android:name="com.yinnho.upnpcast.internal.VideoSelectorActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"

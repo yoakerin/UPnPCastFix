@@ -131,8 +131,18 @@ DLNACast.smartCast(
 // Cast to specific device
 DLNACast.castToDevice(device: Device, url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
 
+// Cast local files (NEW!)
+DLNACast.castLocalFile(filePath: String, device: Device, title: String? = null, callback: (success: Boolean, message: String) -> Unit)
+DLNACast.castLocalFile(filePath: String, title: String? = null, callback: (success: Boolean, message: String) -> Unit)
+
+// Get local file URL for manual use
+DLNACast.getLocalFileUrl(filePath: String): String?
+
 // Control media playback
 DLNACast.control(action: MediaAction, value: Any? = null, callback: (success: Boolean) -> Unit = {})
+
+// Get playback progress
+DLNACast.getProgress(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit)
 
 // Get current state
 DLNACast.getState(): State
@@ -202,3 +212,27 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - 📖 Detailed usage examples in the [demo app](app-demo/) 
 - 🐛 Report issues on [GitHub Issues](https://github.com/yinnho/UPnPCast/issues)
 - 💡 Feature requests are welcome!
+
+// Cast media to specific device
+DLNACast.castToDevice(device, "http://example.com/video.mp4", "My Video") { success ->
+    // Handle result
+}
+
+// Cast local files (NEW!)
+DLNACast.castLocalFile("/storage/emulated/0/video.mp4", "Local Video") { success, message ->
+    if (success) {
+        println("Local file cast successful")
+    } else {
+        println("Cast failed: $message")
+    }
+}
+
+// Get local file URL for manual use
+val fileUrl = DLNACast.getLocalFileUrl("/storage/emulated/0/video.mp4")
+if (fileUrl != null) {
+    DLNACast.cast(fileUrl, "My Local Video") { success ->
+        // Handle result  
+    }
+}
+
+// Control media playback

@@ -1,8 +1,6 @@
 package com.yinnho.upnpcast
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import com.yinnho.upnpcast.internal.DLNACastImpl
 import com.yinnho.upnpcast.types.Device as TypesDevice
 import com.yinnho.upnpcast.types.MediaAction as TypesMediaAction
@@ -105,14 +103,7 @@ object DLNACast {
     fun cast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {}) {
         DLNACastImpl.cast(url, title, callback)
     }
-    
-    fun castTo(url: String, title: String? = null, deviceSelector: (devices: List<Device>) -> Device?) {
-        DLNACastImpl.castTo(url, title) { typesDevices ->
-            val devices = typesDevices.map { Device.fromTypes(it) }
-            deviceSelector(devices)?.toTypes()
-        }
-    }
-    
+
     fun smartCast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {}, deviceSelector: (devices: List<Device>) -> Device?) {
         DLNACastImpl.castTo(url, title, callback) { typesDevices ->
             val devices = typesDevices.map { Device.fromTypes(it) }
@@ -142,6 +133,74 @@ object DLNACast {
     
     fun getState(): State {
         return State.fromTypes(DLNACastImpl.getState())
+    }
+    
+    /**
+     * Get playback progress information
+     * @param callback Callback function, returns (currentMs, totalMs, success)
+     */
+    fun getProgress(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit) {
+        DLNACastImpl.getProgress(callback)
+    }
+    
+    /**
+     * Cast local file
+     * @param filePath Local file path
+     * @param device Target device
+     * @param title Media title (optional)
+     * @param callback Callback function, returns (success, message)
+     */
+    fun castLocalFile(filePath: String, device: Device, title: String? = null, callback: (success: Boolean, message: String) -> Unit) {
+        DLNACastImpl.castLocalFile(filePath, device.toTypes(), title, callback)
+    }
+    
+    /**
+     * Cast local file - auto select device
+     * @param filePath Local file path
+     * @param title Media title (optional)
+     * @param callback Callback function, returns (success, message)
+     */
+    fun castLocalFile(filePath: String, title: String? = null, callback: (success: Boolean, message: String) -> Unit) {
+        DLNACastImpl.castLocalFile(filePath, title, callback)
+    }
+    
+    /**
+     * Get network access URL for local file
+     * @param filePath Local file path
+     * @return HTTP URL of the file, null if failed
+     */
+    fun getLocalFileUrl(filePath: String): String? {
+        return DLNACastImpl.getLocalFileUrl(filePath)
+    }
+    
+    /**
+     * Simplified local video data class
+     */
+    data class LocalVideo(
+        val id: String,
+        val title: String,
+        val path: String,
+        val duration: String,
+        val size: String,
+        val durationMs: Long
+    )
+    
+    /**
+     * Scan local video files
+     * @param context Android Context
+     * @param callback Callback function, returns list of scanned videos
+     */
+    fun scanLocalVideos(context: Context, callback: (videos: List<LocalVideo>) -> Unit) {
+        DLNACastImpl.scanLocalVideos(context, callback)
+    }
+    
+    /**
+     * Launch local video selector
+     * @param context Android Context (must be Activity)
+     * @param device Target casting device
+     */
+    fun showVideoSelector(context: Context, device: Device) {
+        DLNACastImpl.showVideoSelector(context, device.toTypes())
     }
     
     fun release() {

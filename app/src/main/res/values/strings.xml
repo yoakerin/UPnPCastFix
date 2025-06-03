@@ -1,3 +1,25 @@
 <resources>
     <string name="app_name">UPnPCast</string>
+    
+    <!-- VideoSelectorActivity strings -->
+    <string name="video_selector_title">Local Video Cast</string>
+    <string name="target_device">Target Device: %1$s</string>
+    <string name="scanning_videos">Scanning local videos…</string>
+    <string name="rescan">Rescan</string>
+    <string name="please_select_video">Please select a video</string>
+    <string name="back">Back</string>
+    <string name="device_info_error">Device information error</string>
+    <string name="permission_required">Storage permission required to access video files</string>
+    <string name="permission_denied">Permission denied, unable to scan video files</string>
+    <string name="scanning_device_files">🔍 Scanning video files on device…</string>
+    <string name="no_videos_found">No video files found</string>
+    <string name="found_videos">Found %1$d video files, tap to select</string>
+    <string name="video_item">%1$d. %2$s</string>
+    <string name="cast_video">Cast: %1$s</string>
+    <string name="no_videos_message">No video files found on device\n\nPlease ensure:\n• Video files exist on device\n• Storage permission granted</string>
+    <string name="casting">Casting…</string>
+    <string name="cast_successful">Cast successful!</string>
+    <string name="cast_successful_button">Cast successful ✓</string>
+    <string name="cast_failed">Cast failed: %1$s</string>
+    <string name="retry_cast">Retry cast</string>
 </resources>

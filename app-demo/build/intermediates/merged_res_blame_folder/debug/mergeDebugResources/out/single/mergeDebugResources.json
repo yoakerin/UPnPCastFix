@@ -1,22 +1,22 @@
 [
     {
-        "merged": "com.yinnho.upnpcast.demo.app-demo-debug-33:/layout_item_device.xml.flat",
-        "source": "com.yinnho.upnpcast.demo.app-demo-main-35:/layout/item_device.xml"
+        "merged": "com.yinnho.upnpcast.demo.app-demo-debug-34:/layout_activity_main.xml.flat",
+        "source": "com.yinnho.upnpcast.demo.app-demo-main-36:/layout/activity_main.xml"
     },
     {
-        "merged": "com.yinnho.upnpcast.demo.app-demo-debug-33:/layout_activity_settings.xml.flat",
-        "source": "com.yinnho.upnpcast.demo.app-demo-main-35:/layout/activity_settings.xml"
+        "merged": "com.yinnho.upnpcast.demo.app-demo-debug-34:/layout_fragment_test_helper.xml.flat",
+        "source": "com.yinnho.upnpcast.demo.app-demo-main-36:/layout/fragment_test_helper.xml"
     },
     {
-        "merged": "com.yinnho.upnpcast.demo.app-demo-debug-33:/layout_fragment_test_helper.xml.flat",
-        "source": "com.yinnho.upnpcast.demo.app-demo-main-35:/layout/fragment_test_helper.xml"
+        "merged": "com.yinnho.upnpcast.demo.app-demo-debug-34:/layout_activity_settings.xml.flat",
+        "source": "com.yinnho.upnpcast.demo.app-demo-main-36:/layout/activity_settings.xml"
     },
     {
-        "merged": "com.yinnho.upnpcast.demo.app-demo-debug-33:/layout_activity_media_control.xml.flat",
-        "source": "com.yinnho.upnpcast.demo.app-demo-main-35:/layout/activity_media_control.xml"
+        "merged": "com.yinnho.upnpcast.demo.app-demo-debug-34:/layout_item_device.xml.flat",
+        "source": "com.yinnho.upnpcast.demo.app-demo-main-36:/layout/item_device.xml"
     },
     {
-        "merged": "com.yinnho.upnpcast.demo.app-demo-debug-33:/layout_activity_main.xml.flat",
-        "source": "com.yinnho.upnpcast.demo.app-demo-main-35:/layout/activity_main.xml"
+        "merged": "com.yinnho.upnpcast.demo.app-demo-debug-34:/layout_activity_media_control.xml.flat",
+        "source": "com.yinnho.upnpcast.demo.app-demo-main-36:/layout/activity_media_control.xml"
     }
 ]

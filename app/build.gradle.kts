@@ -12,7 +12,7 @@ android {
         minSdk = 24
         
         // Version information setting
-        version = "1.0.0"
+        version = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -72,11 +72,17 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     
+    // 添加RecyclerView支持，用于本地视频选择器
+    implementation(libs.androidx.recyclerview)
+    
     // Network related
     implementation(libs.okhttp)
     
     // JSON parsing
     implementation(libs.gson)
+    
+    // Local file server for local casting
+    implementation(libs.nanohttpd)
     
     // Test dependencies
     testImplementation(libs.junit.jupiter.api)
@@ -97,7 +103,7 @@ afterEvaluate {
                 
                 groupId = "com.github.yinnho"
                 artifactId = "UPnPCast" 
-                version = "1.0.1"
+                version = "1.1.0"
             }
         }
     }

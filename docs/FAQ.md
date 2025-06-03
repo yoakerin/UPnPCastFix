@@ -158,22 +158,49 @@ fun castToMultipleDevices(url: String, devices: List<Device>) {
 ### Q: 如何实现播放进度监控？
 **A:** 
 ```kotlin
-// 定期查询播放状态
+// 方案1：使用新的播放进度API (推荐)
+DLNACast.getProgress { currentMs, totalMs, success ->
+    if (success) {
+        val progressPercent = if (totalMs > 0) (currentMs * 100 / totalMs) else 0
+        Log.d("DLNA", "播放进度: $progressPercent% (${currentMs}ms / ${totalMs}ms)")
+        
+        // 更新UI进度条
+        updateProgressBar(currentMs, totalMs)
+    }
+}
+
+// 方案2：定期获取播放进度
 private fun startProgressMonitoring() {
     val handler = Handler(Looper.getMainLooper())
     val runnable = object : Runnable {
         override fun run() {
-            DLNACast.control(MediaAction.GET_STATE) { success ->
+            DLNACast.getProgress { currentMs, totalMs, success ->
                 if (success) {
-                    val state = DLNACast.getState()
                     // 更新UI显示进度
-                    updateProgress(state)
+                    updateProgress(currentMs, totalMs)
                 }
             }
             handler.postDelayed(this, 1000) // 每秒查询一次
         }
     }
     handler.post(runnable)
+}
+
+// 方案3：结合SeekBar实现可拖拽的进度条
+private fun setupSeekBar() {
+    seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+            if (fromUser && totalDuration > 0) {
+                val targetPosition = (progress * totalDuration / 100).toLong()
+                DLNACast.control(DLNACast.MediaAction.SEEK, targetPosition) { success ->
+                    Log.d("DLNA", "跳转到 ${targetPosition}ms: $success")
+                }
+            }
+        }
+        
+        override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+        override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+    })
 }
 ```
 

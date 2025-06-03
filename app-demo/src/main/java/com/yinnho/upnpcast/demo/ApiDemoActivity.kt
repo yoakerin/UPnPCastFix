@@ -1,6 +1,6 @@
 package com.yinnho.upnpcast.demo
 
-import android.graphics.Color
+import android.app.AlertDialog
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
@@ -8,14 +8,17 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.toColorInt
 import com.yinnho.upnpcast.DLNACast
 
 /**
  * 📚 API Demo Page - Complete Functionality Version
  */
 class ApiDemoActivity : AppCompatActivity() {
+
+    companion object {
+    }
 
     private lateinit var logTextView: TextView
     private val logMessages = mutableListOf<String>()
@@ -49,7 +52,7 @@ class ApiDemoActivity : AppCompatActivity() {
             text = "📚 DLNACast API 演示"
             textSize = 20f
             setTypeface(null, Typeface.BOLD)
-            setTextColor(Color.parseColor("#333333"))
+            setTextColor("#333333".toColorInt())
             gravity = Gravity.CENTER
             setPadding(0, 0, 0, 20)
         }
@@ -61,6 +64,8 @@ class ApiDemoActivity : AppCompatActivity() {
             "🎯 演示智能投屏API" to { demoCastTo() },
             "🎮 演示控制API" to { demoControl() },
             "📊 演示状态API" to { demoGetState() },
+            "⏱️ 演示播放进度API" to { demoGetProgress() },
+            "📁 演示本地文件投屏API" to { demoLocalFileCast() },
             "🔊 演示音量控制" to { demoVolumeControl() }
         )
 
@@ -85,8 +90,8 @@ class ApiDemoActivity : AppCompatActivity() {
 
         logTextView = TextView(this).apply {
             textSize = 12f
-            setTextColor(Color.parseColor("#444444"))
-            setBackgroundColor(Color.parseColor("#F8F8F8"))
+            setTextColor("#444444".toColorInt())
+            setBackgroundColor("#F8F8F8".toColorInt())
             setPadding(16, 16, 16, 16)
         }
         layout.addView(logTextView)
@@ -156,7 +161,7 @@ class ApiDemoActivity : AppCompatActivity() {
     private fun demoControl() {
         logMessage("\n🎮 === 媒体控制API演示 ===")
         
-        val controls = arrayOf("播放", "暂停", "停止", "获取状态", "静音", "音量控制")
+        val controls = arrayOf("播放", "暂停", "停止", "跳转(30秒)", "获取状态", "静音", "音量控制")
         
         AlertDialog.Builder(this)
             .setTitle("选择控制动作")
@@ -165,9 +170,10 @@ class ApiDemoActivity : AppCompatActivity() {
                     0 -> demoControlAction(DLNACast.MediaAction.PLAY, "播放")
                     1 -> demoControlAction(DLNACast.MediaAction.PAUSE, "暂停")
                     2 -> demoControlAction(DLNACast.MediaAction.STOP, "停止")
-                    3 -> demoControlAction(DLNACast.MediaAction.GET_STATE, "获取状态")
-                    4 -> demoControlAction(DLNACast.MediaAction.MUTE, "静音", true)
-                    5 -> demoVolumeControl()
+                    3 -> demoSeekControl()
+                    4 -> demoControlAction(DLNACast.MediaAction.GET_STATE, "获取状态")
+                    5 -> demoControlAction(DLNACast.MediaAction.MUTE, "静音", true)
+                    6 -> demoVolumeControl()
                 }
             }
             .show()
@@ -196,6 +202,19 @@ class ApiDemoActivity : AppCompatActivity() {
             }
         }
     }
+    
+    private fun demoSeekControl() {
+        logMessage("\n⏩ === 跳转控制API演示 ===")
+        logMessage("跳转到30秒位置")
+        
+        val positionMs = 30 * 1000L // 30秒转换为毫秒
+        DLNACast.control(DLNACast.MediaAction.SEEK, positionMs) { success ->
+            runOnUiThread {
+                logMessage("跳转结果: ${if (success) "✅ 成功" else "❌ 失败"}")
+                logMessage("目标位置: 30秒")
+            }
+        }
+    }
 
     private fun demoGetState() {
         logMessage("\n📊 === 状态获取API演示 ===")
@@ -212,6 +231,255 @@ class ApiDemoActivity : AppCompatActivity() {
         logMessage("  isPlaying: ${state.isPlaying}")
         logMessage("  isPaused: ${state.isPaused}")
         logMessage("  isIdle: ${state.isIdle}")
+    }
+
+    private fun demoGetProgress() {
+        logMessage("\n⏱️ === 播放进度API演示 ===")
+        logMessage("调用: DLNACast.getProgress { currentMs, totalMs, success ->")
+        
+        DLNACast.getProgress { currentMs, totalMs, success ->
+            runOnUiThread {
+                if (success) {
+                    val currentSec = currentMs / 1000
+                    val totalSec = totalMs / 1000
+                    val progressPercent = if (totalMs > 0) (currentMs * 100 / totalMs) else 0
+                    
+                    logMessage("✅ 获取成功:")
+                    logMessage("  当前时间: ${formatSeconds(currentSec)}")
+                    logMessage("  总时长: ${formatSeconds(totalSec)}")
+                    logMessage("  播放进度: $progressPercent%")
+                } else {
+                    logMessage("❌ 获取播放进度失败")
+                    logMessage("💡 提示: 需要先投屏内容")
+                }
+            }
+        }
+    }
+
+    private fun formatSeconds(seconds: Long): String {
+        val minutes = seconds / 60
+        val remainingSeconds = seconds % 60
+        return String.format(java.util.Locale.ROOT, "%02d:%02d", minutes, remainingSeconds)
+    }
+
+    private fun demoLocalFileCast() {
+        logMessage("\n📁 === 本地文件投屏API演示 ===")
+        logMessage("演示UPnPCast的本地文件投屏功能")
+        logMessage("💡 说明: 本功能基于直接文件路径访问")
+        
+        // 提供简单实用的选择方式
+        val options = arrayOf(
+            "📹 浏览 DCIM/Camera 文件夹",
+            "📁 浏览 Download 文件夹", 
+            "🎵 浏览 Music 文件夹",
+            "🎬 测试示例文件",
+            "✏️ 手动输入文件路径"
+        )
+        
+        AlertDialog.Builder(this)
+            .setTitle("选择本地文件投屏方式")
+            .setMessage("基于直接文件路径的本地投屏功能")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> browseFolder("/storage/emulated/0/DCIM/Camera/")
+                    1 -> browseFolder("/storage/emulated/0/Download/")
+                    2 -> browseFolder("/storage/emulated/0/Music/")
+                    3 -> showTestFiles()
+                    4 -> showCustomFilePathDialog()
+                }
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+    
+    private fun browseFolder(folderPath: String) {
+        logMessage("🔍 浏览文件夹: $folderPath")
+        
+        try {
+            val folder = java.io.File(folderPath)
+            if (!folder.exists() || !folder.isDirectory) {
+                logMessage("❌ 文件夹不存在: $folderPath")
+                return
+            }
+            
+            val files = folder.listFiles { file ->
+                file.isFile && isMediaFile(file.name)
+            }?.sortedBy { it.name } ?: emptyList()
+            
+            logMessage("📊 发现 ${files.size} 个媒体文件")
+            
+            if (files.isEmpty()) {
+                logMessage("💡 该文件夹中没有媒体文件")
+                return
+            }
+            
+            val fileNames = files.map { file ->
+                val name = file.name.lowercase()
+                val icon = when {
+                    name.endsWith(".mp4") || name.endsWith(".mkv") || name.endsWith(".avi") || name.endsWith(".mov") -> "🎬"
+                    name.endsWith(".mp3") || name.endsWith(".aac") || name.endsWith(".flac") || name.endsWith(".wav") -> "🎵"
+                    name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".gif") || name.endsWith(".webp") -> "🖼️"
+                    else -> "📄"
+                }
+                "$icon ${file.name}"
+            }.toTypedArray()
+            
+            AlertDialog.Builder(this)
+                .setTitle("选择文件 (${files.size}个媒体文件)")
+                .setItems(fileNames) { _, which ->
+                    val selectedFile = files[which]
+                    logMessage("✅ 选中文件: ${selectedFile.name}")
+                    demoLocalFileFromPath(selectedFile.absolutePath)
+                }
+                .setNegativeButton("返回", null)
+                .show()
+                
+        } catch (e: Exception) {
+            logMessage("❌ 浏览文件夹失败: ${e.message}")
+        }
+    }
+    
+    private fun isMediaFile(fileName: String): Boolean {
+        val name = fileName.lowercase()
+        return name.endsWith(".mp4") || name.endsWith(".mkv") || name.endsWith(".avi") ||
+               name.endsWith(".mov") || name.endsWith(".mp3") || name.endsWith(".aac") ||
+               name.endsWith(".flac") || name.endsWith(".wav") || name.endsWith(".jpg") ||
+               name.endsWith(".png") || name.endsWith(".gif") || name.endsWith(".webp")
+    }
+    
+    private fun showTestFiles() {
+        logMessage("🎬 提供常见路径示例")
+        logMessage("💡 请根据设备实际情况选择存在的文件")
+        
+        val testFiles = arrayOf(
+            "📹 /storage/emulated/0/DCIM/Camera/ (相机录制)",
+            "🎵 /storage/emulated/0/Music/ (音乐文件)",
+            "📁 /storage/emulated/0/Download/ (下载文件)",
+            "🖼️ /storage/emulated/0/Pictures/ (图片文件)"
+        )
+        
+        AlertDialog.Builder(this)
+            .setTitle("常用文件路径示例")
+            .setMessage("请先确保对应路径下有媒体文件")
+            .setItems(testFiles) { _, which ->
+                val basePath = when (which) {
+                    0 -> "/storage/emulated/0/DCIM/Camera/"
+                    1 -> "/storage/emulated/0/Music/"
+                    2 -> "/storage/emulated/0/Download/"
+                    3 -> "/storage/emulated/0/Pictures/"
+                    else -> "/storage/emulated/0/"
+                }
+                logMessage("🎯 选择路径: $basePath")
+                browseFolder(basePath)
+            }
+            .setNegativeButton("返回", null)
+            .show()
+    }
+    
+    private fun demoLocalFileFromPath(filePath: String) {
+        logMessage("📁 测试文件路径: $filePath")
+        logMessage("调用: DLNACast.castLocalFile(filePath, title) { success, message ->")
+        
+        val fileName = java.io.File(filePath).name
+        logMessage("📂 文件名: $fileName")
+        
+        // 先检查文件是否存在
+        val file = java.io.File(filePath)
+        if (!file.exists()) {
+            logMessage("⚠️ 文件不存在，演示getLocalFileUrl功能")
+            val fileUrl = DLNACast.getLocalFileUrl(filePath)
+            logMessage("🔗 生成的URL: ${fileUrl ?: "null (文件不存在)"}")
+            return
+        }
+        
+        // 自动选择设备投屏
+        DLNACast.castLocalFile(filePath, fileName) { success, message ->
+            runOnUiThread {
+                if (success) {
+                    logMessage("✅ 本地文件投屏成功")
+                    logMessage("📺 消息: $message")
+                    logMessage("🎬 现在可以在电视上看到播放内容")
+                } else {
+                    logMessage("❌ 本地文件投屏失败")
+                    logMessage("📺 错误信息: $message")
+                    logMessage("💡 提示: 确保文件存在且有读取权限")
+                }
+            }
+        }
+        
+        logMessage("🚀 本地文件投屏请求已发送...")
+        logMessage("ℹ️ 说明: 自动启动HTTP文件服务器")
+        logMessage("ℹ️ 说明: 生成临时访问URL")
+        logMessage("ℹ️ 说明: 投屏到最佳设备")
+    }
+    
+    private fun showCustomFilePathDialog() {
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(50, 20, 50, 20)
+        }
+        
+        val pathInput = android.widget.EditText(this).apply {
+            hint = "输入完整文件路径"
+            setText("/storage/emulated/0/")
+        }
+        
+        val titleInput = android.widget.EditText(this).apply {
+            hint = "文件标题 (可选)"
+        }
+        
+        val tipText = TextView(this).apply {
+            text = """
+                💡 路径示例：
+                • /storage/emulated/0/DCIM/Camera/video.mp4
+                • /storage/emulated/0/Download/movie.mkv
+                • /storage/emulated/0/Music/song.mp3
+                
+                ✨ 本地文件投屏特性：
+                • 基于直接文件路径访问
+                • 自动启动HTTP文件服务器
+                • 支持Range请求，大文件流式传输
+                • 统一MIME类型，确保设备兼容性
+                
+                ⚠️ 注意：需要输入完整的文件系统路径
+            """.trimIndent()
+            textSize = 12f
+            setTextColor("#666666".toColorInt())
+            setPadding(0, 10, 0, 0)
+        }
+        
+        layout.addView(TextView(this).apply { 
+            text = "文件路径:" 
+            textSize = 14f
+            setPadding(0, 0, 0, 5)
+        })
+        layout.addView(pathInput)
+        
+        layout.addView(TextView(this).apply { 
+            text = "标题:" 
+            textSize = 14f 
+            setPadding(0, 15, 0, 5)
+        })
+        layout.addView(titleInput)
+        layout.addView(tipText)
+        
+        AlertDialog.Builder(this)
+            .setTitle("本地文件投屏")
+            .setView(layout)
+            .setPositiveButton("投屏") { _, _ ->
+                val path = pathInput.text.toString().trim()
+                val title = titleInput.text.toString().trim().ifEmpty { null }
+                
+                if (path.isNotEmpty()) {
+                    logMessage("📁 用户输入路径: $path")
+                    logMessage("📝 用户输入标题: ${title ?: "(自动生成)"}")
+                    demoLocalFileFromPath(path)
+                } else {
+                    logMessage("❌ 路径不能为空")
+                }
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     private fun logMessage(message: String) {

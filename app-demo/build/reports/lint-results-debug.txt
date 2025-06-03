@@ -1,0 +1,626 @@
+E:\UPnPCast\app-demo\src\main\AndroidManifest.xml:13: Warning: WRITE_EXTERNAL_STORAGE no longer provides write access when targeting Android 10+ [ScopedStorage]
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "ScopedStorage":
+   Scoped storage is enforced on Android 10+ (or Android 11+ if using
+   requestLegacyExternalStorage). In particular, WRITE_EXTERNAL_STORAGE will
+   no longer provide write access to all files; it will provide the equivalent
+   of READ_EXTERNAL_STORAGE instead.
+
+   As of Android 13, if you need to query or interact with MediaStore or media
+   files on the shared storage, you should be using instead one or more new
+   storage permissions:
+   * android.permission.READ_MEDIA_IMAGES
+   * android.permission.READ_MEDIA_VIDEO
+   * android.permission.READ_MEDIA_AUDIO
+
+   and then add maxSdkVersion="33" to the older permission. See the developer
+   guide for how to do this:
+   https://developer.android.com/about/versions/13/behavior-changes-13#granula
+   r-media-permissions
+
+   The MANAGE_EXTERNAL_STORAGE permission can be used to manage all files, but
+   it is rarely necessary and most apps on Google Play are not allowed to use
+   it. Most apps should instead migrate to use scoped storage. To modify or
+   delete files, apps should request write access from the user as described
+   at https://goo.gle/android-mediastore-createwriterequest.
+
+   To learn more, read these resources: Play policy:
+   https://goo.gle/policy-storage-help Allowable use cases:
+   https://goo.gle/policy-storage-usecases
+
+   https://goo.gle/android-storage-usecases
+
+E:\UPnPCast\app-demo\build.gradle.kts:13: Warning: Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the android.os.Build.VERSION_CODES javadoc for details. [OldTargetApi]
+        targetSdk = 34
+        ~~~~~~~~~~~~~~
+
+   Explanation for issues of type "OldTargetApi":
+   When your application or sdk runs on a version of Android that is more
+   recent than your targetSdkVersion specifies that it has been tested with,
+   various compatibility modes kick in. This ensures that your application
+   continues to work, but it may look out of place. For example, if the
+   targetSdkVersion is less than 14, your app may get an option button in the
+   UI.
+
+   To fix this issue, set the targetSdkVersion to the highest available value.
+   Then test your app to make sure everything works correctly. You may want to
+   consult the compatibility notes to see what changes apply to each version
+   you are adding support for:
+   https://developer.android.com/reference/android/os/Build.VERSION_CODES.html
+   as well as follow this guide:
+   https://developer.android.com/distribute/best-practices/develop/target-sdk.
+   html
+
+   https://developer.android.com/distribute/best-practices/develop/target-sdk.html
+
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\SplashActivity.kt:18: Warning: The application should not provide its own launch screen [CustomSplashScreen]
+class SplashActivity : AppCompatActivity() {
+      ~~~~~~~~~~~~~~
+
+   Explanation for issues of type "CustomSplashScreen":
+   Starting in Android 12 (API 31+), the application's Launch Screen is
+   provided by the system and the application should not create its own,
+   otherwise the user will see two splashscreens. Please check the
+   SplashScreen class to check how the Splash Screen can be controlled and
+   customized.
+
+   https://developer.android.com/guide/topics/ui/splash-screen
+
+E:\UPnPCast\app-demo\src\main\AndroidManifest.xml:17: Warning: Your app is currently not handling Selected Photos Access introduced in Android 14+ [SelectedPhotoAccess]
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\AndroidManifest.xml:18: Warning: Your app is currently not handling Selected Photos Access introduced in Android 14+ [SelectedPhotoAccess]
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "SelectedPhotoAccess":
+   Selected Photo Access is a new ability for users to share partial access to
+   their photo library when apps request access to their device storage on
+   Android 14+.
+
+   Instead of letting the system manage the selection lifecycle, we recommend
+   you adapt your app to handle partial access to the photo library.
+
+   https://developer.android.com/about/versions/14/changes/partial-photo-video-access
+
+E:\UPnPCast\app-demo\src\main\res\layout\activity_settings.xml:17: Warning: Use SwitchCompat from AppCompat or MaterialSwitch from Material library [UseSwitchCompatOrMaterialXml from androidx.appcompat]
+    <Switch
+    ^
+E:\UPnPCast\app-demo\src\main\res\layout\activity_settings.xml:24: Warning: Use SwitchCompat from AppCompat or MaterialSwitch from Material library [UseSwitchCompatOrMaterialXml from androidx.appcompat]
+    <Switch
+    ^
+
+   Explanation for issues of type "UseSwitchCompatOrMaterialXml":
+   Use SwitchCompat from AppCompat or MaterialSwitch from Material library
+
+   Vendor: Android Open Source Project
+   Identifier: androidx.appcompat
+   Feedback: https://issuetracker.google.com/issues/new?component=460343
+
+E:\UPnPCast\app-demo\build.gradle.kts:39: Warning: A newer version of androidx.core:core-ktx than 1.12.0 is available: 1.16.0 [GradleDependency]
+    implementation("androidx.core:core-ktx:1.12.0")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\build.gradle.kts:40: Warning: A newer version of androidx.appcompat:appcompat than 1.6.1 is available: 1.7.0 [GradleDependency]
+    implementation("androidx.appcompat:appcompat:1.6.1")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\build.gradle.kts:41: Warning: A newer version of androidx.constraintlayout:constraintlayout than 2.1.4 is available: 2.2.1 [GradleDependency]
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\build.gradle.kts:42: Warning: A newer version of com.google.android.material:material than 1.10.0 is available: 1.12.0 [GradleDependency]
+    implementation("com.google.android.material:material:1.10.0")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "GradleDependency":
+   This detector looks for usages of libraries where the version you are using
+   is not the current stable release. Using older versions is fine, and there
+   are cases where you deliberately want to stick with an older version.
+   However, you may simply not be aware that a more recent version is
+   available, and that is what this lint check helps find.
+
+E:\UPnPCast\app-demo\src\main\res\layout\activity_main.xml:2: Warning: The resource R.layout.activity_main appears to be unused [UnusedResources]
+<androidx.constraintlayout.widget.ConstraintLayout 
+^
+E:\UPnPCast\app-demo\src\main\res\layout\activity_settings.xml:2: Warning: The resource R.layout.activity_settings appears to be unused [UnusedResources]
+<LinearLayout 
+^
+E:\UPnPCast\app-demo\src\main\res\layout\fragment_test_helper.xml:2: Warning: The resource R.layout.fragment_test_helper appears to be unused [UnusedResources]
+<androidx.constraintlayout.widget.ConstraintLayout 
+^
+E:\UPnPCast\app-demo\src\main\res\layout\item_device.xml:2: Warning: The resource R.layout.item_device appears to be unused [UnusedResources]
+<androidx.cardview.widget.CardView
+^
+
+   Explanation for issues of type "UnusedResources":
+   Unused resources make applications larger and slow down builds.
+
+
+   The unused resource check can ignore tests. If you want to include
+   resources that are only referenced from tests, consider packaging them in a
+   test source set instead.
+
+   You can include test sources in the unused resource check by setting the
+   system property lint.unused-resources.include-tests =true, and to exclude
+   them (usually for performance reasons), use
+   lint.unused-resources.exclude-tests =true.
+   ,
+
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:189: Warning: Buttons in button bars should be borderless; use style="?android:attr/buttonBarButtonStyle" (and ?android:attr/buttonBarStyle on the parent) [ButtonStyle]
+        <Button
+         ~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:197: Warning: Buttons in button bars should be borderless; use style="?android:attr/buttonBarButtonStyle" (and ?android:attr/buttonBarStyle on the parent) [ButtonStyle]
+        <Button
+         ~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:205: Warning: Buttons in button bars should be borderless; use style="?android:attr/buttonBarButtonStyle" (and ?android:attr/buttonBarStyle on the parent) [ButtonStyle]
+        <Button
+         ~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:213: Warning: Buttons in button bars should be borderless; use style="?android:attr/buttonBarButtonStyle" (and ?android:attr/buttonBarStyle on the parent) [ButtonStyle]
+        <Button
+         ~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\fragment_test_helper.xml:29: Warning: Buttons in button bars should be borderless; use style="?android:attr/buttonBarButtonStyle" (and ?android:attr/buttonBarStyle on the parent) [ButtonStyle]
+        <Button
+         ~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\fragment_test_helper.xml:37: Warning: Buttons in button bars should be borderless; use style="?android:attr/buttonBarButtonStyle" (and ?android:attr/buttonBarStyle on the parent) [ButtonStyle]
+        <Button
+         ~~~~~~
+
+   Explanation for issues of type "ButtonStyle":
+   Button bars typically use a borderless style for the buttons. Set the
+   style="?android:attr/buttonBarButtonStyle" attribute on each of the
+   buttons, and set style="?android:attr/buttonBarStyle" on the parent layout
+
+   https://d.android.com/r/studio-ui/designer/material/dialogs
+
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:73: Warning: Avoid using sizes smaller than 11sp: 10sp [SmallSp]
+            android:textSize="10sp"
+            ~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:83: Warning: Avoid using sizes smaller than 11sp: 10sp [SmallSp]
+            android:textSize="10sp"
+            ~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "SmallSp":
+   Avoid using sizes smaller than 11sp.
+
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:49: Warning: Missing autofillHints attribute [Autofill]
+    <EditText
+     ~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:98: Warning: Missing autofillHints attribute [Autofill]
+    <EditText
+     ~~~~~~~~
+
+   Explanation for issues of type "Autofill":
+   Specify an autofillHints attribute when targeting SDK version 26 or higher
+   or explicitly specify that the view is not important for autofill. Your app
+   can help an autofill service classify the data correctly by providing the
+   meaning of each view that could be autofillable, such as views representing
+   usernames, passwords, credit card fields, email addresses, etc.
+
+   The hints can have any value, but it is recommended to use predefined
+   values like 'username' for a username or 'creditCardNumber' for a credit
+   card number. For a list of all predefined autofill hint constants, see the
+   AUTOFILL_HINT_ constants in the View reference at
+   https://developer.android.com/reference/android/view/View.html.
+
+   You can mark a view unimportant for autofill by specifying an
+   importantForAutofill attribute on that view or a parent view. See
+   https://developer.android.com/reference/android/view/View.html#setImportant
+   ForAutofill(int).
+
+   https://developer.android.com/guide/topics/text/autofill.html
+
+E:\UPnPCast\app-demo\build.gradle.kts:39: Warning: Use version catalog instead (androidx.core:core-ktx is already available as androidx-core-ktx, but using version 1.16.0 instead) [UseTomlInstead]
+    implementation("androidx.core:core-ktx:1.12.0")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\build.gradle.kts:40: Warning: Use version catalog instead (androidx.appcompat:appcompat is already available as androidx-appcompat, but using version 1.7.0 instead) [UseTomlInstead]
+    implementation("androidx.appcompat:appcompat:1.6.1")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\build.gradle.kts:41: Warning: Use version catalog instead [UseTomlInstead]
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\build.gradle.kts:42: Warning: Use version catalog instead (com.google.android.material:material is already available as material, but using version 1.12.0 instead) [UseTomlInstead]
+    implementation("com.google.android.material:material:1.10.0")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "UseTomlInstead":
+   If your project is using a libs.versions.toml file, you should place all
+   Gradle dependencies in the TOML file. This lint check looks for version
+   declarations outside of the TOML file and suggests moving them (and in the
+   IDE, provides a quickfix to performing the operation automatically).
+
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:52: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "📚 DLNACast API 演示"
+                    ~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:84: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "📝 API调用日志:"
+                    ~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:424: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            setText("/storage/emulated/0/")
+                     ~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:432: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+            text = """
+                   ^
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:434: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                • /storage/emulated/0/DCIM/Camera/video.mp4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:435: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                • /storage/emulated/0/Download/movie.mkv
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:436: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                • /storage/emulated/0/Music/song.mp3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:440: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                • 自动启动HTTP文件服务器
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:441: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                • 支持Range请求，大文件流式传输
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:442: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                • 统一MIME类型，确保设备兼容性
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MainActivity.kt:57: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "🎯 UPnPCast Professional Demo"
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MainActivity.kt:165: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                statusView.text = "状态: 搜索中... (${discoveredDevices.size}个设备)"
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MainActivity.kt:171: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+            statusView.text = "状态: 搜索完成 (${discoveredDevices.size}个设备)"
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MainActivity.kt:183: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+            deviceListView.text = "$deviceText\n\n💡 点击此处可选择设备进行投屏"
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MainActivity.kt:330: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            setText("http://")
+                     ~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MainActivity.kt:338: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+            text = "💡 支持格式: MP4, MP3, JPG, PNG 等\n📱 示例: http://example.com/video.mp4"
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MainActivity.kt:338: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "💡 支持格式: MP4, MP3, JPG, PNG 等\n📱 示例: http://example.com/video.mp4"
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MainActivity.kt:338: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "💡 支持格式: MP4, MP3, JPG, PNG 等\n📱 示例: http://example.com/video.mp4"
+                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MainActivity.kt:345: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "媒体URL:" 
+                    ~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MainActivity.kt:404: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                    statusView.text = "状态: 正在播放 $title"
+                                      ~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MediaControlActivity.kt:136: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                        currentTime.text = "00:00"
+                                            ~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MediaControlActivity.kt:181: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                    volumeText.text = "音量: $progress%"
+                                      ~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MediaControlActivity.kt:199: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            urlInput.setText("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MediaControlActivity.kt:200: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            titleInput.setText("Big Buck Bunny")
+                                ~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MediaControlActivity.kt:204: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            urlInput.setText("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4")
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MediaControlActivity.kt:205: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            titleInput.setText("Elephants Dream")
+                                ~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MediaControlActivity.kt:349: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            setText("/storage/emulated/0/")
+                     ~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MediaControlActivity.kt:353: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+            text = """
+                   ^
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MediaControlActivity.kt:355: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                • 自动启动HTTP文件服务器
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MediaControlActivity.kt:356: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                • 支持大文件Range请求
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MediaControlActivity.kt:360: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                • /storage/emulated/0/DCIM/Camera/video.mp4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MediaControlActivity.kt:361: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                • /storage/emulated/0/Download/movie.mkv
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MediaControlActivity.kt:362: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                • /storage/emulated/0/Music/music.mp3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:121: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+            text = "$label: $value"
+                   ~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:134: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        searchTimeView.text = "🔍 设备搜索时间: ${searchTime}ms"
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:134: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+        searchTimeView.text = "🔍 设备搜索时间: ${searchTime}ms"
+                                                       ~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:135: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        networkLatencyView.text = "🌐 网络延迟: ${networkLatency}ms"
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:135: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+        networkLatencyView.text = "🌐 网络延迟: ${networkLatency}ms"
+                                                             ~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:136: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        memoryUsageView.text = "💾 内存使用: ${memoryUsage}MB"
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:136: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+        memoryUsageView.text = "💾 内存使用: ${memoryUsage}MB"
+                                                       ~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:137: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        performanceScoreView.text = "性能评分: $score"
+                                    ~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:149: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        performanceDetailsView.text = "🚀 运行基准测试...\n"
+                                      ~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:160: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                        performanceDetailsView.text = performanceDetailsView.text.toString() + "✅ 搜索完成: 找到 ${devices.size} 个设备\n"
+                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:160: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                        performanceDetailsView.text = performanceDetailsView.text.toString() + "✅ 搜索完成: 找到 ${devices.size} 个设备\n"
+                                                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:161: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                        performanceDetailsView.text = performanceDetailsView.text.toString() + "⏱️ 搜索耗时: ${duration}ms\n"
+                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:161: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                        performanceDetailsView.text = performanceDetailsView.text.toString() + "⏱️ 搜索耗时: ${duration}ms\n"
+                                                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:161: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                        performanceDetailsView.text = performanceDetailsView.text.toString() + "⏱️ 搜索耗时: ${duration}ms\n"
+                                                                                                                    ~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:162: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                        performanceDetailsView.text = performanceDetailsView.text.toString() + "📊 平均延迟: ${duration / maxOf(1, devices.size)}ms/设备\n"
+                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:162: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                        performanceDetailsView.text = performanceDetailsView.text.toString() + "📊 平均延迟: ${duration / maxOf(1, devices.size)}ms/设备\n"
+                                                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:162: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                        performanceDetailsView.text = performanceDetailsView.text.toString() + "📊 平均延迟: ${duration / maxOf(1, devices.size)}ms/设备\n"
+                                                                                                                                             ~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:168: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                    performanceDetailsView.text = performanceDetailsView.text.toString() + "❌ 测试失败: ${e.message}\n"
+                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:168: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                    performanceDetailsView.text = performanceDetailsView.text.toString() + "❌ 测试失败: ${e.message}\n"
+                                                                                           ~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:175: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        performanceDetailsView.text = "🌐 网络性能测试...\n"
+                                      ~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:184: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                    performanceDetailsView.text = performanceDetailsView.text.toString() + "测试 ${i + 1}: ${latency}ms\n"
+                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:184: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                    performanceDetailsView.text = performanceDetailsView.text.toString() + "测试 ${i + 1}: ${latency}ms\n"
+                                                                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:184: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                    performanceDetailsView.text = performanceDetailsView.text.toString() + "测试 ${i + 1}: ${latency}ms\n"
+                                                                                                 ~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:184: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                    performanceDetailsView.text = performanceDetailsView.text.toString() + "测试 ${i + 1}: ${latency}ms\n"
+                                                                                                                   ~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:189: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                performanceDetailsView.text = performanceDetailsView.text.toString() + "✅ 网络测试完成\n"
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:189: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                performanceDetailsView.text = performanceDetailsView.text.toString() + "✅ 网络测试完成\n"
+                                                                                       ~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:196: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        performanceDetailsView.text = "💾 内存性能测试...\n"
+                                      ~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:204: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        performanceDetailsView.text = performanceDetailsView.text.toString() + "最大内存: ${maxMemory}MB\n"
+                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:204: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        performanceDetailsView.text = performanceDetailsView.text.toString() + "最大内存: ${maxMemory}MB\n"
+                                                                               ~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:204: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+        performanceDetailsView.text = performanceDetailsView.text.toString() + "最大内存: ${maxMemory}MB\n"
+                                                                                                  ~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:205: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        performanceDetailsView.text = performanceDetailsView.text.toString() + "已分配: ${totalMemory}MB\n"
+                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:205: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        performanceDetailsView.text = performanceDetailsView.text.toString() + "已分配: ${totalMemory}MB\n"
+                                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:205: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+        performanceDetailsView.text = performanceDetailsView.text.toString() + "已分配: ${totalMemory}MB\n"
+                                                                                                   ~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:206: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        performanceDetailsView.text = performanceDetailsView.text.toString() + "已使用: ${usedMemory}MB\n"
+                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:206: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        performanceDetailsView.text = performanceDetailsView.text.toString() + "已使用: ${usedMemory}MB\n"
+                                                                               ~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:206: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+        performanceDetailsView.text = performanceDetailsView.text.toString() + "已使用: ${usedMemory}MB\n"
+                                                                                                  ~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:207: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        performanceDetailsView.text = performanceDetailsView.text.toString() + "可用内存: ${freeMemory}MB\n"
+                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:207: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        performanceDetailsView.text = performanceDetailsView.text.toString() + "可用内存: ${freeMemory}MB\n"
+                                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:207: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+        performanceDetailsView.text = performanceDetailsView.text.toString() + "可用内存: ${freeMemory}MB\n"
+                                                                                                   ~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:208: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        performanceDetailsView.text = performanceDetailsView.text.toString() + "✅ 内存测试完成\n"
+                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\PerformanceActivity.kt:208: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        performanceDetailsView.text = performanceDetailsView.text.toString() + "✅ 内存测试完成\n"
+                                                                               ~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\SplashActivity.kt:44: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "UPnPCast Demo"
+                    ~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\SplashActivity.kt:52: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "Professional DLNA Casting Library"
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\SplashActivity.kt:60: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "v1.0.0 | Built with UPnPCast API"
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "SetTextI18n":
+   When calling TextView#setText
+   * Never call Number#toString() to format numbers; it will not handle
+   fraction separators and locale-specific digits properly. Consider using
+   String#format with proper format specifications (%d or %f) instead.
+   * Do not pass a string literal (e.g. "Hello") to display text. Hardcoded
+   text can not be properly translated to other languages. Consider using
+   Android resource strings instead.
+   * Do not build messages by concatenating text chunks. Such messages can not
+   be properly translated.
+
+   https://developer.android.com/guide/topics/resources/localization.html
+
+E:\UPnPCast\app-demo\src\main\res\layout\activity_main.xml:24: Warning: Hardcoded string "UPnP 设备", should use @string resource [HardcodedText]
+            android:text="UPnP 设备"
+            ~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_main.xml:33: Warning: Hardcoded string "刷新", should use @string resource [HardcodedText]
+            android:text="刷新"
+            ~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_main.xml:42: Warning: Hardcoded string "设置", should use @string resource [HardcodedText]
+            android:text="设置"
+            ~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_main.xml:70: Warning: Hardcoded string "正在搜索设备...", should use @string resource [HardcodedText]
+            android:text="正在搜索设备..."
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_main.xml:78: Warning: Hardcoded string "0 台设备", should use @string resource [HardcodedText]
+            android:text="0 台设备"
+            ~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_main.xml:109: Warning: Hardcoded string "📱", should use @string resource [HardcodedText]
+            android:text="📱"
+            ~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_main.xml:116: Warning: Hardcoded string "未发现设备", should use @string resource [HardcodedText]
+            android:text="未发现设备"
+            ~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_main.xml:125: Warning: Hardcoded string "请确保设备连接到同一WiFi网络n并开启了DLNA/UPnP功能", should use @string resource [HardcodedText]
+            android:text="请确保设备连接到同一WiFi网络\n并开启了DLNA/UPnP功能"
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:26: Warning: Hardcoded string "连接的设备", should use @string resource [HardcodedText]
+            android:text="连接的设备"
+            ~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:34: Warning: Hardcoded string "设备名称", should use @string resource [HardcodedText]
+            android:text="设备名称"
+            ~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:44: Warning: Hardcoded string "视频链接:", should use @string resource [HardcodedText]
+        android:text="视频链接:"
+        ~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:53: Warning: Hardcoded string "输入视频URL或选择示例", should use @string resource [HardcodedText]
+        android:hint="输入视频URL或选择示例"
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:72: Warning: Hardcoded string "示例视频1", should use @string resource [HardcodedText]
+            android:text="示例视频1"
+            ~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:82: Warning: Hardcoded string "示例视频2", should use @string resource [HardcodedText]
+            android:text="示例视频2"
+            ~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:92: Warning: Hardcoded string "视频标题:", should use @string resource [HardcodedText]
+        android:text="视频标题:"
+        ~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:102: Warning: Hardcoded string "输入视频标题", should use @string resource [HardcodedText]
+        android:hint="输入视频标题"
+        ~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:122: Warning: Hardcoded string "当前媒体", should use @string resource [HardcodedText]
+            android:text="当前媒体"
+            ~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:131: Warning: Hardcoded string "未播放", should use @string resource [HardcodedText]
+            android:text="未播放"
+            ~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:156: Warning: Hardcoded string "00:00", should use @string resource [HardcodedText]
+                android:text="00:00"
+                ~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:168: Warning: Hardcoded string "00:00", should use @string resource [HardcodedText]
+                android:text="00:00"
+                ~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:194: Warning: Hardcoded string "▶ 播放", should use @string resource [HardcodedText]
+            android:text="▶ 播放"
+            ~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:202: Warning: Hardcoded string "⏸ 暂停", should use @string resource [HardcodedText]
+            android:text="⏸ 暂停"
+            ~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:210: Warning: Hardcoded string "⏵ 继续", should use @string resource [HardcodedText]
+            android:text="⏵ 继续"
+            ~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:218: Warning: Hardcoded string "⏹ 停止", should use @string resource [HardcodedText]
+            android:text="⏹ 停止"
+            ~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:236: Warning: Hardcoded string "音量控制", should use @string resource [HardcodedText]
+            android:text="音量控制"
+            ~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:252: Warning: Hardcoded string "🔉", should use @string resource [HardcodedText]
+                android:text="🔉"
+                ~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:269: Warning: Hardcoded string "🔊", should use @string resource [HardcodedText]
+                android:text="🔊"
+                ~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_media_control.xml:279: Warning: Hardcoded string "音量: 50%", should use @string resource [HardcodedText]
+            android:text="音量: 50%"
+            ~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_settings.xml:12: Warning: Hardcoded string "设置", should use @string resource [HardcodedText]
+        android:text="设置"
+        ~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_settings.xml:21: Warning: Hardcoded string "自动连接上次设备", should use @string resource [HardcodedText]
+        android:text="自动连接上次设备"
+        ~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_settings.xml:28: Warning: Hardcoded string "启用详细日志", should use @string resource [HardcodedText]
+        android:text="启用详细日志"
+        ~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_settings.xml:41: Warning: Hardcoded string "搜索超时设置(秒):", should use @string resource [HardcodedText]
+        android:text="搜索超时设置(秒):"
+        ~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_settings.xml:64: Warning: Hardcoded string "30 秒", should use @string resource [HardcodedText]
+            android:text="30 秒"
+            ~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_settings.xml:80: Warning: Hardcoded string "清除设备缓存", should use @string resource [HardcodedText]
+        android:text="清除设备缓存"
+        ~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\activity_settings.xml:92: Warning: Hardcoded string "返回", should use @string resource [HardcodedText]
+        android:text="返回" />
+        ~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\fragment_test_helper.xml:13: Warning: Hardcoded string "UPnPCast测试助手", should use @string resource [HardcodedText]
+        android:text="UPnPCast测试助手"
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\fragment_test_helper.xml:34: Warning: Hardcoded string "开始记录", should use @string resource [HardcodedText]
+            android:text="开始记录"
+            ~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\fragment_test_helper.xml:42: Warning: Hardcoded string "停止记录", should use @string resource [HardcodedText]
+            android:text="停止记录"
+            ~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\fragment_test_helper.xml:51: Warning: Hardcoded string "开始自动测试", should use @string resource [HardcodedText]
+        android:text="开始自动测试"
+        ~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\fragment_test_helper.xml:59: Warning: Hardcoded string "测试状态:", should use @string resource [HardcodedText]
+        android:text="测试状态:"
+        ~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\fragment_test_helper.xml:68: Warning: Hardcoded string "等待开始...", should use @string resource [HardcodedText]
+        android:text="等待开始..."
+        ~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\fragment_test_helper.xml:76: Warning: Hardcoded string "内存状态:", should use @string resource [HardcodedText]
+        android:text="内存状态:"
+        ~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\fragment_test_helper.xml:85: Warning: Hardcoded string "等待数据...", should use @string resource [HardcodedText]
+        android:text="等待数据..."
+        ~~~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\fragment_test_helper.xml:93: Warning: Hardcoded string "缓存统计:", should use @string resource [HardcodedText]
+        android:text="缓存统计:"
+        ~~~~~~~~~~~~~~~~~~~~
+E:\UPnPCast\app-demo\src\main\res\layout\fragment_test_helper.xml:109: Warning: Hardcoded string "等待数据...", should use @string resource [HardcodedText]
+            android:text="等待数据..."
+            ~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "HardcodedText":
+   Hardcoding text attributes directly in layout files is bad for several
+   reasons:
+
+   * When creating configuration variations (for example for landscape or
+   portrait) you have to repeat the actual text (and keep it up to date when
+   making changes)
+
+   * The application cannot be translated to other languages by just adding
+   new translations for existing string resources.
+
+   There are quickfixes to automatically extract this hardcoded string into a
+   resource lookup.
+
+0 errors, 151 warnings
