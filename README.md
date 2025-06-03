@@ -11,6 +11,15 @@
 
 > **[中文文档](README_zh.md)** | **English Documentation**
 
+## ✨ What's New in v1.1.0
+
+🎯 **Major Architecture Refactoring & Internationalization**
+- **77% Code Reduction**: Streamlined from 644 lines to 148 lines for core functionality
+- **Modular Architecture**: Implemented specialized modules for better maintainability
+- **Full English Support**: Complete internationalization with English documentation and comments
+- **Performance Optimization**: Improved memory usage and response times
+- **Enhanced Documentation**: Comprehensive API documentation with clear examples
+
 ## Features
 
 - 🔍 **Device Discovery**: Automatic DLNA/UPnP device discovery with SSDP protocol
@@ -41,14 +50,14 @@ allprojects {
 Add dependency:
 ```gradle
 dependencies {
-    implementation 'com.github.yinnho:UPnPCast:1.0.3'
+    implementation 'com.github.yinnho:UPnPCast:1.1.0'
 }
 ```
 
 #### Option 2: Maven Central (Coming Soon)
 ```gradle
 dependencies {
-    implementation 'yinnho.com:upnpcast:1.0.0'
+    implementation 'yinnho.com:upnpcast:1.1.0'
 }
 ```
 
