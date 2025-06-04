@@ -12,7 +12,7 @@ android {
         minSdk = 24
         
         // Version information setting
-        version = "1.1.0"
+        version = "1.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -103,7 +103,7 @@ afterEvaluate {
                 
                 groupId = "com.github.yinnho"
                 artifactId = "UPnPCast" 
-                version = "1.1.0"
+                version = "1.1.1"
             }
         }
     }

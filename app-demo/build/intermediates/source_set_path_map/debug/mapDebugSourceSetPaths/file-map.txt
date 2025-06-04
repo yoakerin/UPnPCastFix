@@ -14,11 +14,11 @@ com.yinnho.upnpcast.demo.app-demo-appcompat-resources-1.7.0-12 C:\Users\8684c\.g
 com.yinnho.upnpcast.demo.app-demo-customview-poolingcontainer-1.0.0-13 C:\Users\8684c\.gradle\caches\8.11.1\transforms\44628089f7226511937b8176e85f3086\transformed\customview-poolingcontainer-1.0.0\res
 com.yinnho.upnpcast.demo.app-demo-core-1.16.0-14 C:\Users\8684c\.gradle\caches\8.11.1\transforms\44b466240c8f1890d019d146aaebc138\transformed\core-1.16.0\res
 com.yinnho.upnpcast.demo.app-demo-transition-1.5.0-15 C:\Users\8684c\.gradle\caches\8.11.1\transforms\45c84bce6d50c71b6933ade1339a1325\transformed\transition-1.5.0\res
-com.yinnho.upnpcast.demo.app-demo-material-1.12.0-16 C:\Users\8684c\.gradle\caches\8.11.1\transforms\5829cd9e45869d44733e106503681dfa\transformed\material-1.12.0\res
-com.yinnho.upnpcast.demo.app-demo-core-runtime-2.2.0-17 C:\Users\8684c\.gradle\caches\8.11.1\transforms\5d4d2b38d27e234f2177792099e0e2db\transformed\core-runtime-2.2.0\res
-com.yinnho.upnpcast.demo.app-demo-coordinatorlayout-1.1.0-18 C:\Users\8684c\.gradle\caches\8.11.1\transforms\7274957a335e4dc15795bdb1f23dcb69\transformed\coordinatorlayout-1.1.0\res
-com.yinnho.upnpcast.demo.app-demo-profileinstaller-1.3.1-19 C:\Users\8684c\.gradle\caches\8.11.1\transforms\795f0fcfbc2402711ecfc52e62b949ae\transformed\profileinstaller-1.3.1\res
-com.yinnho.upnpcast.demo.app-demo-recyclerview-1.3.2-20 C:\Users\8684c\.gradle\caches\8.11.1\transforms\880c5067d5b42b42646fbe9ea97aa82c\transformed\recyclerview-1.3.2\res
+com.yinnho.upnpcast.demo.app-demo-recyclerview-1.4.0-16 C:\Users\8684c\.gradle\caches\8.11.1\transforms\4e2034918eaa07d370e92b951d4f9397\transformed\recyclerview-1.4.0\res
+com.yinnho.upnpcast.demo.app-demo-material-1.12.0-17 C:\Users\8684c\.gradle\caches\8.11.1\transforms\5829cd9e45869d44733e106503681dfa\transformed\material-1.12.0\res
+com.yinnho.upnpcast.demo.app-demo-core-runtime-2.2.0-18 C:\Users\8684c\.gradle\caches\8.11.1\transforms\5d4d2b38d27e234f2177792099e0e2db\transformed\core-runtime-2.2.0\res
+com.yinnho.upnpcast.demo.app-demo-coordinatorlayout-1.1.0-19 C:\Users\8684c\.gradle\caches\8.11.1\transforms\7274957a335e4dc15795bdb1f23dcb69\transformed\coordinatorlayout-1.1.0\res
+com.yinnho.upnpcast.demo.app-demo-profileinstaller-1.3.1-20 C:\Users\8684c\.gradle\caches\8.11.1\transforms\795f0fcfbc2402711ecfc52e62b949ae\transformed\profileinstaller-1.3.1\res
 com.yinnho.upnpcast.demo.app-demo-startup-runtime-1.1.1-21 C:\Users\8684c\.gradle\caches\8.11.1\transforms\8f8933de638b34450139c5f7bf166957\transformed\startup-runtime-1.1.1\res
 com.yinnho.upnpcast.demo.app-demo-lifecycle-viewmodel-2.6.2-22 C:\Users\8684c\.gradle\caches\8.11.1\transforms\9e19bd8222048ede46d5847b786b6270\transformed\lifecycle-viewmodel-2.6.2\res
 com.yinnho.upnpcast.demo.app-demo-lifecycle-viewmodel-savedstate-2.6.2-23 C:\Users\8684c\.gradle\caches\8.11.1\transforms\a56c0e627f37efbc32629f4a15890ecf\transformed\lifecycle-viewmodel-savedstate-2.6.2\res

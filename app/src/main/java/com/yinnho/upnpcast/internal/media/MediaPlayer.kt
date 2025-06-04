@@ -105,6 +105,26 @@ internal class MediaPlayer {
         }
         
         /**
+         * Get current volume
+         * 
+         * @param device Current playback device
+         * @param callback Volume information callback (volume, isMuted, success)
+         */
+        fun getCurrentVolume(device: RemoteDevice, callback: (volume: Int?, isMuted: Boolean?, success: Boolean) -> Unit) {
+            Thread {
+                try {
+                    val controller = DlnaMediaController.getController(device)
+                    val volume = runBlocking { controller.getVolumeAsync() }
+                    val isMuted = runBlocking { controller.getMuteAsync() }
+                    callback(volume, isMuted, volume != null)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to get volume: ${e.message}")
+                    callback(null, null, false)
+                }
+            }.start()
+        }
+        
+        /**
          * Clean up all media controllers
          */
         fun cleanup() {

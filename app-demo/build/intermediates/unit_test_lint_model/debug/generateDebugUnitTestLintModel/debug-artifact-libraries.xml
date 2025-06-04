@@ -4,9 +4,9 @@
       project=":app-demo"/>
   <library
       name=":@@:app::debug"
-      jars="C:\Users\8684c\.gradle\caches\8.11.1\transforms\b4168e4ca955000b180c68b8e0d35ed1\transformed\out\jars\classes.jar;C:\Users\8684c\.gradle\caches\8.11.1\transforms\b4168e4ca955000b180c68b8e0d35ed1\transformed\out\jars\libs\R.jar"
-      resolved="UPnPCast:app:1.0.0"
-      folder="C:\Users\8684c\.gradle\caches\8.11.1\transforms\b4168e4ca955000b180c68b8e0d35ed1\transformed\out"
+      jars="C:\Users\8684c\.gradle\caches\8.11.1\transforms\2ed27ab1550699c0d898683c6b91152d\transformed\out\jars\classes.jar;C:\Users\8684c\.gradle\caches\8.11.1\transforms\2ed27ab1550699c0d898683c6b91152d\transformed\out\jars\libs\R.jar"
+      resolved="UPnPCast:app:1.1.0"
+      folder="C:\Users\8684c\.gradle\caches\8.11.1\transforms\2ed27ab1550699c0d898683c6b91152d\transformed\out"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"

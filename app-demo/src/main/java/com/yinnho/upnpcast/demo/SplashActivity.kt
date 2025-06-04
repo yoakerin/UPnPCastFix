@@ -1,11 +1,9 @@
 package com.yinnho.upnpcast.demo
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.Gravity
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -13,72 +11,77 @@ import androidx.core.graphics.toColorInt
 import com.yinnho.upnpcast.DLNACast
 
 /**
- * 🚀 UPnPCast Demo - 专业启动页
+ * 🚀 UPnPCast Demo - Professional Splash Screen
+ * Demonstrates modern splash screen implementation with auto-redirect
  */
 class SplashActivity : AppCompatActivity() {
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // 隐藏状态栏
-        supportActionBar?.hide()
+        // Hide status bar
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
         
-        // 创建布局
+        // Create layout
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            setBackgroundColor("#1E1E1E".toColorInt())
             setPadding(40, 40, 40, 40)
+            setBackgroundColor("#F5F5F5".toColorInt())
         }
         
-        // Logo文字
+        // Logo text
         val logoView = TextView(this).apply {
-            text = "🎯"
-            textSize = 60f
-            setTextColor(Color.WHITE)
+            text = "📡"
+            textSize = 80f
             gravity = Gravity.CENTER
+            setPadding(0, 0, 0, 30)
         }
+        layout.addView(logoView)
         
-        // 标题
+        // Title
         val titleView = TextView(this).apply {
             text = "UPnPCast Demo"
-            textSize = 24f
-            setTextColor(Color.WHITE)
+            textSize = 28f
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            setTextColor("#333333".toColorInt())
             gravity = Gravity.CENTER
         }
+        layout.addView(titleView)
         
-        // 副标题
+        // Subtitle
         val subtitleView = TextView(this).apply {
             text = "Professional DLNA Casting Library"
-            textSize = 14f
-            setTextColor("#AAAAAA".toColorInt())
+            textSize = 16f
+            setTextColor("#666666".toColorInt())
             gravity = Gravity.CENTER
+            setPadding(0, 10, 0, 40)
         }
-        
-        // 版本信息
-        val versionView = TextView(this).apply {
-            text = "v1.0.0 | Built with UPnPCast API"
-            textSize = 12f
-            setTextColor("#888888".toColorInt())
-            gravity = Gravity.CENTER
-        }
-        
-        layout.addView(logoView)
-        layout.addView(titleView)
         layout.addView(subtitleView)
+        
+        // Version info
+        val versionView = TextView(this).apply {
+            text = "Version 1.1.0"
+            textSize = 14f
+            setTextColor("#999999".toColorInt())
+            gravity = Gravity.CENTER
+        }
         layout.addView(versionView)
         
         setContentView(layout)
         
-        // 🚀 在后台初始化UPnPCast
+        // 🚀 Initialize UPnPCast in background
         Thread {
             try {
                 DLNACast.init(this@SplashActivity)
-                Thread.sleep(2000) // 展示2秒
+                Thread.sleep(2000) // Display for 2 seconds
+                
+                runOnUiThread {
+                    startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+                    finish()
+                }
             } catch (e: Exception) {
-                e.printStackTrace()
-            } finally {
-                Handler(Looper.getMainLooper()).post {
+                runOnUiThread {
                     startActivity(Intent(this@SplashActivity, MainActivity::class.java))
                     finish()
                 }

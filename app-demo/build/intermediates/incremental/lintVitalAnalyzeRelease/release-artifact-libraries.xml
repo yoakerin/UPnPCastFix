@@ -1,10 +1,10 @@
 <libraries>
   <library
       name=":@@:app::release"
-      jars="C:\Users\8684c\.gradle\caches\8.11.1\transforms\0c176af9a9d684699dae202c4cf7fa00\transformed\out\jars\classes.jar;C:\Users\8684c\.gradle\caches\8.11.1\transforms\0c176af9a9d684699dae202c4cf7fa00\transformed\out\jars\libs\R.jar"
-      resolved="UPnPCast:app:1.0.0"
+      jars="C:\Users\8684c\.gradle\caches\8.11.1\transforms\045d2aaa0614c6959541c289d4bdcab0\transformed\out\jars\classes.jar;C:\Users\8684c\.gradle\caches\8.11.1\transforms\045d2aaa0614c6959541c289d4bdcab0\transformed\out\jars\libs\R.jar"
+      resolved="UPnPCast:app:1.1.0"
       partialResultsDir="E:\UPnPCast\app\build\intermediates\lint_vital_partial_results\release\lintVitalAnalyzeRelease\out"
-      folder="C:\Users\8684c\.gradle\caches\8.11.1\transforms\0c176af9a9d684699dae202c4cf7fa00\transformed\out"
+      folder="C:\Users\8684c\.gradle\caches\8.11.1\transforms\045d2aaa0614c6959541c289d4bdcab0\transformed\out"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"

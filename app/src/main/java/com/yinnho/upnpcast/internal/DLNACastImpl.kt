@@ -93,6 +93,26 @@ internal object DLNACastImpl {
         CoreManager.getProgress(callback)
     }
 
+    fun getVolume(callback: (volume: Int?, isMuted: Boolean?, success: Boolean) -> Unit) {
+        CoreManager.getVolume(callback)
+    }
+
+    fun getProgressRealtime(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit) {
+        CoreManager.getProgressRealtime(callback)
+    }
+
+    fun refreshVolumeCache(callback: (success: Boolean) -> Unit) {
+        CoreManager.refreshVolumeCache(callback)
+    }
+
+    fun refreshProgressCache(callback: (success: Boolean) -> Unit) {
+        CoreManager.refreshProgressCache(callback)
+    }
+
+    fun clearProgressCache() {
+        CoreManager.clearProgressCache()
+    }
+
     fun castLocalFile(filePath: String, device: Device, title: String?, callback: (success: Boolean, message: String) -> Unit) {
         CoreManager.castLocalFileToDevice(filePath, device, title, callback)
     }

@@ -144,6 +144,48 @@ object DLNACast {
     }
     
     /**
+     * Get current volume information
+     * @param callback Callback function, returns (volume: Int?, isMuted: Boolean?, success: Boolean)
+     *                 volume: Current volume (0-100), null if failed to get
+     *                 isMuted: Current mute state, null if failed to get
+     *                 success: Whether the request was successful
+     */
+    fun getVolume(callback: (volume: Int?, isMuted: Boolean?, success: Boolean) -> Unit) {
+        DLNACastImpl.getVolume(callback)
+    }
+    
+    /**
+     * Get real-time playback progress (force fetch from device, no cache)
+     * @param callback Callback function, returns (currentMs, totalMs, success)
+     */
+    fun getProgressRealtime(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit) {
+        DLNACastImpl.getProgressRealtime(callback)
+    }
+    
+    /**
+     * Manually refresh volume cache
+     * @param callback Callback function, returns success status
+     */
+    fun refreshVolumeCache(callback: (success: Boolean) -> Unit = {}) {
+        DLNACastImpl.refreshVolumeCache(callback)
+    }
+    
+    /**
+     * Manually refresh progress cache
+     * @param callback Callback function, returns success status
+     */
+    fun refreshProgressCache(callback: (success: Boolean) -> Unit = {}) {
+        DLNACastImpl.refreshProgressCache(callback)
+    }
+    
+    /**
+     * Clear progress cache (call when switching media)
+     */
+    fun clearProgressCache() {
+        DLNACastImpl.clearProgressCache()
+    }
+    
+    /**
      * Cast local file
      * @param filePath Local file path
      * @param device Target device

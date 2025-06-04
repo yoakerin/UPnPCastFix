@@ -523,7 +523,7 @@
         errorLine2="                    ~~~~~~~~~~~">
         <location
             file="E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt"
-            line="84"
+            line="86"
             column="21"/>
     </issue>
 
@@ -541,7 +541,7 @@
         errorLine2="                     ~~~~~~~~~~~~~~~~~~~~">
         <location
             file="E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt"
-            line="424"
+            line="556"
             column="22"/>
     </issue>
 
@@ -559,7 +559,7 @@
         errorLine2="                   ^">
         <location
             file="E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt"
-            line="432"
+            line="564"
             column="20"/>
     </issue>
 
@@ -577,7 +577,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt"
-            line="434"
+            line="566"
             column="1"/>
     </issue>
 
@@ -595,7 +595,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt"
-            line="435"
+            line="567"
             column="1"/>
     </issue>
 
@@ -613,7 +613,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt"
-            line="436"
+            line="568"
             column="1"/>
     </issue>
 
@@ -631,7 +631,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt"
-            line="440"
+            line="572"
             column="1"/>
     </issue>
 
@@ -649,7 +649,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt"
-            line="441"
+            line="573"
             column="1"/>
     </issue>
 
@@ -667,7 +667,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt"
-            line="442"
+            line="574"
             column="1"/>
     </issue>
 

@@ -231,31 +231,31 @@ E:\UPnPCast\app-demo\build.gradle.kts:42: Warning: Use version catalog instead (
 E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:52: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
             text = "📚 DLNACast API 演示"
                     ~~~~~~~~~~~~~~~~~~
-E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:84: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:86: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
             text = "📝 API调用日志:"
                     ~~~~~~~~~~~
-E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:424: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:556: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
             setText("/storage/emulated/0/")
                      ~~~~~~~~~~~~~~~~~~~~
-E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:432: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:564: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
             text = """
                    ^
-E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:434: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:566: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
                 • /storage/emulated/0/DCIM/Camera/video.mp4
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:435: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:567: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
                 • /storage/emulated/0/Download/movie.mkv
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:436: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:568: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
                 • /storage/emulated/0/Music/song.mp3
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:440: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:572: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
                 • 自动启动HTTP文件服务器
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:441: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:573: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
                 • 支持Range请求，大文件流式传输
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:442: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\ApiDemoActivity.kt:574: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
                 • 统一MIME类型，确保设备兼容性
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 E:\UPnPCast\app-demo\src\main\java\com\yinnho\upnpcast\demo\MainActivity.kt:57: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]

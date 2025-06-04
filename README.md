@@ -158,6 +158,17 @@ DLNACast.control(action: MediaAction, value: Any? = null, callback: (success: Bo
 // Get playback progress
 DLNACast.getProgress(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit)
 
+// Get volume information (NEW!)
+DLNACast.getVolume(callback: (volume: Int?, isMuted: Boolean?, success: Boolean) -> Unit)
+
+// Get real-time progress (NEW!)
+DLNACast.getProgressRealtime(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit)
+
+// Cache management (NEW!)
+DLNACast.refreshVolumeCache(callback: (success: Boolean) -> Unit = {})
+DLNACast.refreshProgressCache(callback: (success: Boolean) -> Unit = {})
+DLNACast.clearProgressCache()
+
 // Get current state
 DLNACast.getState(): State
 

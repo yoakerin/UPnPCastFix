@@ -526,6 +526,88 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
     }
     
     /**
+     * Send RenderingControl SOAP action with response
+     */
+    private suspend fun sendRenderingControlActionWithResponse(action: String, body: String): String? = withContext(Dispatchers.IO) {
+        try {
+            val renderingControlUrl = buildServiceUrl("RenderingControl", "RenderingControl/control")
+                ?: return@withContext null
+            
+            val soapEnvelope = """
+                <?xml version="1.0" encoding="utf-8"?>
+                <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+                    <s:Body>
+                        $body
+                    </s:Body>
+                </s:Envelope>
+            """.trimIndent()
+            
+            val connection = URL(renderingControlUrl).openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "text/xml; charset=utf-8")
+            connection.setRequestProperty("SOAPAction", "\"urn:schemas-upnp-org:service:RenderingControl:1#$action\"")
+            connection.setRequestProperty("User-Agent", "UPnPCast/1.0")
+            connection.doOutput = true
+            connection.connectTimeout = 10000
+            connection.readTimeout = 15000
+            
+            connection.outputStream.use { outputStream ->
+                OutputStreamWriter(outputStream, "UTF-8").use { writer ->
+                    writer.write(soapEnvelope)
+                    writer.flush()
+                }
+            }
+            
+            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                connection.inputStream.use { inputStream ->
+                    BufferedReader(InputStreamReader(inputStream, "UTF-8")).use { reader ->
+                        reader.readText()
+                    }
+                }
+            } else {
+                null
+            }
+            
+        } catch (e: Exception) {
+            Log.e(tag, "RenderingControl request with response failed: $action, ${e.message}")
+            null
+        }
+    }
+    
+    /**
+     * Parse volume from response
+     */
+    private fun parseVolumeFromResponse(response: String): Int? {
+        try {
+            val volumePattern = "<CurrentVolume>(.*?)</CurrentVolume>".toRegex()
+            val match = volumePattern.find(response)
+            return match?.groupValues?.get(1)?.toIntOrNull()
+        } catch (e: Exception) {
+            Log.e(tag, "Failed to parse volume response: ${e.message}")
+            return null
+        }
+    }
+    
+    /**
+     * Parse mute state from response
+     */
+    private fun parseMuteFromResponse(response: String): Boolean? {
+        try {
+            val mutePattern = "<CurrentMute>(.*?)</CurrentMute>".toRegex()
+            val match = mutePattern.find(response)
+            val muteValue = match?.groupValues?.get(1)
+            return when (muteValue) {
+                "1", "true", "True" -> true
+                "0", "false", "False" -> false
+                else -> null
+            }
+        } catch (e: Exception) {
+            Log.e(tag, "Failed to parse mute response: ${e.message}")
+            return null
+        }
+    }
+    
+    /**
      * XML escape
      */
     private fun escapeXmlContent(text: String): String {
@@ -587,6 +669,54 @@ internal class DlnaMediaController(private val device: RemoteDevice) {
         val minutes = (totalSeconds % 3600) / 60
         val seconds = totalSeconds % 60
         return String.format(Locale.ROOT, "%02d:%02d:%02d", hours, minutes, seconds)
+    }
+    
+    /**
+     * Get current volume
+     */
+    suspend fun getVolumeAsync(): Int? = withContext(Dispatchers.IO) {
+        if (!checkAvailable()) return@withContext null
+        
+        try {
+            val response = sendRenderingControlActionWithResponse(
+                action = "GetVolume",
+                body = """
+                    <u:GetVolume xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1">
+                        <InstanceID>0</InstanceID>
+                        <Channel>Master</Channel>
+                    </u:GetVolume>
+                """.trimIndent()
+            )
+            
+            response?.let { parseVolumeFromResponse(it) }
+        } catch (e: Exception) {
+            Log.e(tag, "Failed to get volume: ${e.message}")
+            null
+        }
+    }
+    
+    /**
+     * Get current mute state
+     */
+    suspend fun getMuteAsync(): Boolean? = withContext(Dispatchers.IO) {
+        if (!checkAvailable()) return@withContext null
+        
+        try {
+            val response = sendRenderingControlActionWithResponse(
+                action = "GetMute",
+                body = """
+                    <u:GetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1">
+                        <InstanceID>0</InstanceID>
+                        <Channel>Master</Channel>
+                    </u:GetMute>
+                """.trimIndent()
+            )
+            
+            response?.let { parseMuteFromResponse(it) }
+        } catch (e: Exception) {
+            Log.e(tag, "Failed to get mute state: ${e.message}")
+            null
+        }
     }
     
     /**
