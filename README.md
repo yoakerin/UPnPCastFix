@@ -11,20 +11,23 @@
 
 > **[中文文档](README_zh.md)** | **English Documentation**
 
-## ✨ What's New in v1.1.0
+## ✨ What's New in v1.1.1
 
-🎯 **Major Architecture Refactoring & Internationalization**
-- **77% Code Reduction**: Streamlined from 644 lines to 148 lines for core functionality
-- **Modular Architecture**: Implemented specialized modules for better maintainability
-- **Full English Support**: Complete internationalization with English documentation and comments
-- **Performance Optimization**: Improved memory usage and response times
-- **Enhanced Documentation**: Comprehensive API documentation with clear examples
+🎯 **Enhanced Volume Control & Millisecond-Level Progress Management**
+- **🔊 Complete Volume Control System**: Added `getVolume()`, `setVolume()`, and `setMute()` APIs for comprehensive volume management
+- **⚡ Millisecond-Level Progress Control**: Intelligent caching with 3-second cache duration and real-time interpolation
+- **🚀 Smart Cache Management**: Volume cache (5-second validity) and progress cache with async refresh mechanisms
+- **🎯 Real-time Progress Tracking**: `getProgressRealtime()` for force refresh without cache dependency
+- **🔄 Manual Cache Control**: Exposed cache refresh and clearing methods for advanced control
+- **📊 Enhanced State Management**: Improved `getState()` with integrated volume and mute status
 
 ## Features
 
 - 🔍 **Device Discovery**: Automatic DLNA/UPnP device discovery with SSDP protocol
 - 📺 **Media Casting**: Cast photos, videos, and audio to DLNA-compatible devices
 - 🎮 **Playback Controls**: Play, pause, stop, seek, volume control, and mute functionality
+- 🔊 **Advanced Volume Control**: Get/set volume, mute control with intelligent caching
+- ⚡ **Millisecond Precision**: Real-time progress tracking with smart interpolation
 - 📱 **Easy Integration**: Simple API with intuitive callback mechanisms
 - 🚀 **Modern Architecture**: Built with Kotlin, Coroutines, and Android best practices
 - 🔧 **Highly Compatible**: Tested with major TV brands (Xiaomi, Samsung, LG, Sony)
@@ -50,14 +53,14 @@ allprojects {
 Add dependency:
 ```gradle
 dependencies {
-    implementation 'com.github.yinnho:UPnPCast:1.1.0'
+    implementation 'com.github.yinnho:UPnPCast:1.1.1'
 }
 ```
 
 #### Option 2: Maven Central (Coming Soon)
 ```gradle
 dependencies {
-    implementation 'yinnho.com:upnpcast:1.1.0'
+    implementation 'yinnho.com:upnpcast:1.1.1'
 }
 ```
 
@@ -108,6 +111,44 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
+    // NEW: Volume control examples
+    private fun volumeControlExamples() {
+        // Get current volume
+        DLNACast.getVolume { volume, isMuted, success ->
+            if (success) {
+                Log.d("DLNA", "Current volume: $volume, Muted: $isMuted")
+            }
+        }
+        
+        // Set volume to 50%
+        DLNACast.setVolume(50) { success ->
+            Log.d("DLNA", "Volume set: $success")
+        }
+        
+        // Toggle mute
+        DLNACast.setMute(true) { success ->
+            Log.d("DLNA", "Muted: $success")
+        }
+    }
+    
+    // NEW: Advanced progress tracking
+    private fun progressTrackingExamples() {
+        // Cached progress (fast, uses interpolation)
+        DLNACast.getProgress { currentMs, totalMs, success ->
+            Log.d("DLNA", "Progress: ${currentMs}ms / ${totalMs}ms")
+        }
+        
+        // Real-time progress (accurate, always from device)
+        DLNACast.getProgressRealtime { currentMs, totalMs, success ->
+            Log.d("DLNA", "Real-time progress: ${currentMs}ms / ${totalMs}ms")
+        }
+        
+        // Manual cache management
+        DLNACast.refreshVolumeCache { success ->
+            Log.d("DLNA", "Volume cache refreshed: $success")
+        }
+    }
+    
     override fun onDestroy() {
         super.onDestroy()
         DLNACast.release()
@@ -140,7 +181,7 @@ DLNACast.smartCast(
 // Cast to specific device
 DLNACast.castToDevice(device: Device, url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
 
-// Cast local files (NEW!)
+// Cast local files
 DLNACast.castLocalFile("/storage/emulated/0/video.mp4", "Local Video") { success, message ->
     if (success) {
         println("Local file cast successful")
@@ -154,22 +195,51 @@ DLNACast.getLocalFileUrl(filePath: String): String?
 
 // Control media playback
 DLNACast.control(action: MediaAction, value: Any? = null, callback: (success: Boolean) -> Unit = {})
+```
 
-// Get playback progress
-DLNACast.getProgress(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit)
+### 🆕 NEW: Volume Control APIs (v1.1.1)
 
-// Get volume information (NEW!)
+```kotlin
+// Get current volume and mute status
 DLNACast.getVolume(callback: (volume: Int?, isMuted: Boolean?, success: Boolean) -> Unit)
 
-// Get real-time progress (NEW!)
-DLNACast.getProgressRealtime(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit)
+// Set volume (0-100)
+DLNACast.setVolume(volume: Int, callback: (success: Boolean) -> Unit = {})
 
-// Cache management (NEW!)
+// Set mute state
+DLNACast.setMute(mute: Boolean, callback: (success: Boolean) -> Unit = {})
+```
+
+### 🆕 NEW: Enhanced Progress Management (v1.1.1)
+
+```kotlin
+// Get progress with intelligent caching and interpolation (recommended)
+DLNACast.getProgress(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit)
+
+// Get real-time progress (always fetches from device, no cache)
+DLNACast.getProgressRealtime(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit)
+```
+
+### 🆕 NEW: Cache Management APIs (v1.1.1)
+
+```kotlin
+// Manually refresh volume cache
 DLNACast.refreshVolumeCache(callback: (success: Boolean) -> Unit = {})
+
+// Manually refresh progress cache
 DLNACast.refreshProgressCache(callback: (success: Boolean) -> Unit = {})
+
+// Clear progress cache (call when switching media)
 DLNACast.clearProgressCache()
 
-// Get current state
+// Clear volume cache
+DLNACast.clearVolumeCache()
+```
+
+### Other Core Methods
+
+```kotlin
+// Get current state (now includes volume and mute status)
 DLNACast.getState(): State
 
 // Release resources
@@ -197,14 +267,85 @@ enum class PlaybackState {
     IDLE, PLAYING, PAUSED, STOPPED, BUFFERING, ERROR
 }
 
-// Current casting state
+// Current casting state (enhanced in v1.1.1)
 data class State(
     val isConnected: Boolean,
     val currentDevice: Device?,
     val playbackState: PlaybackState,
-    val volume: Int = -1,
-    val isMuted: Boolean = false
+    val volume: Int = -1,        // Current volume (0-100, -1 if unknown)
+    val isMuted: Boolean = false // Current mute status
 )
+```
+
+## 🆕 Advanced Usage Examples (v1.1.1)
+
+### Smart Volume Control
+```kotlin
+// Check current volume before adjusting
+DLNACast.getVolume { currentVolume, isMuted, success ->
+    if (success && currentVolume != null) {
+        when {
+            isMuted == true -> {
+                // Unmute first
+                DLNACast.setMute(false) { 
+                    DLNACast.setVolume(50) // Then set to 50%
+                }
+            }
+            currentVolume < 30 -> {
+                DLNACast.setVolume(currentVolume + 10) // Increase by 10
+            }
+            else -> {
+                DLNACast.setVolume(currentVolume - 10) // Decrease by 10
+            }
+        }
+    }
+}
+```
+
+### Progress Tracking with Caching Strategy
+```kotlin
+class ProgressTracker {
+    private var useRealtime = false
+    
+    fun trackProgress() {
+        val progressMethod = if (useRealtime) {
+            DLNACast::getProgressRealtime
+        } else {
+            DLNACast::getProgress
+        }
+        
+        progressMethod { currentMs, totalMs, success ->
+            if (success) {
+                updateUI(currentMs, totalMs)
+                
+                // Switch to real-time if user is seeking
+                if (isUserSeeking()) {
+                    useRealtime = true
+                    DLNACast.refreshProgressCache() // Refresh cache after seeking
+                }
+            }
+        }
+    }
+}
+```
+
+### Optimized State Management
+```kotlin
+fun getEnhancedState() {
+    val state = DLNACast.getState()
+    
+    // The state now includes volume and mute information
+    println("Connected: ${state.isConnected}")
+    println("Device: ${state.currentDevice?.name}")
+    println("Playing: ${state.playbackState}")
+    println("Volume: ${state.volume}% (Muted: ${state.isMuted})")
+    
+    // Refresh caches if needed
+    if (state.isConnected) {
+        DLNACast.refreshVolumeCache()
+        DLNACast.refreshProgressCache()
+    }
+}
 ```
 
 ## Documentation
