@@ -24,6 +24,7 @@ android {
     testOptions {
         unitTests.all {
             it.enabled = true
+            it.useJUnitPlatform()
         }
     }
     
