@@ -78,12 +78,6 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build and publish to GitHub Packages
-      run: ./gradlew publish
-      env:
-        USERNAME: ${{ github.actor }}
-        TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Build release artifacts
       run: ./gradlew assembleRelease publishToMavenLocal
 
@@ -93,5 +87,4 @@ jobs:
         name: release-artifacts
         path: |
           app/build/outputs/aar/*
-          app/build/libs/*-sources.jar
-          app/build/libs/*-javadoc.jar 
+          ~/.m2/repository/com/github/yinnho/UPnPCast/1.1.2/* 
