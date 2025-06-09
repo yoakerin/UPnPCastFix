@@ -41,14 +41,14 @@ allprojects {
 添加依赖：
 ```gradle
 dependencies {
-    implementation 'com.github.yinnho:UPnPCast:1.0.3'
+    implementation 'com.github.yinnho:UPnPCast:1.1.2'
 }
 ```
 
 #### 方式二：Maven Central（即将推出）
 ```gradle
 dependencies {
-    implementation 'yinnho.com:upnpcast:1.0.0'
+    implementation 'yinnho.com:upnpcast:1.1.2'
 }
 ```
 
@@ -82,13 +82,12 @@ class MainActivity : AppCompatActivity() {
     
     private fun performSmartCast() {
         // 智能投屏 - 自动查找并选择最佳设备
-        DLNACast.smartCast("http://your-video.mp4", "视频标题") { success ->
-            if (success) {
+        DLNACast.cast("http://your-video.mp4", "视频标题") { result ->
+            if (result.success) {
                 Log.d("DLNA", "智能投屏开始!")
+            } else {
+                Log.e("DLNA", "投屏失败: ${result.message}")
             }
-        } { devices ->
-            // 设备选择器：优先选择电视设备
-            devices.firstOrNull { it.isTV } ?: devices.firstOrNull()
         }
     }
     
@@ -121,7 +120,7 @@ DLNACast.search(timeout: Long = 5000, callback: (devices: List<Device>) -> Unit)
 DLNACast.cast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
 
 // 智能投屏，支持设备选择
-DLNACast.smartCast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {}, deviceSelector: (devices: List<Device>) -> Device?)
+// 已移除：使用 DLNACast.cast() 进行自动设备选择
 
 // 投屏到指定设备
 DLNACast.castToDevice(device: Device, url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})

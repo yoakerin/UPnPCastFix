@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 
 /**
- * Local file server - based on NanoHTTPD implementation
+ * Local file server based on NanoHTTPD
  * Supports Range requests, UTF-8 paths, and large file transmission
  */
 internal class LocalFileServer private constructor(
@@ -19,10 +19,8 @@ internal class LocalFileServer private constructor(
     port: Int
 ) : NanoHTTPD(port) {
     
-    // Use WeakReference to prevent memory leaks, store Application Context only
     private val contextRef = WeakReference(context.applicationContext)
     
-    // Safe method to get Context
     val context: Context? get() = contextRef.get()
     
     companion object {
@@ -35,7 +33,7 @@ internal class LocalFileServer private constructor(
         private val fileRegistry = ConcurrentHashMap<String, String>() // token -> filePath
         
         /**
-         * Get server instance
+         * Get server instance (singleton)
          */
         fun getInstance(context: Context): LocalFileServer {
             return instance ?: synchronized(this) {
@@ -43,14 +41,10 @@ internal class LocalFileServer private constructor(
             }
         }
         
-        /**
-         * Create server instance
-         */
         private fun createServer(context: Context): LocalFileServer {
             var port = DEFAULT_PORT_START
             var server: LocalFileServer? = null
             
-            // Try to start server within port range
             while (port <= DEFAULT_PORT_END && server == null) {
                 try {
                     val testServer = LocalFileServer(context, port)
@@ -67,14 +61,13 @@ internal class LocalFileServer private constructor(
         }
         
         /**
-         * Get file access URL
+         * Get file access URL with unique token
          */
         fun getFileUrl(filePath: String): String? {
             return try {
                 val context = instance?.context ?: return null
                 val server = getInstance(context)
                 
-                // Generate unique token
                 val token = generateToken()
                 fileRegistry[token] = filePath
                 
@@ -100,9 +93,6 @@ internal class LocalFileServer private constructor(
             }
         }
         
-        /**
-         * Get local IP address
-         */
         private fun getLocalIpAddress(): String {
             return try {
                 val interfaces = java.net.NetworkInterface.getNetworkInterfaces()
@@ -123,9 +113,6 @@ internal class LocalFileServer private constructor(
             }
         }
         
-        /**
-         * Generate access token
-         */
         private fun generateToken(): String {
             val timestamp = System.currentTimeMillis()
             val random = Random.nextInt(10000, 99999)
@@ -148,9 +135,6 @@ internal class LocalFileServer private constructor(
         }
     }
     
-    /**
-     * Handle file requests
-     */
     private fun serveFile(session: IHTTPSession): Response {
         val uri = session.uri
         val token = uri.substring("/file/".length)
@@ -164,7 +148,7 @@ internal class LocalFileServer private constructor(
         val file = File(filePath)
         if (!file.exists() || !file.isFile) {
             Log.w(TAG, "File not found: $filePath")
-            fileRegistry.remove(token) // Clean up invalid token
+            fileRegistry.remove(token)
             return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "File not found")
         }
         
@@ -177,14 +161,13 @@ internal class LocalFileServer private constructor(
     }
     
     /**
-     * File serving with Range request support
+     * File serving with Range request support for streaming
      */
     private fun serveFileWithRange(session: IHTTPSession, file: File): Response {
         val fileSize = file.length()
         var rangeStart = 0L
         var rangeEnd = fileSize - 1
         
-        // Handle Range requests
         val rangeHeader = session.headers["range"]
         if (rangeHeader != null && rangeHeader.startsWith("bytes=")) {
             try {

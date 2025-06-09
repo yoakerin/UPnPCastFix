@@ -1,4 +1,4 @@
-package com.yinnho.upnpcast.internal.utils
+package com.yinnho.upnpcast.internal
 
 import java.util.Locale
 

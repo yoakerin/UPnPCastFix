@@ -1,6 +1,7 @@
 package com.yinnho.upnpcast.internal.discovery
 
 import android.util.Log
+import com.yinnho.upnpcast.internal.core.ScopeManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,7 +18,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * SSDP device discoverer
+ * SSDP device discovery service
  */
 internal class SsdpDeviceDiscovery(
     private val onDeviceFound: (RemoteDevice) -> Unit,
@@ -48,9 +49,7 @@ internal class SsdpDeviceDiscovery(
     private var socket: MulticastSocket? = null
     private val multicastGroup by lazy { InetSocketAddress(MULTICAST_ADDRESS, MULTICAST_PORT) }
     private val descriptionParser = DeviceDescriptionParser()
-    private val searchScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    // LRU cache to prevent memory leaks
     private val processedLocations = object : LinkedHashMap<String, Long>(16, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Long>?): Boolean {
             return size > MAX_PROCESSED_LOCATIONS
@@ -97,7 +96,7 @@ internal class SsdpDeviceDiscovery(
     }
 
     /**
-     * Start device discovery
+     * Start SSDP device discovery
      */
     fun startSearch() {
         if (isShutdown.get()) return
@@ -204,20 +203,17 @@ internal class SsdpDeviceDiscovery(
                 if (location != null) {
                     synchronized(processedLock) {
                         if (processedLocations.containsKey(location)) {
-                            // Device is known, update timestamp
                             processedLocations[location] = System.currentTimeMillis()
                             deviceTimeouts[location] = System.currentTimeMillis()
                             return
                         }
                     }
                     
-                    // New device, process fully
                     processSsdpResponse(message, fromAddress)
                 }
             } else if (nts == "ssdp:byebye") {
                 val usn = extractHeader(message, "USN")
                 if (usn != null) {
-                    // Device offline, remove related cache
                     val headers = parseSsdpHeaders(message)
                     val location = headers["location"]
                     if (location != null) {
@@ -277,7 +273,7 @@ internal class SsdpDeviceDiscovery(
                 }
                 
                 // Asynchronous device description parsing
-                searchScope.launch {
+                ScopeManager.appScope.launch {
                     try {
                         val deviceInfo = descriptionParser.parseDeviceDescription(location)
                         
@@ -381,7 +377,7 @@ internal class SsdpDeviceDiscovery(
         if (isShutdown.getAndSet(true)) return
         
         try {
-            searchScope.cancel()
+            // 协程作用域由ScopeManager统一管理，无需单独取消
         } catch (e: Exception) {
             Log.w(tag, "Failed to cancel search scope", e)
         }
@@ -389,6 +385,17 @@ internal class SsdpDeviceDiscovery(
         try {
             if (executor is ExecutorService) {
                 executor.shutdown()
+                
+                // 等待任务完成，最多等待5秒
+                if (!executor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)) {
+                    Log.w(tag, "Executor didn't terminate gracefully, forcing shutdown")
+                    executor.shutdownNow()
+                    
+                    // 再等待2秒确保强制关闭完成
+                    if (!executor.awaitTermination(2, java.util.concurrent.TimeUnit.SECONDS)) {
+                        Log.e(tag, "Executor didn't terminate after force shutdown")
+                    }
+                }
             }
         } catch (e: Exception) {
             Log.w(tag, "Failed to shutdown executor", e)

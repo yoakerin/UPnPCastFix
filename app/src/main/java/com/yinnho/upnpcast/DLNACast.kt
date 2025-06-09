@@ -1,77 +1,81 @@
 package com.yinnho.upnpcast
 
 import android.content.Context
-import com.yinnho.upnpcast.internal.DLNACastImpl
-import com.yinnho.upnpcast.types.Device as TypesDevice
-import com.yinnho.upnpcast.types.MediaAction as TypesMediaAction
-import com.yinnho.upnpcast.types.PlaybackState as TypesPlaybackState
-import com.yinnho.upnpcast.types.State as TypesState
+import kotlinx.coroutines.*
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import com.yinnho.upnpcast.internal.core.CoreManager
+import com.yinnho.upnpcast.internal.UPnPException
 
 /**
- * DLNACast - Simplified DLNA Casting API
- * 
- * Usage:
- * ```
- * import com.yinnho.upnpcast.DLNACast
- * 
- * // Initialize
- * DLNACast.init(context)
- * 
- * // Search for devices - returns all devices at once
- * DLNACast.search { devices: List<DLNACast.Device> ->
- *     // All devices returned in single callback
- * }
- * 
- * // Cast media
- * DLNACast.cast(url, title) { success ->
- *     // Handle result
- * }
- * ```
+ * Modern UPnP/DLNA casting interface (pure coroutine version)
+ * Architecture: DLNACast -> CoreManager -> DlnaMediaController
  */
 object DLNACast {
     
-    // Type definitions - Provide nested type access for external use
+    /**
+     * Generic coroutine converter for single return value
+     */
+    private suspend inline fun <T> suspendOnce(
+        crossinline block: (callback: (T) -> Unit) -> Unit
+    ): T = suspendCancellableCoroutine { cont ->
+        var resumed = false
+        block { result ->
+            if (!resumed) {
+                resumed = true
+                cont.resume(result)
+            }
+        }
+    }
+    
+    /**
+     * Generic coroutine converter for success/failure pattern
+     */
+    private suspend inline fun <T> suspendWithSuccess(
+        crossinline block: (callback: (T, success: Boolean) -> Unit) -> Unit
+    ): T? = suspendCancellableCoroutine { cont ->
+        var resumed = false
+        block { result, success ->
+            if (!resumed) {
+                resumed = true
+                if (success) cont.resume(result) else cont.resume(null)
+            }
+        }
+    }
+    
+    /**
+     * Generic coroutine converter for triple parameter pattern
+     */
+    private suspend inline fun <T1, T2> suspendWithTriple(
+        crossinline block: (callback: (T1, T2, success: Boolean) -> Unit) -> Unit
+    ): Pair<T1, T2>? = suspendCancellableCoroutine { cont ->
+        var resumed = false
+        block { param1, param2, success ->
+            if (!resumed) {
+                resumed = true
+                if (success) cont.resume(Pair(param1, param2)) else cont.resume(null)
+            }
+        }
+    }
+    
     data class Device(
         val id: String,
         val name: String,
         val address: String,
         val isTV: Boolean
-    ) {
-        // Internal conversion methods
-        internal fun toTypes(): TypesDevice = TypesDevice(id, name, address, isTV)
-        internal companion object {
-            fun fromTypes(device: TypesDevice): Device = Device(device.id, device.name, device.address, device.isTV)
-        }
-    }
-    
-    enum class MediaAction {
-        PLAY, PAUSE, STOP, VOLUME, MUTE, SEEK, GET_STATE;
-        
-        // Internal conversion methods
-        internal fun toTypes(): TypesMediaAction = when (this) {
-            PLAY -> TypesMediaAction.PLAY
-            PAUSE -> TypesMediaAction.PAUSE
-            STOP -> TypesMediaAction.STOP
-            VOLUME -> TypesMediaAction.VOLUME
-            MUTE -> TypesMediaAction.MUTE
-            SEEK -> TypesMediaAction.SEEK
-            GET_STATE -> TypesMediaAction.GET_STATE
-        }
-    }
+    )
     
     enum class PlaybackState {
-        IDLE, PLAYING, PAUSED, STOPPED, BUFFERING, ERROR;
-        
-        internal companion object {
-            fun fromTypes(state: TypesPlaybackState): PlaybackState = when (state) {
-                TypesPlaybackState.IDLE -> IDLE
-                TypesPlaybackState.PLAYING -> PLAYING
-                TypesPlaybackState.PAUSED -> PAUSED
-                TypesPlaybackState.STOPPED -> STOPPED
-                TypesPlaybackState.BUFFERING -> BUFFERING
-                TypesPlaybackState.ERROR -> ERROR
-            }
-        }
+        IDLE, PLAYING, PAUSED, STOPPED, BUFFERING, ERROR
+    }
+    
+    enum class MediaAction(val value: String) {
+        PLAY("play"),
+        PAUSE("pause"),
+        STOP("stop"),
+        VOLUME("volume"),
+        MUTE("mute"),
+        SEEK("seek")
     }
     
     data class State(
@@ -84,140 +88,8 @@ object DLNACast {
         val isPlaying: Boolean get() = playbackState == PlaybackState.PLAYING
         val isPaused: Boolean get() = playbackState == PlaybackState.PAUSED
         val isIdle: Boolean get() = playbackState == PlaybackState.IDLE
-        
-        internal companion object {
-            fun fromTypes(state: TypesState): State = State(
-                isConnected = state.isConnected,
-                currentDevice = state.currentDevice?.let { Device.fromTypes(it) },
-                playbackState = PlaybackState.fromTypes(state.playbackState),
-                volume = state.volume,
-                isMuted = state.isMuted
-            )
-        }
     }
     
-    fun init(context: Context) {
-        DLNACastImpl.init(context)
-    }
-    
-    fun cast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {}) {
-        DLNACastImpl.cast(url, title, callback)
-    }
-
-    fun smartCast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {}, deviceSelector: (devices: List<Device>) -> Device?) {
-        DLNACastImpl.castTo(url, title, callback) { typesDevices ->
-            val devices = typesDevices.map { Device.fromTypes(it) }
-            deviceSelector(devices)?.toTypes()
-        }
-    }
-    
-    fun castToDevice(device: Device, url: String, title: String? = null, callback: (success: Boolean) -> Unit = {}) {
-        DLNACastImpl.castToDevice(device.toTypes(), url, title, callback)
-    }
-    
-    /**
-     * Search for devices - returns new devices in real-time batches
-     * @param timeout Total search timeout (default 5 seconds)
-     * @param callback Called with newly discovered devices (may be called multiple times)
-     */
-    fun search(timeout: Long = 5000, callback: (devices: List<Device>) -> Unit) {
-        DLNACastImpl.search(timeout) { typesDevices ->
-            val devices = typesDevices.map { Device.fromTypes(it) }
-            callback(devices)
-        }
-    }
-    
-    fun control(action: MediaAction, value: Any? = null, callback: (success: Boolean) -> Unit = {}) {
-        DLNACastImpl.control(action.toTypes(), value, callback)
-    }
-    
-    fun getState(): State {
-        return State.fromTypes(DLNACastImpl.getState())
-    }
-    
-    /**
-     * Get playback progress information
-     * @param callback Callback function, returns (currentMs, totalMs, success)
-     */
-    fun getProgress(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit) {
-        DLNACastImpl.getProgress(callback)
-    }
-    
-    /**
-     * Get current volume information
-     * @param callback Callback function, returns (volume: Int?, isMuted: Boolean?, success: Boolean)
-     *                 volume: Current volume (0-100), null if failed to get
-     *                 isMuted: Current mute state, null if failed to get
-     *                 success: Whether the request was successful
-     */
-    fun getVolume(callback: (volume: Int?, isMuted: Boolean?, success: Boolean) -> Unit) {
-        DLNACastImpl.getVolume(callback)
-    }
-    
-    /**
-     * Get real-time playback progress (force fetch from device, no cache)
-     * @param callback Callback function, returns (currentMs, totalMs, success)
-     */
-    fun getProgressRealtime(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit) {
-        DLNACastImpl.getProgressRealtime(callback)
-    }
-    
-    /**
-     * Manually refresh volume cache
-     * @param callback Callback function, returns success status
-     */
-    fun refreshVolumeCache(callback: (success: Boolean) -> Unit = {}) {
-        DLNACastImpl.refreshVolumeCache(callback)
-    }
-    
-    /**
-     * Manually refresh progress cache
-     * @param callback Callback function, returns success status
-     */
-    fun refreshProgressCache(callback: (success: Boolean) -> Unit = {}) {
-        DLNACastImpl.refreshProgressCache(callback)
-    }
-    
-    /**
-     * Clear progress cache (call when switching media)
-     */
-    fun clearProgressCache() {
-        DLNACastImpl.clearProgressCache()
-    }
-    
-    /**
-     * Cast local file
-     * @param filePath Local file path
-     * @param device Target device
-     * @param title Media title (optional)
-     * @param callback Callback function, returns (success, message)
-     */
-    fun castLocalFile(filePath: String, device: Device, title: String? = null, callback: (success: Boolean, message: String) -> Unit) {
-        DLNACastImpl.castLocalFile(filePath, device.toTypes(), title, callback)
-    }
-    
-    /**
-     * Cast local file - auto select device
-     * @param filePath Local file path
-     * @param title Media title (optional)
-     * @param callback Callback function, returns (success, message)
-     */
-    fun castLocalFile(filePath: String, title: String? = null, callback: (success: Boolean, message: String) -> Unit) {
-        DLNACastImpl.castLocalFile(filePath, title, callback)
-    }
-    
-    /**
-     * Get network access URL for local file
-     * @param filePath Local file path
-     * @return HTTP URL of the file, null if failed
-     */
-    fun getLocalFileUrl(filePath: String): String? {
-        return DLNACastImpl.getLocalFileUrl(filePath)
-    }
-    
-    /**
-     * Simplified local video data class
-     */
     data class LocalVideo(
         val id: String,
         val title: String,
@@ -228,24 +100,121 @@ object DLNACast {
     )
     
     /**
-     * Scan local video files
-     * @param context Android Context
-     * @param callback Callback function, returns list of scanned videos
+     * Generic media control method
      */
-    fun scanLocalVideos(context: Context, callback: (videos: List<LocalVideo>) -> Unit) {
-        DLNACastImpl.scanLocalVideos(context, callback)
+    suspend fun control(action: MediaAction, value: Any? = null): Boolean {
+        return CoreManager.controlMediaSuspend(action.value, value)
     }
     
     /**
-     * Launch local video selector
-     * @param context Android Context (must be Activity)
-     * @param device Target casting device
+     * Convenient control methods
      */
-    fun showVideoSelector(context: Context, device: Device) {
-        DLNACastImpl.showVideoSelector(context, device.toTypes())
+    suspend fun play(): Boolean = control(MediaAction.PLAY)
+    suspend fun pause(): Boolean = control(MediaAction.PAUSE)
+    suspend fun stop(): Boolean = control(MediaAction.STOP)
+    suspend fun setVolume(volume: Int): Boolean = control(MediaAction.VOLUME, volume)
+    suspend fun setMute(mute: Boolean): Boolean = control(MediaAction.MUTE, mute)
+    suspend fun seek(positionMs: Long): Boolean = control(MediaAction.SEEK, positionMs)
+    
+    /**
+     * Search for DLNA devices
+     */
+    suspend fun search(timeout: Long = 5000): List<Device> = 
+        suspendOnce { callback -> CoreManager.search(timeout, callback) }
+    
+    /**
+     * Cast media to best available device
+     */
+    suspend fun cast(url: String, title: String? = null): Boolean = 
+        suspendOnce { callback -> CoreManager.cast(url, title, callback) }
+    
+    /**
+     * Cast media to specific device
+     */
+    suspend fun castToDevice(device: Device, url: String, title: String? = null): Boolean = 
+        suspendOnce { callback -> CoreManager.castToDevice(device, url, title, callback) }
+    
+    /**
+     * Get current playback progress
+     */
+    suspend fun getProgress(): Pair<Long, Long>? = 
+        suspendWithTriple { callback -> CoreManager.getProgress(callback) }
+    
+    /**
+     * Get volume information
+     */
+    suspend fun getVolume(): Pair<Int?, Boolean?>? = 
+        suspendWithTriple { callback -> CoreManager.getVolume(callback) }
+    
+    /**
+     * Scan local videos on device
+     */
+    suspend fun scanLocalVideos(context: Context): List<LocalVideo> = 
+        suspendOnce { callback -> CoreManager.scanLocalVideos(context, callback) }
+    
+    /**
+     * Cast local file to device
+     */
+    suspend fun castLocalFile(filePath: String, device: Device, title: String? = null) {
+        suspendCancellableCoroutine<Unit> { cont ->
+            var resumed = false
+            CoreManager.castLocalFileToDevice(filePath, device, title) { success, message ->
+                if (!resumed) {
+                    resumed = true
+                    if (success) {
+                        cont.resume(Unit)
+                    } else {
+                        val exception = when {
+                            "file" in message.lowercase() || "not found" in message.lowercase() -> 
+                                UPnPException.FileError(message)
+                            "network" in message.lowercase() || "connection" in message.lowercase() || "timeout" in message.lowercase() -> 
+                                UPnPException.NetworkError(message)
+                            "device" in message.lowercase() -> 
+                                UPnPException.DeviceError(message)
+                            else -> UPnPException.UnknownError(message)
+                        }
+                        cont.resumeWith(Result.failure(exception))
+                    }
+                }
+            }
+        }
     }
     
-    fun release() {
-        DLNACastImpl.release()
-    }
+    /**
+     * Get real-time progress (force refresh cache)
+     */
+    suspend fun getProgressRealtime(): Pair<Long, Long>? = 
+        suspendWithTriple { callback -> CoreManager.getProgressRealtime(callback) }
+    
+    /**
+     * Refresh volume cache
+     */
+    suspend fun refreshVolumeCache(): Boolean = 
+        suspendOnce { callback -> CoreManager.refreshVolumeCache(callback) }
+    
+    /**
+     * Refresh progress cache
+     */
+    suspend fun refreshProgressCache(): Boolean = 
+        suspendOnce { callback -> CoreManager.refreshProgressCache(callback) }
+    
+    /**
+     * Initialize DLNA service
+     */
+    fun init(context: Context) = CoreManager.init(context)
+    
+    /**
+     * Get current casting state
+     */
+    fun getState(): State = CoreManager.getCurrentState()
+    
+    /**
+     * Clear progress cache (call when switching media)
+     */
+    fun clearProgressCache() = CoreManager.clearProgressCache()
+    
+    /**
+     * Clean up all resources
+     */
+    fun cleanup() = CoreManager.cleanup()
 } 

@@ -8,14 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2025-06-03
 
 ### 🚀 Major Architecture Refactoring
-- **77% Code Reduction**: Streamlined core functionality from 644 lines to 148 lines
-- **Modular Design**: Implemented 7 specialized modules for better organization:
-  - `core/` - Central device and state management (CoreManager.kt)
-  - `discovery/` - DLNA device detection (SsdpDeviceDiscovery.kt, DeviceDescriptionParser.kt, RemoteDevice.kt)
-  - `media/` - Media playback control (DlnaMediaController.kt, MediaPlayer.kt)
-  - `localcast/` - Local file serving (LocalCastManager.kt, LocalFileServer.kt, VideoScanner.kt)
-  - `utils/` - File operations (FileUtils.kt)
-- **Maintainability**: Enhanced code clarity and reduced technical debt by 77%
+- **Code Optimization**: Streamlined core functionality and improved performance
+- **Modular Design**: Implemented specialized modules for better organization
+- **Maintainability**: Enhanced code clarity and reduced technical debt
 
 ### 🌍 Complete Internationalization
 - **Full English Support**: All Chinese comments and documentation converted to English
@@ -48,13 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Better cleanup of network resources
 - Optimized garbage collection patterns
 
-### 📊 Performance Metrics
-| Metric | v1.0.4 | v1.1.0 | Improvement |
-|--------|---------|--------|-------------|
-| Core Code Lines | 644 | 148 | **-77%** |
-| Memory Usage | Baseline | -15% | ⬇️ Better |
-| Discovery Time | Baseline | -10% | ⚡ Faster |
-| APK Size Impact | Baseline | -5% | ⬇️ Smaller |
+### 📊 Performance Improvements
+- **Memory Usage**: Reduced by 15%
+- **Discovery Time**: Improved by 10%
+- **APK Size Impact**: Reduced by 5%
 
 ### 🔄 Migration Guide
 **No breaking changes!** Simply update your dependency:
@@ -64,12 +56,10 @@ dependencies {
 }
 ```
 
-### 📁 File Structure Changes
-- **Relocated**: Device discovery files moved to `discovery/` package
-- **Added**: CoreManager for centralized device management
-- **Enhanced**: LocalFileServer with better NanoHTTPD integration
-- **Optimized**: VideoScanner with MediaStore performance improvements
-- **Created**: FileUtils for comprehensive file operations
+### 📁 Architecture Changes
+- **Modular Structure**: Organized code into logical packages
+- **Centralized Management**: Improved device and state management
+- **Enhanced Integration**: Better HTTP server and file handling
 
 ### 🎯 Developer Benefits
 - **Easier Maintenance**: Modular architecture simplifies bug fixes and feature additions

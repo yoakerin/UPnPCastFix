@@ -9,7 +9,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Device description parser
+ * UPnP device description parser
  */
 class DeviceDescriptionParser {
     companion object {
@@ -44,7 +44,7 @@ class DeviceDescriptionParser {
     )
     
     /**
-     * Parse device description information
+     * Parse device description from location URL
      */
     suspend fun parseDeviceDescription(locationUrl: String): DeviceInfo? {
         return withContext(Dispatchers.IO) {

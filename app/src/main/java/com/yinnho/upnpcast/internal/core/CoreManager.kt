@@ -2,22 +2,25 @@ package com.yinnho.upnpcast.internal.core
 
 import android.content.Context
 import android.util.Log
-import com.yinnho.upnpcast.types.Device
-import com.yinnho.upnpcast.types.MediaAction
-import com.yinnho.upnpcast.types.PlaybackState
-import com.yinnho.upnpcast.types.State
+import com.yinnho.upnpcast.DLNACast.Device
+
+import com.yinnho.upnpcast.DLNACast.PlaybackState
+import com.yinnho.upnpcast.DLNACast.State
+
+
 import com.yinnho.upnpcast.internal.discovery.RemoteDevice
 import com.yinnho.upnpcast.internal.discovery.SsdpDeviceDiscovery
-import com.yinnho.upnpcast.internal.media.MediaPlayer
+
 import com.yinnho.upnpcast.internal.media.DlnaMediaController
 import com.yinnho.upnpcast.internal.localcast.LocalCastManager
 import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentHashMap
-import kotlinx.coroutines.runBlocking
+import java.util.concurrent.ConcurrentSkipListSet
+import kotlinx.coroutines.*
 
 /**
- * Core manager
- * Responsible for unified management of DLNA casting core functionality
+ * Core manager for DLNA casting functionality
+ * Responsible for unified management of device discovery, media control, and casting operations
  * 
  * Core management logic extracted from DLNACastImpl
  */
@@ -26,9 +29,11 @@ internal class CoreManager {
     companion object {
         private const val TAG = "CoreManager"
         
-        // Device storage and current state
+        private val cacheManager = CacheManager(ScopeManager.appScope)
+        
         private val devices = ConcurrentHashMap<String, RemoteDevice>()
         private var ssdpDiscovery: SsdpDeviceDiscovery? = null
+        @Volatile
         private var currentDevice: RemoteDevice? = null
         private var contextRef: WeakReference<Context>? = null
         
@@ -36,33 +41,15 @@ internal class CoreManager {
         private var currentDeviceListCallback: ((devices: List<Device>) -> Unit)? = null
         
         @Volatile
+        private var callbackTimeoutJob: Job? = null
+        
+        @Volatile
         private var searchCompleted = false
         
-        private val notifiedDeviceIds = mutableSetOf<String>()
-        
-        // Volume cache related fields
-        @Volatile
-        private var cachedVolume: Int = -1
-        @Volatile
-        private var cachedMuted: Boolean = false
-        @Volatile
-        private var lastVolumeUpdate: Long = 0
-        
-        // Progress cache related fields
-        @Volatile
-        private var cachedCurrentMs: Long = 0L
-        @Volatile
-        private var cachedTotalMs: Long = 0L
-        @Volatile
-        private var lastProgressUpdate: Long = 0L
-        @Volatile
-        private var isPlaying: Boolean = false
-        
-        private const val VOLUME_CACHE_DURATION = 5000L // 5-second volume cache validity period
-        private const val PROGRESS_CACHE_DURATION = 3000L // 3-second progress cache validity period
+        private val notifiedDeviceIds = ConcurrentSkipListSet<String>()
         
         /**
-         * Initialize core manager
+         * Initialize core manager with application context
          */
         fun init(context: Context) {
             contextRef = WeakReference(context.applicationContext)
@@ -75,27 +62,68 @@ internal class CoreManager {
         }
         
         /**
-         * Device search
+         * Search for available DLNA devices
          */
-        fun searchDevices(timeout: Long, callback: (devices: List<Device>) -> Unit) {
+        fun search(timeout: Long, callback: (devices: List<Device>) -> Unit) {
             ensureInitialized {
-                currentDeviceListCallback = callback
+                cleanupSearchCallback()
+                
+                val foundDevices = mutableListOf<Device>()
+                
+                currentDeviceListCallback = { devices ->
+                    foundDevices.clear()
+                    foundDevices.addAll(devices)
+                    callback(devices)
+                }
+                
                 searchCompleted = false
                 notifiedDeviceIds.clear()
                 ssdpDiscovery?.startSearch()
-                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                
+                callbackTimeoutJob = ScopeManager.uiScope.launch {
+                    delay(timeout)
                     searchCompleted = true
-                    val currentDevices = getAllDevices()
-                    if (currentDevices.size != notifiedDeviceIds.size) {
-                        callback(currentDevices)
-                    }
-                    currentDeviceListCallback = null
-                }, timeout)
+                    callback(foundDevices)
+                    cleanupSearchCallback()
+                }
             }
         }
         
         /**
-         * Connect and play media
+         * Cast media to available device (auto-select best device)
+         */
+        fun cast(url: String, title: String?, callback: (Boolean) -> Unit) {
+            ensureInitialized {
+                val availableDevices = getAllDevices()
+                if (availableDevices.isNotEmpty()) {
+                    val bestDevice = selectBestDevice(availableDevices)
+                    connectAndPlay(bestDevice, url, title ?: "Media", callback)
+                } else {
+                    Log.i(TAG, "No devices available, searching first...")
+                    search(3000) { devices ->
+                        if (devices.isNotEmpty()) {
+                            val bestDevice = selectBestDevice(devices)
+                            connectAndPlay(bestDevice, url, title ?: "Media", callback)
+                        } else {
+                            Log.w(TAG, "No devices found after search")
+                            callback(false)
+                        }
+                    }
+                }
+            }
+        }
+        
+        /**
+         * Cast media to specific device
+         */
+        fun castToDevice(device: Device, url: String, title: String?, callback: (Boolean) -> Unit) {
+            ensureInitialized {
+                connectAndPlay(device, url, title ?: "Media", callback)
+            }
+        }
+        
+        /**
+         * Connect to device and start media playback
          */
         fun connectAndPlay(device: Device, url: String, title: String, callback: (success: Boolean) -> Unit) {
             try {
@@ -103,7 +131,20 @@ internal class CoreManager {
                 val services = remoteDevice.details["services"] as? List<*>
                 if (!services.isNullOrEmpty()) {
                     currentDevice = remoteDevice
-                    MediaPlayer.playMedia(remoteDevice, url, title, callback)
+                    ScopeManager.appScope.launch {
+                        try {
+                            val controller = DlnaMediaController.getController(remoteDevice)
+                            val success = controller.playMediaDirect(url, title)
+                            withContext(Dispatchers.Main) {
+                                callback(success)
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to play media: ${e.message}")
+                            withContext(Dispatchers.Main) {
+                                callback(false)
+                            }
+                        }
+                    }
                 } else {
                     callback(false)
                 }
@@ -113,105 +154,88 @@ internal class CoreManager {
             }
         }
         
-        /**
-         * Media control
-         */
-        fun controlMedia(action: MediaAction, value: Any?, callback: (success: Boolean) -> Unit) {
-            executeWithDevice { device ->
-                MediaPlayer.controlMedia(device, action, value, callback)
-            } ?: callback(false)
-        }
+
         
         /**
-         * Get playback progress
+         * Coroutine version of media control operations
+         */
+        suspend fun controlMediaSuspend(action: String, value: Any? = null): Boolean {
+            return executeWithDevice { device ->
+                withContext(Dispatchers.IO) {
+                    try {
+                        val controller = DlnaMediaController.getController(device)
+                        controller.control(action, value)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Control failed: $action - ${e.message}")
+                        false
+                    }
+                }
+            } ?: false
+        }
+
+
+        
+        /**
+         * Get current playback progress
          */
         fun getProgress(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit) {
-            executeWithDevice { device ->
-                val now = System.currentTimeMillis()
-                val timeSinceLastUpdate = now - lastProgressUpdate
-                
-                // If cache is still valid and has valid data, use interpolation to calculate current progress
-                if (timeSinceLastUpdate < PROGRESS_CACHE_DURATION && cachedTotalMs > 0) {
-                    val estimatedProgress = if (isPlaying) {
-                        // Interpolation calculation: based on last retrieved progress + elapsed time
-                        cachedCurrentMs + timeSinceLastUpdate
-                    } else {
-                        // Paused state, progress doesn't change
-                        cachedCurrentMs
-                    }
-                    
-                    callback(estimatedProgress.coerceAtMost(cachedTotalMs), cachedTotalMs, true)
-                    
-                    // Asynchronously refresh cache (update real progress)
-                    refreshProgressCacheAsync()
-                } else {
-                    // Cache expired or first-time retrieval, request immediately
-                    getProgressFromDevice(device, now, callback)
-                }
-            } ?: callback(0L, 0L, false)
+            cacheManager.getProgress(currentDevice, callback)
         }
         
         /**
-         * Get current volume
+         * Get current volume level and mute state
          */
         fun getVolume(callback: (volume: Int?, isMuted: Boolean?, success: Boolean) -> Unit) {
-            executeWithDevice { device ->
-                MediaPlayer.getCurrentVolume(device, callback)
-            } ?: callback(null, null, false)
+            cacheManager.getVolume(currentDevice, callback)
         }
         
         /**
-         * Get current state
+         * Get current DLNA casting state
          */
         fun getCurrentState(): State {
             val device = currentDevice?.let { convertToDevice(it) }
             val playbackState = if (device != null) PlaybackState.PLAYING else PlaybackState.IDLE
-            
-            // If there's a connected device, try to refresh volume cache
-            if (device != null && shouldUpdateVolumeCache()) {
-                refreshVolumeCacheAsync()
-            }
+            val (volume, muted) = cacheManager.getVolumeState()
             
             return State(
                 isConnected = device != null,
                 currentDevice = device,
                 playbackState = playbackState,
-                volume = if (cachedVolume >= 0) cachedVolume else -1,
-                isMuted = cachedMuted
+                volume = if (volume >= 0) volume else -1,
+                isMuted = muted
             )
         }
         
         /**
-         * Get real-time progress (force fetch from device, no cache)
+         * Get real-time progress without cache
          */
         fun getProgressRealtime(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit) {
-            executeWithDevice { device ->
-                getProgressFromDevice(device, System.currentTimeMillis(), callback)
+            currentDevice?.let { device ->
+                cacheManager.refreshProgressCache(device) { success ->
+                    if (success) {
+                        cacheManager.getProgress(device, callback)
+                    } else {
+                        callback(0L, 0L, false)
+                    }
+                }
             } ?: callback(0L, 0L, false)
         }
         
         /**
-         * Manually refresh volume cache
+         * Manually refresh volume cache from device
          */
         fun refreshVolumeCache(callback: (success: Boolean) -> Unit = {}) {
-            executeWithDevice { device ->
-                MediaPlayer.getCurrentVolume(device) { volume, isMuted, success ->
-                    if (success && volume != null) {
-                        updateVolumeCache(volume, isMuted ?: false)
-                    }
-                    callback(success)
-                }
+            currentDevice?.let { device ->
+                cacheManager.refreshVolumeCache(device, callback)
             } ?: callback(false)
         }
         
         /**
-         * Manually refresh progress cache
+         * Manually refresh progress cache from device
          */
         fun refreshProgressCache(callback: (success: Boolean) -> Unit = {}) {
-            executeWithDevice { device ->
-                getProgressFromDevice(device, System.currentTimeMillis()) { _, _, success ->
-                    callback(success)
-                }
+            currentDevice?.let { device ->
+                cacheManager.refreshProgressCache(device, callback)
             } ?: callback(false)
         }
         
@@ -219,19 +243,7 @@ internal class CoreManager {
          * Clear progress cache (call when switching media)
          */
         fun clearProgressCache() {
-            cachedCurrentMs = 0L
-            cachedTotalMs = 0L
-            lastProgressUpdate = 0L
-            isPlaying = false
-        }
-        
-        /**
-         * Clear volume cache
-         */
-        fun clearVolumeCache() {
-            cachedVolume = -1
-            cachedMuted = false
-            lastVolumeUpdate = 0L
+            cacheManager.clearAll()
         }
         
         /**
@@ -252,12 +264,29 @@ internal class CoreManager {
                 }
                 
                 currentDevice = remoteDevice
-                LocalCastManager.castLocalFile(context, filePath, remoteDevice, title, callback)
+                LocalCastManager.castLocalFile(context, filePath, remoteDevice, title, ScopeManager.appScope, callback)
             }
         }
         
         /**
-         * Get all devices
+         * Scan local video files on device
+         */
+        fun scanLocalVideos(context: Context, callback: (videos: List<com.yinnho.upnpcast.DLNACast.LocalVideo>) -> Unit) {
+            LocalCastManager.scanLocalVideos(context, callback)
+        }
+        
+        /**
+         * Get URL for local file serving
+         */
+        fun getLocalFileUrl(filePath: String): String? {
+            val context = contextRef?.get() ?: return null
+            return LocalCastManager.getLocalFileUrl(context, filePath)
+        }
+        
+
+        
+        /**
+         * Get all discovered devices
          */
         fun getAllDevices(): List<Device> {
             return devices.values.map { convertToDevice(it) }
@@ -265,151 +294,59 @@ internal class CoreManager {
         }
         
         /**
-         * Find device
+         * Find device by ID
          */
         fun findDevice(deviceId: String): Device? {
             return devices[deviceId]?.let { convertToDevice(it) }
         }
         
         /**
-         * Select best device (prioritize TV)
+         * Select best device (prioritize TV devices)
          */
         fun selectBestDevice(devices: List<Device>): Device {
             return devices.find { it.isTV } ?: devices.first()
         }
         
         /**
-         * Get Context
+         * Get application context
          */
         fun getContext(): Context? {
             return contextRef?.get()
         }
         
         /**
-         * Clean up resources
+         * Clean up all resources and stop services
          */
         fun cleanup() {
+            cleanupSearchCallback()
+            
+
+            
             ssdpDiscovery?.shutdown()
             ssdpDiscovery = null
             devices.clear()
             currentDevice = null
             contextRef = null
-            currentDeviceListCallback = null
             searchCompleted = false
             notifiedDeviceIds.clear()
             
-            // Clear cache
-            clearVolumeCache()
-            clearProgressCache()
+            cacheManager.clearAll()
             
-            MediaPlayer.cleanup()
+            ScopeManager.cleanup()
+            
+            DlnaMediaController.clearAllControllers()
             LocalCastManager.cleanup()
             Log.i(TAG, "CoreManager cleaned up")
         }
         
-        // Private helper methods - Extract common logic, reduce code duplication
-        
         /**
-         * Generic device check and execution method
+         * Execute action with current connected device
          */
         private inline fun <T> executeWithDevice(action: (RemoteDevice) -> T): T? {
             return currentDevice?.let(action)
         }
         
-        /**
-         * Generic method for getting progress from device
-         */
-        private fun getProgressFromDevice(
-            device: RemoteDevice, 
-            timestamp: Long,
-            callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit
-        ) {
-            MediaPlayer.getProgress(device) { currentMs, totalMs, success ->
-                if (success) {
-                    updateProgressCache(currentMs, totalMs, timestamp)
-                }
-                callback(currentMs, totalMs, success)
-            }
-        }
-        
-        /**
-         * Generic method for updating progress cache
-         */
-        private fun updateProgressCache(currentMs: Long, totalMs: Long, timestamp: Long) {
-            cachedCurrentMs = currentMs
-            cachedTotalMs = totalMs
-            lastProgressUpdate = timestamp
-            updatePlayingState()
-        }
-        
-        /**
-         * Generic method for updating volume cache
-         */
-        private fun updateVolumeCache(volume: Int, muted: Boolean) {
-            cachedVolume = volume
-            cachedMuted = muted
-            lastVolumeUpdate = System.currentTimeMillis()
-        }
-        
-        /**
-         * Check if volume cache needs updating
-         */
-        private fun shouldUpdateVolumeCache(): Boolean {
-            return System.currentTimeMillis() - lastVolumeUpdate > VOLUME_CACHE_DURATION
-        }
-        
-        /**
-         * Asynchronously refresh volume cache
-         */
-        private fun refreshVolumeCacheAsync() {
-            currentDevice?.let { device ->
-                Thread {
-                    try {
-                        val controller = DlnaMediaController.getController(device)
-                        runBlocking {
-                            val volume = controller.getVolumeAsync()
-                            val muted = controller.getMuteAsync()
-                            
-                            if (volume != null) {
-                                updateVolumeCache(volume, muted ?: false)
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to refresh volume cache: ${e.message}")
-                    }
-                }.start()
-            }
-        }
-        
-        /**
-         * Asynchronously refresh progress cache
-         */
-        private fun refreshProgressCacheAsync() {
-            currentDevice?.let { device ->
-                Thread {
-                    try {
-                        val controller = DlnaMediaController.getController(device)
-                        runBlocking {
-                            val progressInfo = controller.getPositionInfo()
-                            if (progressInfo != null) {
-                                val (currentMs, totalMs) = progressInfo
-                                updateProgressCache(currentMs, totalMs, System.currentTimeMillis())
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to refresh progress cache: ${e.message}")
-                    }
-                }.start()
-            }
-        }
-        
-        /**
-         * Update playing state (for interpolation calculation)
-         */
-        private fun updatePlayingState() {
-            // Simple playback state determination, can be obtained more precisely
-            isPlaying = currentDevice != null
-        }
+
         
         private fun ensureInitialized(action: () -> Unit) {
             if (ssdpDiscovery == null) {
@@ -447,5 +384,19 @@ internal class CoreManager {
                 }
             }
         }
+        
+        /**
+         * Clean up search callback and timeout job to prevent memory leaks
+         */
+        private fun cleanupSearchCallback() {
+            try {
+                callbackTimeoutJob?.cancel()
+                callbackTimeoutJob = null
+                currentDeviceListCallback = null
+            } catch (e: Exception) {
+                Log.w(TAG, "Error cleaning up search callback: ${e.message}")
+            }
+        }
+
     }
 } 

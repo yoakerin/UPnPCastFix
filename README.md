@@ -11,7 +11,7 @@
 
 > **[中文文档](README_zh.md)** | **English Documentation**
 
-## ✨ What's New in v1.1.1
+## ✨ What's New in v1.1.2
 
 🎯 **Enhanced Volume Control & Millisecond-Level Progress Management**
 - **🔊 Complete Volume Control System**: Added `getVolume()`, `setVolume()`, and `setMute()` APIs for comprehensive volume management
@@ -53,14 +53,14 @@ allprojects {
 Add dependency:
 ```gradle
 dependencies {
-    implementation 'com.github.yinnho:UPnPCast:1.1.1'
+    implementation 'com.github.yinnho:UPnPCast:1.1.2'
 }
 ```
 
 #### Option 2: Maven Central (Coming Soon)
 ```gradle
 dependencies {
-    implementation 'yinnho.com:upnpcast:1.1.1'
+    implementation 'yinnho.com:upnpcast:1.1.2'
 }
 ```
 
@@ -94,13 +94,12 @@ class MainActivity : AppCompatActivity() {
     
     private fun performSmartCast() {
         // Smart cast - automatically finds and selects best device
-        DLNACast.smartCast("http://your-video.mp4", "Video Title") { success ->
-            if (success) {
+        DLNACast.cast("http://your-video.mp4", "Video Title") { result ->
+            if (result.success) {
                 Log.d("DLNA", "Smart casting started!")
+            } else {
+                Log.e("DLNA", "Cast failed: ${result.message}")
             }
-        } { devices ->
-            // Device selector: prefer TV over other devices
-            devices.firstOrNull { it.isTV } ?: devices.firstOrNull()
         }
     }
     
@@ -170,13 +169,7 @@ DLNACast.search(timeout: Long = 5000, callback: (devices: List<Device>) -> Unit)
 // Auto cast to available device
 DLNACast.cast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
 
-// Smart cast with device selection strategy
-DLNACast.smartCast(
-    url: String, 
-    title: String? = null, 
-    callback: (success: Boolean) -> Unit = {}, 
-    deviceSelector: (devices: List<Device>) -> Device?
-)
+// Removed: Use DLNACast.cast() for automatic device selection
 
 // Cast to specific device
 DLNACast.castToDevice(device: Device, url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
