@@ -10,6 +10,8 @@ import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import com.yinnho.upnpcast.DLNACast
 
 /**
@@ -98,44 +100,62 @@ class MediaControlActivity : AppCompatActivity() {
             }
         }
 
+        // 初始化音量显示
+        updateVolumeDisplay()
+
         // Control buttons
         btnPause.setOnClickListener {
-            DLNACast.control(DLNACast.MediaAction.PAUSE) { success ->
-                runOnUiThread {
-                    if (success) {
-                        playbackStatus.text = "Paused"
-                        showToast("Paused")
-                    } else {
-                        showToast("Pause failed")
+            lifecycleScope.launch {
+                try {
+                    val success = DLNACast.pause()
+                    runOnUiThread {
+                        if (success) {
+                            playbackStatus.text = "Paused"
+                            showToast("Paused")
+                        } else {
+                            showToast("Pause failed")
+                        }
                     }
+                } catch (e: Exception) {
+                    runOnUiThread { showToast("Pause error: ${e.message}") }
                 }
             }
         }
 
         btnResume.setOnClickListener {
-            DLNACast.control(DLNACast.MediaAction.PLAY) { success ->
-                runOnUiThread {
-                    if (success) {
-                        playbackStatus.text = "Playing"
-                        showToast("Resumed")
-                    } else {
-                        showToast("Resume failed")
+            lifecycleScope.launch {
+                try {
+                    val success = DLNACast.play()
+                    runOnUiThread {
+                        if (success) {
+                            playbackStatus.text = "Playing"
+                            showToast("Resumed")
+                        } else {
+                            showToast("Resume failed")
+                        }
                     }
+                } catch (e: Exception) {
+                    runOnUiThread { showToast("Resume error: ${e.message}") }
                 }
             }
         }
 
         btnStop.setOnClickListener {
-            DLNACast.control(DLNACast.MediaAction.STOP) { success ->
-                runOnUiThread {
-                    if (success) {
-                        playbackStatus.text = "Stopped"
-                        currentTime.text = "00:00"
-                        seekBar.progress = 0
-                        showToast("Stopped")
-                    } else {
-                        showToast("Stop failed")
+            lifecycleScope.launch {
+                try {
+                    val success = DLNACast.stop()
+                    runOnUiThread {
+                        if (success) {
+                            playbackStatus.text = "Stopped"
+                            currentTime.text = "00:00"
+                            seekBar.progress = 0
+                            showToast("Stopped")
+                        } else {
+                            showToast("Stop failed")
+                        }
                     }
+                } catch (e: Exception) {
+                    runOnUiThread { showToast("Stop error: ${e.message}") }
                 }
             }
         }
@@ -158,13 +178,18 @@ class MediaControlActivity : AppCompatActivity() {
                 val progress = seekBar?.progress ?: 0
                 if (totalDurationMs > 0) {
                     val targetPosition = (progress * totalDurationMs / 100).toLong()
-                    DLNACast.control(DLNACast.MediaAction.SEEK, targetPosition) { success ->
-                        runOnUiThread {
-                            if (success) {
-                                showToast("Seek to ${formatTime(targetPosition)}")
-                            } else {
-                                showToast("Seek failed")
+                    lifecycleScope.launch {
+                        try {
+                            val success = DLNACast.seek(targetPosition)
+                            runOnUiThread {
+                                if (success) {
+                                    showToast("Seek to ${formatTime(targetPosition)}")
+                                } else {
+                                    showToast("Seek failed")
+                                }
                             }
+                        } catch (e: Exception) {
+                            runOnUiThread { showToast("Seek error: ${e.message}") }
                         }
                     }
                 }
@@ -175,20 +200,21 @@ class MediaControlActivity : AppCompatActivity() {
         volumeSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    volumeText.text = "Volume: $progress%"
-                    DLNACast.control(DLNACast.MediaAction.VOLUME, progress) { success ->
-                        if (!success) {
-                            runOnUiThread {
-                                showToast("Volume setting failed")
-                            }
-                        }
-                    }
+                    volumeText.text = "🔊 音量: $progress%"
+                    // 不在拖动过程中设置音量，避免重复调用
                 }
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                // 只在用户停止拖动时设置音量
+                val volume = seekBar?.progress ?: 0
+                setVolume(volume)
+            }
         })
+
+
     }
 
     private fun setupExampleVideos() {
@@ -204,15 +230,20 @@ class MediaControlActivity : AppCompatActivity() {
     }
 
     private fun playMedia(url: String, title: String) {
-        DLNACast.cast(url, title) { success ->
-            runOnUiThread {
-                if (success) {
-                    mediaTitle.text = title
-                    playbackStatus.text = "Playing"
-                    showToast("Playback started")
-                } else {
-                    showToast("Playback failed")
+        lifecycleScope.launch {
+            try {
+                val success = DLNACast.cast(url, title)
+                runOnUiThread {
+                    if (success) {
+                        mediaTitle.text = title
+                        playbackStatus.text = "Playing"
+                        showToast("Playback started")
+                    } else {
+                        showToast("Playback failed")
+                    }
                 }
+            } catch (e: Exception) {
+                runOnUiThread { showToast("Playback error: ${e.message}") }
             }
         }
     }
@@ -220,9 +251,38 @@ class MediaControlActivity : AppCompatActivity() {
     private fun updateDeviceInfo() {
         val state = DLNACast.getState()
         connectedDeviceName.text = if (state.isConnected) {
-            "Connected Device: ${state.currentDevice?.name ?: "Unknown"}"
+            "📺 已连接设备: ${state.currentDevice?.name ?: "未知"}"
         } else {
-            "No device connected"
+            "❌ 未连接设备"
+        }
+        
+        // 主动获取实时音量信息
+        if (state.isConnected) {
+            lifecycleScope.launch {
+                try {
+                    val volumeInfo = DLNACast.getVolume()
+                    runOnUiThread {
+                        if (volumeInfo != null) {
+                            val (volume, isMuted) = volumeInfo
+                            if (volume != null) {
+                                volumeSeekBar.progress = volume
+                                val muteStatus = if (isMuted == true) " (静音)" else ""
+                                volumeText.text = "🔊 音量: ${volume}%$muteStatus"
+                            } else {
+                                updateVolumeDisplay()
+                            }
+                        } else {
+                            // 获取失败时使用缓存的状态
+                            updateVolumeDisplay()
+                        }
+                    }
+                } catch (e: Exception) {
+                    runOnUiThread { updateVolumeDisplay() }
+                }
+            }
+        } else {
+            // 未连接时显示默认状态
+            updateVolumeDisplay()
         }
     }
 
@@ -246,19 +306,116 @@ class MediaControlActivity : AppCompatActivity() {
     }
 
     private fun updateProgress() {
-        DLNACast.getProgress { currentMs, totalMs, success ->
-            runOnUiThread {
-                if (success && totalMs > 0) {
-                    totalDurationMs = totalMs
-                    val progress = ((currentMs * 100) / totalMs).toInt()
+        // 获取播放进度
+        lifecycleScope.launch {
+            try {
+                val progressInfo = DLNACast.getProgress()
+                runOnUiThread {
+                    if (progressInfo != null) {
+                        val (currentMs, totalMs) = progressInfo
+                        totalDurationMs = totalMs
+                        val progressPercent = if (totalMs > 0) (currentMs * 100 / totalMs).toInt() else 0
+                        
+                        // 只在用户没有拖动进度条时更新
+                        if (!isUserDragging) {
+                            seekBar.progress = progressPercent
+                            currentTime.text = formatTime(currentMs)
+                            totalTime.text = formatTime(totalMs)
+                        }
+                    } else {
+                        // 进度获取失败时静默处理，避免过多提示
+                    }
                     
-                    seekBar.progress = progress
-                    currentTime.text = formatTime(currentMs)
-                    totalTime.text = formatTime(totalMs)
+                    // 同时更新状态和音量信息
+                    updateStateAndVolume()
+                }
+            } catch (e: Exception) {
+                runOnUiThread { updateStateAndVolume() }
+            }
+        }
+    }
+    
+    private fun updateStateAndVolume() {
+        // 获取当前播放状态
+        val state = DLNACast.getState()
+        
+        // 更新播放状态显示
+        playbackStatus.text = when (state.playbackState) {
+            DLNACast.PlaybackState.PLAYING -> "🎬 播放中"
+            DLNACast.PlaybackState.PAUSED -> "⏸️ 已暂停"
+            DLNACast.PlaybackState.STOPPED -> "⏹️ 已停止"
+            DLNACast.PlaybackState.BUFFERING -> "⏳ 缓冲中"
+            DLNACast.PlaybackState.ERROR -> "❌ 错误"
+            else -> "空闲"
+        }
+        
+        // 偶尔获取实时音量信息（每10秒一次）
+        if (state.isConnected && System.currentTimeMillis() % 10000 < 1000) {
+            lifecycleScope.launch {
+                try {
+                    val volumeInfo = DLNACast.getVolume()
+                    runOnUiThread {
+                        if (volumeInfo != null) {
+                            val (volume, isMuted) = volumeInfo
+                            if (volume != null) {
+                                volumeSeekBar.progress = volume
+                                val muteStatus = if (isMuted == true) " (静音)" else ""
+                                volumeText.text = "🔊 音量: ${volume}%$muteStatus"
+                            } else {
+                                updateVolumeDisplay()
+                            }
+                        } else {
+                            updateVolumeDisplay()
+                        }
+                    }
+                } catch (e: Exception) {
+                    runOnUiThread { updateVolumeDisplay() }
+                }
+            }
+        } else {
+            // 其他时候使用缓存的音量信息
+            updateVolumeDisplay()
+        }
+    }
+
+    private fun updateVolumeDisplay() {
+        val state = DLNACast.getState()
+        if (state.volume >= 0) {
+            volumeSeekBar.progress = state.volume
+            val muteStatus = if (state.isMuted) " (静音)" else ""
+            volumeText.text = "🔊 音量: ${state.volume}%$muteStatus"
+        } else {
+            volumeText.text = "🔊 音量: 未知"
+        }
+    }
+
+    private fun setVolume(volume: Int) {
+        lifecycleScope.launch {
+            try {
+                val success = DLNACast.setVolume(volume)
+                runOnUiThread {
+                    if (success) {
+                        showToast("音量设置为: $volume%")
+                        // 延迟更新显示，等待设备响应
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            updateVolumeDisplay()
+                        }, 500)
+                    } else {
+                        showToast("音量设置失败")
+                        // 恢复原有音量显示
+                        updateVolumeDisplay()
+                    }
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    showToast("音量设置异常: ${e.message}")
+                    updateVolumeDisplay()
                 }
             }
         }
     }
+
+
 
     private fun formatTime(timeMs: Long): String {
         val seconds = timeMs / 1000

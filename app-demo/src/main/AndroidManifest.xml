@@ -56,6 +56,11 @@
         <activity
             android:name=".MediaControlActivity"
             android:exported="false" />
+            
+        <!-- 视频选择页面（示例实现） -->
+        <activity
+            android:name=".VideoSelectorActivity"
+            android:exported="false" />
         
     </application>
 </manifest>

@@ -19,7 +19,7 @@
 - **🚀 Smart Cache Management**: Volume cache (5-second validity) and progress cache with async refresh mechanisms
 - **🎯 Real-time Progress Tracking**: `getProgressRealtime()` for force refresh without cache dependency
 - **🔄 Manual Cache Control**: Exposed cache refresh and clearing methods for advanced control
-- **📊 Enhanced State Management**: Improved `getState()` with integrated volume and mute status
+- 📊 **Enhanced State Management**: Improved `getState()` with integrated volume and mute status
 
 ## Features
 
@@ -76,267 +76,253 @@ class MainActivity : AppCompatActivity() {
         // Initialize
         DLNACast.init(this)
         
-        // Search for devices - real-time cumulative updates
-        searchDevices()
-        
-        // Or use smart cast with automatic device selection
-        performSmartCast()
+        // Use coroutines for all operations
+        lifecycleScope.launch {
+            searchDevices()
+            performSmartCast()
+        }
     }
     
-    private fun searchDevices() {
-        // Real-time device discovery with cumulative results
-        DLNACast.search(timeout = 5000) { devices ->
-            // Called with cumulative device list each time new devices are found
-            updateDeviceList(devices) // Simply replace the list
+    private suspend fun searchDevices() {
+        try {
+            // Device discovery with timeout
+            val devices = DLNACast.search(timeout = 5000)
             Log.d("DLNA", "Found ${devices.size} devices")
-        }
-    }
-    
-    private fun performSmartCast() {
-        // Smart cast - automatically finds and selects best device
-        DLNACast.cast("http://your-video.mp4", "Video Title") { result ->
-            if (result.success) {
-                Log.d("DLNA", "Smart casting started!")
-            } else {
-                Log.e("DLNA", "Cast failed: ${result.message}")
+            
+            // Display devices
+            devices.forEach { device ->
+                val icon = if (device.isTV) "📺" else "📱"
+                Log.d("DLNA", "$icon ${device.name} (${device.address})")
             }
+        } catch (e: Exception) {
+            Log.e("DLNA", "Search failed: ${e.message}")
         }
     }
     
-    // Control playback
-    private fun controlPlayback() {
-        DLNACast.control(DLNACast.MediaAction.PAUSE) { success ->
-            Log.d("DLNA", "Paused: $success")
-        }
-    }
-    
-    // NEW: Volume control examples
-    private fun volumeControlExamples() {
-        // Get current volume
-        DLNACast.getVolume { volume, isMuted, success ->
+    private suspend fun performSmartCast() {
+        try {
+            // Smart cast - automatically finds and selects best device
+            val success = DLNACast.cast("http://your-video.mp4", "Video Title")
             if (success) {
-                Log.d("DLNA", "Current volume: $volume, Muted: $isMuted")
+                Log.d("DLNA", "Smart casting started!")
+                controlPlayback()
+            } else {
+                Log.e("DLNA", "Cast failed")
             }
-        }
-        
-        // Set volume to 50%
-        DLNACast.setVolume(50) { success ->
-            Log.d("DLNA", "Volume set: $success")
-        }
-        
-        // Toggle mute
-        DLNACast.setMute(true) { success ->
-            Log.d("DLNA", "Muted: $success")
+        } catch (e: Exception) {
+            Log.e("DLNA", "Cast error: ${e.message}")
         }
     }
     
-    // NEW: Advanced progress tracking
-    private fun progressTrackingExamples() {
-        // Cached progress (fast, uses interpolation)
-        DLNACast.getProgress { currentMs, totalMs, success ->
-            Log.d("DLNA", "Progress: ${currentMs}ms / ${totalMs}ms")
-        }
-        
-        // Real-time progress (accurate, always from device)
-        DLNACast.getProgressRealtime { currentMs, totalMs, success ->
-            Log.d("DLNA", "Real-time progress: ${currentMs}ms / ${totalMs}ms")
-        }
-        
-        // Manual cache management
-        DLNACast.refreshVolumeCache { success ->
-            Log.d("DLNA", "Volume cache refreshed: $success")
+    private suspend fun controlPlayback() {
+        try {
+            // Control playback
+            val pauseSuccess = DLNACast.control(DLNACast.MediaAction.PAUSE)
+            Log.d("DLNA", "Paused: $pauseSuccess")
+            
+            // Get current state
+            val state = DLNACast.getState()
+            Log.d("DLNA", "Connected: ${state.isConnected}, Playing: ${state.isPlaying}")
+            
+            // Seek to 30 seconds
+            val seekSuccess = DLNACast.seek(30000)
+            Log.d("DLNA", "Seeked to 30 seconds: $seekSuccess")
+        } catch (e: Exception) {
+            Log.e("DLNA", "Control error: ${e.message}")
         }
     }
     
     override fun onDestroy() {
         super.onDestroy()
-        DLNACast.release()
+        DLNACast.cleanup()
     }
 }
 ```
 
 ## API Reference
 
-### Core Methods
+### 🚀 Core Methods (All Suspend Functions)
 
 ```kotlin
-// Initialize the library
+// Initialize the library (call once in onCreate)
 DLNACast.init(context: Context)
 
-// Search for devices with real-time cumulative updates
-DLNACast.search(timeout: Long = 5000, callback: (devices: List<Device>) -> Unit)
+// Search for devices (returns list of discovered devices)
+suspend fun DLNACast.search(timeout: Long = 5000): List<Device>
 
-// Auto cast to available device
-DLNACast.cast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
-
-// Removed: Use DLNACast.cast() for automatic device selection
+// Smart cast - automatically selects best available device
+suspend fun DLNACast.cast(url: String, title: String? = null): Boolean
 
 // Cast to specific device
-DLNACast.castToDevice(device: Device, url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
+suspend fun DLNACast.castToDevice(device: Device, url: String, title: String): Boolean
 
-// Cast local files
-DLNACast.castLocalFile("/storage/emulated/0/video.mp4", "Local Video") { success, message ->
-    if (success) {
-        println("Local file cast successful")
-    } else {
-        println("Cast failed: $message")
-    }
-}
+// Cast local video files
+suspend fun DLNACast.castLocalFile(device: Device, video: LocalVideo): Boolean
 
-// Get local file URL for manual use
-DLNACast.getLocalFileUrl(filePath: String): String?
+// Scan for local video files
+suspend fun DLNACast.scanLocalVideos(): List<LocalVideo>
 
-// Control media playback
-DLNACast.control(action: MediaAction, value: Any? = null, callback: (success: Boolean) -> Unit = {})
+// Media control operations
+suspend fun DLNACast.control(action: MediaAction): Boolean
+
+// Seek to specific position (in milliseconds)
+suspend fun DLNACast.seek(positionMs: Long): Boolean
 ```
 
-### 🆕 NEW: Volume Control APIs (v1.1.1)
+### 📊 State Management
 
 ```kotlin
-// Get current volume and mute status
-DLNACast.getVolume(callback: (volume: Int?, isMuted: Boolean?, success: Boolean) -> Unit)
+// Get current casting state (synchronous)
+fun DLNACast.getState(): State
 
-// Set volume (0-100)
-DLNACast.setVolume(volume: Int, callback: (success: Boolean) -> Unit = {})
+// Get playback progress (synchronous) 
+fun DLNACast.getProgress(): Progress
 
-// Set mute state
-DLNACast.setMute(mute: Boolean, callback: (success: Boolean) -> Unit = {})
+// Get volume information (synchronous)
+fun DLNACast.getVolume(): Volume
+
+// Clean up resources (call in onDestroy)
+fun DLNACast.cleanup()
 ```
 
-### 🆕 NEW: Enhanced Progress Management (v1.1.1)
-
-```kotlin
-// Get progress with intelligent caching and interpolation (recommended)
-DLNACast.getProgress(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit)
-
-// Get real-time progress (always fetches from device, no cache)
-DLNACast.getProgressRealtime(callback: (currentMs: Long, totalMs: Long, success: Boolean) -> Unit)
-```
-
-### 🆕 NEW: Cache Management APIs (v1.1.1)
-
-```kotlin
-// Manually refresh volume cache
-DLNACast.refreshVolumeCache(callback: (success: Boolean) -> Unit = {})
-
-// Manually refresh progress cache
-DLNACast.refreshProgressCache(callback: (success: Boolean) -> Unit = {})
-
-// Clear progress cache (call when switching media)
-DLNACast.clearProgressCache()
-
-// Clear volume cache
-DLNACast.clearVolumeCache()
-```
-
-### Other Core Methods
-
-```kotlin
-// Get current state (now includes volume and mute status)
-DLNACast.getState(): State
-
-// Release resources
-DLNACast.release()
-```
-
-### Data Types
+### 📋 Data Types
 
 ```kotlin
 // Device information
 data class Device(
-    val id: String,
-    val name: String,
-    val address: String,
-    val isTV: Boolean
+    val id: String,           // Unique device identifier
+    val name: String,         // Display name (e.g., "Living Room TV")
+    val address: String,      // IP address
+    val isTV: Boolean         // Whether this is a TV device
+)
+
+// Local video file information
+data class LocalVideo(
+    val path: String,         // Full file path
+    val name: String,         // Display name
+    val size: Long,           // File size in bytes
+    val duration: Long        // Duration in milliseconds
 )
 
 // Media control actions
 enum class MediaAction {
-    PLAY, PAUSE, STOP, VOLUME, MUTE, SEEK, GET_STATE
+    PLAY, PAUSE, STOP
 }
 
 // Playback states
 enum class PlaybackState {
-    IDLE, PLAYING, PAUSED, STOPPED, BUFFERING, ERROR
+    IDLE,                     // Not connected or no media
+    PLAYING,                  // Currently playing
+    PAUSED,                   // Playback paused
+    STOPPED,                  // Playback stopped
+    BUFFERING,                // Loading/buffering
+    ERROR                     // Error state
 }
 
-// Current casting state (enhanced in v1.1.1)
+// Current casting state
 data class State(
-    val isConnected: Boolean,
-    val currentDevice: Device?,
-    val playbackState: PlaybackState,
-    val volume: Int = -1,        // Current volume (0-100, -1 if unknown)
-    val isMuted: Boolean = false // Current mute status
+    val isConnected: Boolean,     // Connected to a device
+    val currentDevice: Device?,   // Current target device
+    val playbackState: PlaybackState,  // Current playback state
+    val isPlaying: Boolean,       // Whether media is playing
+    val isPaused: Boolean,        // Whether media is paused
+    val volume: Int,              // Current volume (0-100)
+    val isMuted: Boolean          // Whether audio is muted
+)
+
+// Playback progress information
+data class Progress(
+    val currentMs: Long,          // Current position in milliseconds
+    val totalMs: Long,            // Total duration in milliseconds
+    val percentage: Float         // Progress as percentage (0.0-1.0)
+)
+
+// Volume information
+data class Volume(
+    val level: Int,               // Volume level (0-100)
+    val isMuted: Boolean          // Mute status
 )
 ```
 
-## 🆕 Advanced Usage Examples (v1.1.1)
+## 🔥 Advanced Usage Examples
 
-### Smart Volume Control
+### Cast to Specific Device
 ```kotlin
-// Check current volume before adjusting
-DLNACast.getVolume { currentVolume, isMuted, success ->
-    if (success && currentVolume != null) {
-        when {
-            isMuted == true -> {
-                // Unmute first
-                DLNACast.setMute(false) { 
-                    DLNACast.setVolume(50) // Then set to 50%
-                }
-            }
-            currentVolume < 30 -> {
-                DLNACast.setVolume(currentVolume + 10) // Increase by 10
-            }
-            else -> {
-                DLNACast.setVolume(currentVolume - 10) // Decrease by 10
-            }
-        }
-    }
-}
-```
-
-### Progress Tracking with Caching Strategy
-```kotlin
-class ProgressTracker {
-    private var useRealtime = false
-    
-    fun trackProgress() {
-        val progressMethod = if (useRealtime) {
-            DLNACast::getProgressRealtime
-        } else {
-            DLNACast::getProgress
-        }
+lifecycleScope.launch {
+    try {
+        // First, search for devices
+        val devices = DLNACast.search(timeout = 5000)
         
-        progressMethod { currentMs, totalMs, success ->
+        // Find your preferred device
+        val targetDevice = devices.firstOrNull { it.name.contains("Living Room") }
+        
+        if (targetDevice != null) {
+            // Cast to specific device
+            val success = DLNACast.castToDevice(
+                device = targetDevice,
+                url = "http://your-video.mp4",
+                title = "My Movie"
+            )
+            
             if (success) {
-                updateUI(currentMs, totalMs)
-                
-                // Switch to real-time if user is seeking
-                if (isUserSeeking()) {
-                    useRealtime = true
-                    DLNACast.refreshProgressCache() // Refresh cache after seeking
-                }
+                Log.d("DLNA", "Successfully cast to ${targetDevice.name}")
             }
         }
+    } catch (e: Exception) {
+        Log.e("DLNA", "Cast failed: ${e.message}")
     }
 }
 ```
 
-### Optimized State Management
+### Local File Casting
 ```kotlin
-fun getEnhancedState() {
-    val state = DLNACast.getState()
-    
-    // The state now includes volume and mute information
-    println("Connected: ${state.isConnected}")
-    println("Device: ${state.currentDevice?.name}")
-    println("Playing: ${state.playbackState}")
-    println("Volume: ${state.volume}% (Muted: ${state.isMuted})")
-    
-    // Refresh caches if needed
-    if (state.isConnected) {
-        DLNACast.refreshVolumeCache()
-        DLNACast.refreshProgressCache()
+lifecycleScope.launch {
+    try {
+        // Scan for local video files
+        val localVideos = DLNACast.scanLocalVideos()
+        
+        // Find a video to cast
+        val videoToPlay = localVideos.firstOrNull { it.name.contains("movie") }
+        
+        if (videoToPlay != null) {
+            // Get available devices
+            val devices = DLNACast.search()
+            val device = devices.firstOrNull()
+            
+            if (device != null) {
+                // Cast local file
+                val success = DLNACast.castLocalFile(device, videoToPlay)
+                Log.d("DLNA", "Local cast success: $success")
+            }
+        }
+    } catch (e: Exception) {
+        Log.e("DLNA", "Local cast failed: ${e.message}")
+    }
+}
+```
+
+### Media Control & State Monitoring
+```kotlin
+lifecycleScope.launch {
+    try {
+        // Control playback
+        DLNACast.control(DLNACast.MediaAction.PAUSE)
+        
+        // Monitor state
+        val state = DLNACast.getState()
+        Log.d("DLNA", "Device: ${state.currentDevice?.name}")
+        Log.d("DLNA", "Playing: ${state.isPlaying}")
+        Log.d("DLNA", "Volume: ${state.volume}")
+        
+        // Get progress
+        val progress = DLNACast.getProgress()
+        Log.d("DLNA", "Progress: ${progress.percentage * 100}%")
+        
+        // Seek to specific position (2 minutes)
+        DLNACast.seek(120000)
+        
+    } catch (e: Exception) {
+        Log.e("DLNA", "Control failed: ${e.message}")
     }
 }
 ```

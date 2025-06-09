@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
@@ -156,20 +158,27 @@ class MainActivity : AppCompatActivity() {
         statusView.text = "状态: 搜索中..."
         discoveredDevices.clear()
         
-        DLNACast.search(timeout = 5000) { devices: List<DLNACast.Device> ->
-            runOnUiThread {
-                discoveredDevices.clear()
-                discoveredDevices.addAll(devices)
-                log("📱 实时更新: 发现 ${devices.size} 个设备")
-                updateDeviceList()
-                statusView.text = "状态: 搜索中... (${discoveredDevices.size}个设备)"
+        // 使用新的协程API
+        lifecycleScope.launch {
+            try {
+                val devices = DLNACast.search(timeout = 5000)
+                runOnUiThread {
+                    discoveredDevices.clear()
+                    discoveredDevices.addAll(devices)
+                    log("📱 实时更新: 发现 ${devices.size} 个设备")
+                    updateDeviceList()
+                    
+                    val statusText = "状态: 搜索完成 (${devices.size}个设备)"
+                    statusView.text = statusText
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    log("❌ 搜索设备失败: ${e.message}")
+                    statusView.text = "状态: 搜索失败"
+                    deviceListView.text = "搜索失败，请重试"
+                }
             }
         }
-        
-        // 5秒后更新为搜索完成状态
-        Handler(Looper.getMainLooper()).postDelayed({
-            statusView.text = "状态: 搜索完成 (${discoveredDevices.size}个设备)"
-        }, 5100)
     }
 
     private fun updateDeviceList() {
@@ -185,7 +194,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showDeviceSelectionDialog() {
-        Log.d(tag, "showDeviceSelectionDialog() called with ${discoveredDevices.size} devices")
         val deviceNames = discoveredDevices.map { device ->
             val icon = if (device.isTV) "📺" else "📱"
             "$icon ${device.name} (${device.address})"
@@ -194,9 +202,7 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("选择投屏设备")
             .setItems(deviceNames) { _, which ->
-                Log.d(tag, "Device selected: index=$which")
                 val selectedDevice = discoveredDevices[which]
-                Log.d(tag, "Selected device: ${selectedDevice.name}")
                 performCastToDevice(selectedDevice)
             }
             .setNegativeButton("取消", null)
@@ -204,7 +210,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun testCasting() {
-        Log.d(tag, "testCasting() called")
         if (discoveredDevices.isEmpty()) {
             AlertDialog.Builder(this)
                 .setTitle("提示")
@@ -218,65 +223,50 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun performCastToDevice(targetDevice: DLNACast.Device) {
-        Log.d(tag, "performCastToDevice() called for device: ${targetDevice.name}")
-        // 显示媒体选择对话框
         showMediaSelectionDialog(targetDevice)
     }
     
     private fun showMediaSelectionDialog(targetDevice: DLNACast.Device) {
-        Log.d(tag, "showMediaSelectionDialog() called for device: ${targetDevice.name}")
-        
         if (isShowingMediaDialog) {
-            Log.w(tag, "Media dialog is already showing, ignoring duplicate call")
             return
         }
         
         isShowingMediaDialog = true
-        Log.d(tag, "Setting isShowingMediaDialog = true")
         
-        // 创建垂直布局，包含6个按钮
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(20, 20, 20, 20)
         }
         
-        // 6个媒体选项 - 简化版本
         val mediaOptions = listOf(
             "🎬 Big Buck Bunny (经典)" to {
-                Log.d(tag, "Big Buck Bunny selected")
                 castMedia(targetDevice, 
                     "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4", 
                     "Big Buck Bunny")
             },
             "🌊 海洋视频 (推荐)" to {
-                Log.d(tag, "Ocean video selected")
                 castMedia(targetDevice, 
                     "http://vjs.zencdn.net/v/oceans.mp4", 
                     "Ocean Video")
             },
             "🎭 Sintel 动画短片" to {
-                Log.d(tag, "Sintel selected")
                 castMedia(targetDevice, 
                     "https://media.w3.org/2010/05/sintel/trailer.mp4", 
                     "Sintel Trailer")
             },
             "🚗 西瓜视频Demo" to {
-                Log.d(tag, "XiGua video selected")
                 castMedia(targetDevice, 
                     "https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/xgplayer_doc_video/mp4/xgplayer-demo-360p.mp4", 
                     "XiGua Player Demo")
             },
             "📱 选取本地视频" to {
-                Log.d(tag, "Local file casting selected")
                 showLocalFileCastingOptions(targetDevice)
             },
             "✏️ 手动输入网络URL" to {
-                Log.d(tag, "Custom URL option selected")
                 showCustomUrlDialog(targetDevice)
             }
         )
         
-        // 为每个选项创建按钮
         mediaOptions.forEach { option ->
             val text = option.first
             val action = option.second
@@ -297,26 +287,18 @@ class MainActivity : AppCompatActivity() {
             .setMessage("投屏到: ${targetDevice.name}")
             .setView(layout)
             .setNegativeButton("取消") { _, _ ->
-                Log.d(tag, "Media selection cancelled")
                 isShowingMediaDialog = false
             }
             .setOnDismissListener {
-                Log.d(tag, "Media dialog dismissed")
                 isShowingMediaDialog = false
             }
             .create()
             
-        Log.d(tag, "Showing media selection dialog with button list")
         dialog.show()
     }
     
     private fun showLocalFileCastingOptions(targetDevice: DLNACast.Device) {
-        Log.d(tag, "showLocalFileCastingOptions() called for device: ${targetDevice.name}")
-        
-        // 使用库内置的视频选择器 - 只需一行代码！
-        DLNACast.showVideoSelector(this, targetDevice)
-        
-        Log.d(tag, "启动库内置视频选择器, 设备: ${targetDevice.name}")
+                        VideoSelectorActivity.start(this, targetDevice)
     }
     
     private fun showCustomUrlDialog(targetDevice: DLNACast.Device) {
@@ -380,7 +362,6 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun castMedia(targetDevice: DLNACast.Device, url: String, title: String) {
-        Log.d(tag, "MainActivity.castMedia called: device=${targetDevice.name}, url=$url, title=$title")
         log("🎬 开始投屏: $title 到: ${targetDevice.name}")
         log("📺 URL: $url")
         log("🔍 目标设备ID: ${targetDevice.id}")
@@ -394,30 +375,46 @@ class MainActivity : AppCompatActivity() {
             .create()
         progressDialog.show()
         
-        // 使用新的API直接向指定设备投屏
-        DLNACast.castToDevice(targetDevice, url, title) { success ->
-            runOnUiThread {
-                progressDialog.dismiss()
-                
-                if (success) {
-                    log("✅ 投屏成功: $title 到: ${targetDevice.name}")
-                    statusView.text = "状态: 正在播放 $title"
+        // 使用新的协程API直接向指定设备投屏
+        lifecycleScope.launch {
+            try {
+                val success = DLNACast.castToDevice(targetDevice, url, title)
+                runOnUiThread {
+                    progressDialog.dismiss()
                     
-                    // 显示成功对话框
-                    AlertDialog.Builder(this)
-                        .setTitle("投屏成功")
-                        .setMessage("📺 设备: ${targetDevice.name}\n🎬 媒体: $title\n\n现在可以使用媒体控制功能")
-                        .setPositiveButton("确定", null)
-                        .setNeutralButton("媒体控制") { _, _ -> showMediaControls() }
-                        .show()
-                } else {
-                    log("❌ 投屏失败: $title")
-                    statusView.text = "状态: 投屏失败"
+                    if (success) {
+                        log("✅ 投屏成功: $title 到: ${targetDevice.name}")
+                        statusView.text = "状态: 正在播放 $title"
+                        
+                        // 显示成功对话框
+                        AlertDialog.Builder(this@MainActivity)
+                            .setTitle("投屏成功")
+                            .setMessage("📺 设备: ${targetDevice.name}\n🎬 媒体: $title\n\n现在可以使用媒体控制功能")
+                            .setPositiveButton("确定", null)
+                            .setNeutralButton("媒体控制") { _, _ -> showMediaControls() }
+                            .show()
+                    } else {
+                        log("❌ 投屏失败: $title")
+                        statusView.text = "状态: 投屏失败"
+                        
+                        // 显示失败对话框，包含详细错误信息
+                        AlertDialog.Builder(this@MainActivity)
+                            .setTitle("投屏失败")
+                            .setMessage("📺 目标设备: ${targetDevice.name}\n🎬 媒体: $title\n\n可能的原因:\n• 设备不在线\n• 媒体格式不支持\n• 网络连接问题")
+                            .setPositiveButton("重试") { _, _ -> castMedia(targetDevice, url, title) }
+                            .setNegativeButton("取消", null)
+                            .show()
+                    }
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    progressDialog.dismiss()
+                    log("❌ 投屏异常: ${e.message}")
+                    statusView.text = "状态: 投屏异常"
                     
-                    // 显示失败对话框
-                    AlertDialog.Builder(this)
-                        .setTitle("投屏失败")
-                        .setMessage("📺 目标设备: ${targetDevice.name}\n🎬 媒体: $title\n\n可能的原因:\n• 设备不在线\n• 媒体格式不支持\n• 网络连接问题")
+                    AlertDialog.Builder(this@MainActivity)
+                        .setTitle("投屏异常")
+                        .setMessage("📺 目标设备: ${targetDevice.name}\n🎬 媒体: $title\n\n错误信息: ${e.message}")
                         .setPositiveButton("重试") { _, _ -> castMedia(targetDevice, url, title) }
                         .setNegativeButton("取消", null)
                         .show()
@@ -492,6 +489,6 @@ class MainActivity : AppCompatActivity() {
     
     override fun onDestroy() {
         super.onDestroy()
-        DLNACast.release()
+        DLNACast.cleanup()
     }
 }

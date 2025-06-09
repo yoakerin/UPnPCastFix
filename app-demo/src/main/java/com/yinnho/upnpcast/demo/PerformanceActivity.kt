@@ -11,6 +11,8 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.toColorInt
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import com.yinnho.upnpcast.DLNACast
 import kotlin.random.Random
 
@@ -148,27 +150,28 @@ class PerformanceActivity : AppCompatActivity() {
     private fun runBenchmark() {
         performanceDetailsView.text = "🚀 Running benchmark...\n"
         
-        Thread {
+        lifecycleScope.launch {
             val startTime = System.currentTimeMillis()
             
             try {
-                DLNACast.search(5000) { devices ->
-                    val endTime = System.currentTimeMillis()
-                    val duration = endTime - startTime
-                    
-                    runOnUiThread {
-                        performanceDetailsView.text = performanceDetailsView.text.toString() + "✅ Search completed: Found ${devices.size} devices\n"
-                        performanceDetailsView.text = performanceDetailsView.text.toString() + "⏱️ Search time: ${duration}ms\n"
-                        performanceDetailsView.text = performanceDetailsView.text.toString() + "📊 Average latency: ${duration / maxOf(1, devices.size)}ms/device\n"
-                        updateMetrics()
-                    }
+                val devices = DLNACast.search(5000)
+                val endTime = System.currentTimeMillis()
+                val duration = endTime - startTime
+                
+                runOnUiThread {
+                    performanceDetailsView.text = performanceDetailsView.text.toString() + "✅ Search completed: Found ${devices.size} devices\n"
+                    performanceDetailsView.text = performanceDetailsView.text.toString() + "⏱️ Search time: ${duration}ms\n"
+                    performanceDetailsView.text = performanceDetailsView.text.toString() + "📊 Average latency: ${duration / maxOf(1, devices.size)}ms/device\n"
+                    performanceDetailsView.text = performanceDetailsView.text.toString() + "📺 TV devices: ${devices.filter { it.isTV }.size}\n"
+                    performanceDetailsView.text = performanceDetailsView.text.toString() + "🔍 Search status: Completed\n"
+                    updateMetrics()
                 }
             } catch (e: Exception) {
                 runOnUiThread {
                     performanceDetailsView.text = performanceDetailsView.text.toString() + "❌ Test failed: ${e.message}\n"
                 }
             }
-        }.start()
+        }
     }
 
     private fun runNetworkTest() {

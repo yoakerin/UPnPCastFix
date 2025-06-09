@@ -64,102 +64,255 @@ class MainActivity : AppCompatActivity() {
         // 初始化
         DLNACast.init(this)
         
-        // 搜索设备 - 实时累积更新
-        searchDevices()
-        
-        // 或使用智能投屏，自动选择设备
-        performSmartCast()
+        // 使用协程进行所有操作
+        lifecycleScope.launch {
+            searchDevices()
+            performSmartCast()
+        }
     }
     
-    private fun searchDevices() {
-        // 实时设备发现，返回累积的设备列表
-        DLNACast.search(timeout = 5000) { devices ->
-            // 每次发现新设备时调用，返回累积的全部设备
-            updateDeviceList(devices) // 直接替换列表即可
+    private suspend fun searchDevices() {
+        try {
+            // 设备发现（带超时）
+            val devices = DLNACast.search(timeout = 5000)
             Log.d("DLNA", "发现 ${devices.size} 个设备")
-        }
-    }
-    
-    private fun performSmartCast() {
-        // 智能投屏 - 自动查找并选择最佳设备
-        DLNACast.cast("http://your-video.mp4", "视频标题") { result ->
-            if (result.success) {
-                Log.d("DLNA", "智能投屏开始!")
-            } else {
-                Log.e("DLNA", "投屏失败: ${result.message}")
+            
+            // 显示设备
+            devices.forEach { device ->
+                val icon = if (device.isTV) "📺" else "📱"
+                Log.d("DLNA", "$icon ${device.name} (${device.address})")
             }
+        } catch (e: Exception) {
+            Log.e("DLNA", "搜索失败: ${e.message}")
         }
     }
     
-    // 控制播放
-    private fun controlPlayback() {
-        DLNACast.control(DLNACast.MediaAction.PAUSE) { success ->
-            Log.d("DLNA", "暂停: $success")
+    private suspend fun performSmartCast() {
+        try {
+            // 智能投屏 - 自动查找并选择最佳设备
+            val success = DLNACast.cast("http://your-video.mp4", "视频标题")
+            if (success) {
+                Log.d("DLNA", "智能投屏开始!")
+                controlPlayback()
+            } else {
+                Log.e("DLNA", "投屏失败")
+            }
+        } catch (e: Exception) {
+            Log.e("DLNA", "投屏错误: ${e.message}")
+        }
+    }
+    
+    private suspend fun controlPlayback() {
+        try {
+            // 控制播放
+            val pauseSuccess = DLNACast.control(DLNACast.MediaAction.PAUSE)
+            Log.d("DLNA", "暂停: $pauseSuccess")
+            
+            // 获取当前状态
+            val state = DLNACast.getState()
+            Log.d("DLNA", "已连接: ${state.isConnected}, 正在播放: ${state.isPlaying}")
+            
+            // 跳转到30秒
+            val seekSuccess = DLNACast.seek(30000)
+            Log.d("DLNA", "跳转到30秒: $seekSuccess")
+        } catch (e: Exception) {
+            Log.e("DLNA", "控制错误: ${e.message}")
         }
     }
     
     override fun onDestroy() {
         super.onDestroy()
-        DLNACast.release()
+        DLNACast.cleanup()
     }
 }
 ```
 
 ## API参考
 
-### 核心方法
+### 🚀 核心方法（所有挂起函数）
 
 ```kotlin
-// 初始化库
+// 初始化库（在onCreate中调用一次）
 DLNACast.init(context: Context)
 
-// 搜索设备 - 实时累积更新
-DLNACast.search(timeout: Long = 5000, callback: (devices: List<Device>) -> Unit)
+// 搜索设备（返回发现的设备列表）
+suspend fun DLNACast.search(timeout: Long = 5000): List<Device>
 
-// 自动投屏到可用设备
-DLNACast.cast(url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
-
-// 智能投屏，支持设备选择
-// 已移除：使用 DLNACast.cast() 进行自动设备选择
+// 智能投屏 - 自动选择最佳可用设备
+suspend fun DLNACast.cast(url: String, title: String? = null): Boolean
 
 // 投屏到指定设备
-DLNACast.castToDevice(device: Device, url: String, title: String? = null, callback: (success: Boolean) -> Unit = {})
+suspend fun DLNACast.castToDevice(device: Device, url: String, title: String): Boolean
 
-// 控制媒体播放
-DLNACast.control(action: MediaAction, value: Any? = null, callback: (success: Boolean) -> Unit = {})
+// 投屏本地视频文件
+suspend fun DLNACast.castLocalFile(device: Device, video: LocalVideo): Boolean
 
-// 获取当前状态
-DLNACast.getState(): State
+// 扫描本地视频文件
+suspend fun DLNACast.scanLocalVideos(): List<LocalVideo>
 
-// 释放资源
-DLNACast.release()
+// 媒体控制操作
+suspend fun DLNACast.control(action: MediaAction): Boolean
+
+// 跳转到指定位置（毫秒）
+suspend fun DLNACast.seek(positionMs: Long): Boolean
 ```
 
-### 数据类型
+### 📊 状态管理
 
 ```kotlin
+// 获取当前投屏状态（同步）
+fun DLNACast.getState(): State
+
+// 获取播放进度（同步）
+fun DLNACast.getProgress(): Progress
+
+// 获取音量信息（同步）
+fun DLNACast.getVolume(): Volume
+
+// 清理资源（在onDestroy中调用）
+fun DLNACast.cleanup()
+```
+
+### 📋 数据类型
+
+```kotlin
+// 设备信息
 data class Device(
-    val id: String,           // 设备ID
-    val name: String,         // 设备名称
+    val id: String,           // 唯一设备标识符
+    val name: String,         // 显示名称（如"客厅电视"）
     val address: String,      // IP地址
-    val isTV: Boolean         // 是否为电视
+    val isTV: Boolean         // 是否为电视设备
 )
 
+// 本地视频文件信息
+data class LocalVideo(
+    val path: String,         // 文件完整路径
+    val name: String,         // 显示名称
+    val size: Long,           // 文件大小（字节）
+    val duration: Long        // 时长（毫秒）
+)
+
+// 媒体控制操作
 enum class MediaAction {
-    PLAY, PAUSE, STOP, VOLUME, MUTE, SEEK, GET_STATE
+    PLAY, PAUSE, STOP
 }
 
+// 播放状态
 enum class PlaybackState {
-    IDLE, PLAYING, PAUSED, STOPPED, BUFFERING, ERROR
+    IDLE,                     // 未连接或无媒体
+    PLAYING,                  // 正在播放
+    PAUSED,                   // 已暂停
+    STOPPED,                  // 已停止
+    BUFFERING,                // 加载/缓冲中
+    ERROR                     // 错误状态
 }
 
+// 当前投屏状态
 data class State(
-    val isConnected: Boolean,      // 是否已连接
-    val currentDevice: Device?,    // 当前设备
-    val playbackState: PlaybackState, // 播放状态
-    val volume: Int = -1,          // 音量
-    val isMuted: Boolean = false   // 是否静音
+    val isConnected: Boolean,     // 是否连接到设备
+    val currentDevice: Device?,   // 当前目标设备
+    val playbackState: PlaybackState,  // 当前播放状态
+    val isPlaying: Boolean,       // 是否正在播放媒体
+    val isPaused: Boolean,        // 是否已暂停媒体
+    val volume: Int,              // 当前音量（0-100）
+    val isMuted: Boolean          // 是否静音
 )
+
+// 播放进度信息
+data class Progress(
+    val currentMs: Long,          // 当前位置（毫秒）
+    val totalMs: Long,            // 总时长（毫秒）
+    val percentage: Float         // 进度百分比（0.0-1.0）
+)
+
+// 音量信息
+data class Volume(
+    val level: Int,               // 音量级别（0-100）
+    val isMuted: Boolean          // 静音状态
+)
+```
+
+## 🔥 高级用法示例
+
+### 投屏到指定设备
+```kotlin
+lifecycleScope.launch {
+    try {
+        // 首先，搜索设备
+        val devices = DLNACast.search(timeout = 5000)
+        
+        // 找到您偏好的设备
+        val targetDevice = devices.firstOrNull { it.name.contains("客厅") }
+        
+        if (targetDevice != null) {
+            // 投屏到指定设备
+            val success = DLNACast.castToDevice(
+                device = targetDevice,
+                url = "http://your-video.mp4",
+                title = "我的电影"
+            )
+            
+            if (success) {
+                Log.d("DLNA", "成功投屏到 ${targetDevice.name}")
+            }
+        }
+    } catch (e: Exception) {
+        Log.e("DLNA", "投屏失败: ${e.message}")
+    }
+}
+```
+
+### 本地文件投屏
+```kotlin
+lifecycleScope.launch {
+    try {
+        // 扫描本地视频文件
+        val localVideos = DLNACast.scanLocalVideos()
+        
+        // 找到要播放的视频
+        val videoToPlay = localVideos.firstOrNull { it.name.contains("电影") }
+        
+        if (videoToPlay != null) {
+            // 获取可用设备
+            val devices = DLNACast.search()
+            val device = devices.firstOrNull()
+            
+            if (device != null) {
+                // 投屏本地文件
+                val success = DLNACast.castLocalFile(device, videoToPlay)
+                Log.d("DLNA", "本地投屏成功: $success")
+            }
+        }
+    } catch (e: Exception) {
+        Log.e("DLNA", "本地投屏失败: ${e.message}")
+    }
+}
+```
+
+### 媒体控制和状态监控
+```kotlin
+lifecycleScope.launch {
+    try {
+        // 控制播放
+        DLNACast.control(DLNACast.MediaAction.PAUSE)
+        
+        // 监控状态
+        val state = DLNACast.getState()
+        Log.d("DLNA", "设备: ${state.currentDevice?.name}")
+        Log.d("DLNA", "播放中: ${state.isPlaying}")
+        Log.d("DLNA", "音量: ${state.volume}")
+        
+        // 获取进度
+        val progress = DLNACast.getProgress()
+        Log.d("DLNA", "进度: ${progress.percentage * 100}%")
+        
+        // 跳转到指定位置（2分钟）
+        DLNACast.seek(120000)
+        
+    } catch (e: Exception) {
+        Log.e("DLNA", "控制失败: ${e.message}")
+    }
+}
 ```
 
 ## 文档
