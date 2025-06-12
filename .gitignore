@@ -20,3 +20,19 @@ local.properties
 # Local configuration files containing sensitive information
 gradle.properties.local
 
+# Maven Central publishing artifacts
+maven-central-files/
+maven-central-bundle/
+central-bundle.zip
+upnpcast-*.zip
+upnpcast-*.jar
+upnpcast-*.aar
+upnpcast-*.pom
+upnpcast-*.asc
+upnpcast-*.md5
+upnpcast-*.sha1
+test-signature.asc
+
+# Additional build outputs
+app-demo/build/
+
