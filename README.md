@@ -3,9 +3,8 @@
 [![CI/CD](https://github.com/yinnho/UPnPCast/actions/workflows/ci.yml/badge.svg)](https://github.com/yinnho/UPnPCast/actions)
 [![Release](https://img.shields.io/github/v/release/yinnho/UPnPCast)](https://github.com/yinnho/UPnPCast/releases)
 [![License](https://img.shields.io/github/license/yinnho/UPnPCast)](LICENSE)
-[![Maven Central](https://img.shields.io/maven-central/v/yinnho.com/upnpcast)](https://central.sonatype.com/artifact/yinnho.com/upnpcast)
-[![Weekly Downloads](https://jitpack.io/v/yinnho/UPnPCast/week.svg)](https://jitpack.io/#yinnho/UPnPCast)
-[![Monthly Downloads](https://jitpack.io/v/yinnho/UPnPCast/month.svg)](https://jitpack.io/#yinnho/UPnPCast)
+[![Maven Central](https://img.shields.io/maven-central/v/com.yinnho.upnpcast/upnpcast)](https://central.sonatype.com/artifact/com.yinnho.upnpcast/upnpcast)
+[![JitPack](https://jitpack.io/v/yinnho/UPnPCast.svg)](https://jitpack.io/#yinnho/UPnPCast)
 
 🚀 A modern, clean Android DLNA/UPnP casting library designed as a drop-in replacement for the discontinued Cling project.
 
@@ -37,7 +36,16 @@
 
 ### Installation
 
-#### Option 1: JitPack (Recommended - Available Now!)
+#### Option 1: Maven Central (Recommended - Official Release!)
+
+Add to your app's `build.gradle`:
+```gradle
+dependencies {
+    implementation 'com.yinnho.upnpcast:upnpcast:1.1.2'
+}
+```
+
+#### Option 2: JitPack (Alternative)
 
 Add to your root `build.gradle`:
 ```gradle
@@ -54,13 +62,6 @@ Add dependency:
 ```gradle
 dependencies {
     implementation 'com.github.yinnho:UPnPCast:1.1.2'
-}
-```
-
-#### Option 2: Maven Central (Coming Soon)
-```gradle
-dependencies {
-    implementation 'yinnho.com:upnpcast:1.1.2'
 }
 ```
 

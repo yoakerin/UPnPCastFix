@@ -1,0 +1,12 @@
+# 本地配置文件示例
+# 将此文件复制为 gradle.properties.local 并填入真实的配置信息
+# gradle.properties.local 已被添加到 .gitignore，不会被提交到仓库
+
+# Maven Central配置
+ossrhUsername=你的OSSRH用户名
+ossrhPassword=你的OSSRH密码或Token
+
+# GPG签名配置
+signing.gnupg.executable=C:\\Program Files (x86)\\GnuPG\\bin\\gpg.exe
+signing.gnupg.keyName=你的GPG密钥ID
+signing.gnupg.passphrase=你的GPG密钥密码 

@@ -16,3 +16,7 @@ local.properties
 # 忽略本地IDE配置
 .idea/
 .vscode/
+
+# Local configuration files containing sensitive information
+gradle.properties.local
+

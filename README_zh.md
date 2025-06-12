@@ -3,9 +3,8 @@
 [![CI/CD](https://github.com/yinnho/UPnPCast/actions/workflows/ci.yml/badge.svg)](https://github.com/yinnho/UPnPCast/actions)
 [![Release](https://img.shields.io/github/v/release/yinnho/UPnPCast)](https://github.com/yinnho/UPnPCast/releases)
 [![License](https://img.shields.io/github/license/yinnho/UPnPCast)](LICENSE)
-[![Maven Central](https://img.shields.io/maven-central/v/yinnho.com/upnpcast)](https://central.sonatype.com/artifact/yinnho.com/upnpcast)
-[![Weekly Downloads](https://jitpack.io/v/yinnho/UPnPCast/week.svg)](https://jitpack.io/#yinnho/UPnPCast)
-[![Monthly Downloads](https://jitpack.io/v/yinnho/UPnPCast/month.svg)](https://jitpack.io/#yinnho/UPnPCast)
+[![Maven Central](https://img.shields.io/maven-central/v/com.yinnho.upnpcast/upnpcast)](https://central.sonatype.com/artifact/com.yinnho.upnpcast/upnpcast)
+[![JitPack](https://jitpack.io/v/yinnho/UPnPCast.svg)](https://jitpack.io/#yinnho/UPnPCast)
 
 🚀 现代化、简洁的Android DLNA/UPnP投屏库，专为替代已停止维护的Cling项目而设计。
 
@@ -25,7 +24,16 @@
 
 ### 安装
 
-#### 方式一：JitPack（推荐 - 立即可用！）
+#### 方式一：Maven Central（推荐 - 官方发布！）
+
+在应用的 `build.gradle` 中添加：
+```gradle
+dependencies {
+    implementation 'com.yinnho.upnpcast:upnpcast:1.1.2'
+}
+```
+
+#### 方式二：JitPack（备选方案）
 
 在根目录的 `build.gradle` 中添加：
 ```gradle
@@ -42,13 +50,6 @@ allprojects {
 ```gradle
 dependencies {
     implementation 'com.github.yinnho:UPnPCast:1.1.2'
-}
-```
-
-#### 方式二：Maven Central（即将推出）
-```gradle
-dependencies {
-    implementation 'yinnho.com:upnpcast:1.1.2'
 }
 ```
 

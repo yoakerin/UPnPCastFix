@@ -1,7 +1,15 @@
+// 加载本地配置
+val localPropertiesFile = rootProject.file("gradle.properties.local")
+val localProperties = java.util.Properties()
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("maven-publish")
+    id("signing")
 }
 
 android {
@@ -95,17 +103,71 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 }
 
-// 简化的发布配置 - JitPack会自动处理
+// 简化的发布配置 - 支持Maven Central
 afterEvaluate {
     publishing {
+        repositories {
+            maven {
+                name = "OSSRH"
+                val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+                credentials {
+                    username = localProperties.getProperty("ossrhUsername") 
+                        ?: project.findProperty("ossrhUsername") as String? ?: ""
+                    password = localProperties.getProperty("ossrhPassword") 
+                        ?: project.findProperty("ossrhPassword") as String? ?: ""
+                }
+            }
+            // 本地仓库用于生成Central Portal bundle
+            maven {
+                name = "Local"
+                url = uri("$buildDir/repo")
+            }
+        }
+        
         publications {
             create<MavenPublication>("release") {
                 from(components["release"])
                 
-                groupId = "com.github.yinnho"
-                artifactId = "UPnPCast" 
+                groupId = "com.yinnho.upnpcast"
+                artifactId = "upnpcast"
                 version = "1.1.2"
+                
+                pom {
+                    name.set("UPnPCast")
+                    description.set("Ultimate Android UPnP/DLNA Media Streaming Library | Easy TV Casting & Screen Mirroring Solution for Smart TVs, Media Players & IoT Devices | Auto Device Discovery, Local/Remote Video Streaming, Zero-Config Setup | Supports Android 7.0+ | Lightweight, High Performance, Production Ready")
+                    url.set("https://github.com/yinnho/UPnPCast")
+                    
+                    licenses {
+                        license {
+                            name.set("MIT License")
+                            url.set("https://opensource.org/licenses/MIT")
+                        }
+                    }
+                    
+                    developers {
+                        developer {
+                            id.set("yinnho")
+                            name.set("Yinnho")
+                            email.set("4505225@qq.com")
+                        }
+                    }
+                    
+                    scm {
+                        connection.set("scm:git:https://github.com/yinnho/UPnPCast.git")
+                        developerConnection.set("scm:git:ssh://git@github.com:yinnho/UPnPCast.git")
+                        url.set("https://github.com/yinnho/UPnPCast")
+                    }
+                }
             }
         }
+    }
+    
+    // 完整的签名配置 - 使用标准GPG命令行工具
+    signing {
+        // 强制使用GPG命令行工具以确保标准签名格式
+        useGpgCmd()
+        sign(publishing.publications["release"])
     }
 }
