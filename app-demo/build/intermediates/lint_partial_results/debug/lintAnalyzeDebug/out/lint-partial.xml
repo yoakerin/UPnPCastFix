@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.9.2" type="partial_results">
+    <map id="UnsafeIntentLaunch">
+            <map id="unprotected">
+                <entry
+                    name="com.yinnho.upnpcast.demo.SplashActivity"
+                    boolean="true"/>
+            </map>
+    </map>
+    <map id="UnusedResources">
+        <entry
+            name="model"
+            string="drawable[ic_launcher_background(U),ic_launcher_foreground(U)],id[device_info_card(U),connected_device_name(U),url_label(U),url_input(U),sample_urls_layout(U),btn_sample_video1(U),btn_sample_video2(U),title_label(U),title_input(U),media_info_card(U),media_title(U),playback_status(U),progress_layout(U),current_time(U),total_time(U),seek_bar(U),controls_layout(U),btn_play(U),btn_pause(U),btn_resume(U),btn_stop(U),volume_layout(U),btn_volume_down(D),volume_seekbar(U),btn_volume_up(D),volume_text(U)],layout[activity_media_control(U)],mipmap[ic_launcher(U),ic_launcher_round(U)],style[Theme_AppCompat_Light(R),Widget_AppCompat_Button_Small(R)];1c^2^4^5^20^6^9^a^b^e^12^17,1d^0^1,1e^0^1;;;"/>
+    </map>
+
+</incidents>

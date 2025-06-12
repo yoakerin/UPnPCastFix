@@ -1,0 +1,33 @@
+R_DEF: Internal format may change without notice
+local
+drawable ic_launcher_background
+drawable ic_launcher_foreground
+id btn_pause
+id btn_play
+id btn_resume
+id btn_sample_video1
+id btn_sample_video2
+id btn_stop
+id btn_volume_down
+id btn_volume_up
+id connected_device_name
+id controls_layout
+id current_time
+id device_info_card
+id media_info_card
+id media_title
+id playback_status
+id progress_layout
+id sample_urls_layout
+id seek_bar
+id title_input
+id title_label
+id total_time
+id url_input
+id url_label
+id volume_layout
+id volume_seekbar
+id volume_text
+layout activity_media_control
+mipmap ic_launcher
+mipmap ic_launcher_round

@@ -1,6 +1,8 @@
+import java.util.Properties
+
 // 加载本地配置
 val localPropertiesFile = rootProject.file("gradle.properties.local")
-val localProperties = java.util.Properties()
+val localProperties = Properties()
 if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
 }
@@ -122,7 +124,7 @@ afterEvaluate {
             // 本地仓库用于生成Central Portal bundle
             maven {
                 name = "Local"
-                url = uri("$buildDir/repo")
+                url = uri(layout.buildDirectory.dir("repo").get().asFile)
             }
         }
         
@@ -164,10 +166,17 @@ afterEvaluate {
         }
     }
     
-    // 完整的签名配置 - 使用标准GPG命令行工具
+    // 签名配置 - 仅在本地开发环境启用
     signing {
-        // 强制使用GPG命令行工具以确保标准签名格式
-        useGpgCmd()
-        sign(publishing.publications["release"])
+        // 只有在有GPG配置且不在CI环境时才启用签名
+        val isCI = System.getenv("CI") == "true" || System.getenv("GITHUB_ACTIONS") == "true"
+        val hasGpgConfig = localProperties.getProperty("signing.gnupg.keyName") != null 
+            || project.hasProperty("signing.gnupg.keyName")
+        
+        if (!isCI && hasGpgConfig) {
+            // 强制使用GPG命令行工具以确保标准签名格式
+            useGpgCmd()
+            sign(publishing.publications["release"])
+        }
     }
 }
