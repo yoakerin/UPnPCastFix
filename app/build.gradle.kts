@@ -19,7 +19,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        minSdk = 24
+        minSdk = 23
         
         // Version information setting
         version = "1.1.2"
