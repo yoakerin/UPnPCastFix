@@ -16,7 +16,7 @@ plugins {
 
 android {
     namespace = "com.yinnho.upnpcast"
-    compileSdk = 36
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 24
